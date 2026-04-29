@@ -17,6 +17,7 @@ router.get('/', protect, authorize('admin'), getUniversities);
 router.post('/', protect, authorize('admin'), createUniversity);
 router.get('/:id', getUniversity);
 router.put('/:id', protect, authorize('admin'), updateUniversity);
+
 router.delete('/:id', protect, authorize('admin'), deleteUniversity);
 
 module.exports = router;

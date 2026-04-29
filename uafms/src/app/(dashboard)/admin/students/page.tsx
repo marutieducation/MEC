@@ -1,14 +1,16 @@
 'use client';
 
 import React from 'react';
-import { 
-  MagnifyingGlassIcon, 
-  FunnelIcon, 
+import { useRouter } from 'next/navigation';
+import {
+  MagnifyingGlassIcon,
+  FunnelIcon,
   ArrowDownTrayIcon,
   AcademicCapIcon,
   MapPinIcon,
   PhoneIcon,
-  EnvelopeIcon
+  EnvelopeIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 
 import { useAuth } from '@/context/AuthContext';
@@ -31,12 +33,13 @@ interface Student {
 }
 
 export default function StudentListPage() {
+  const router = useRouter();
   const [students, setStudents] = React.useState<Student[]>([]);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  
-  // Edit State
+
+
   const [isEditing, setIsEditing] = React.useState(false);
   const [selectedStudent, setSelectedStudent] = React.useState<Student | null>(null);
   const [editFormData, setEditFormData] = React.useState({
@@ -80,7 +83,7 @@ export default function StudentListPage() {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudent) return;
-    
+
     setIsLoading(true);
     try {
       await api.put(`/admin/users/${selectedStudent._id}`, editFormData);
@@ -96,7 +99,7 @@ export default function StudentListPage() {
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to delete ${name}? This will permanently remove their account.`)) return;
-    
+
     setIsLoading(true);
     try {
       await api.delete(`/admin/users/${id}`);
@@ -109,7 +112,7 @@ export default function StudentListPage() {
     }
   };
 
-  const filteredStudents = (students || []).filter(s => 
+  const filteredStudents = (students || []).filter(s =>
     `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.universityId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -132,9 +135,9 @@ export default function StudentListPage() {
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-          <input 
-            type="text" 
-            placeholder="Search by name, email, or university..." 
+          <input
+            type="text"
+            placeholder="Search by name, email, or university..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-12 pl-12 pr-4 bg-surface border border-border rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
@@ -203,13 +206,19 @@ export default function StudentListPage() {
                       </td>
                       <td className="px-6 py-5 text-right pr-6">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
+                          <button
+                            onClick={() => router.push(`/admin/students/${s._id}/documents`)}
+                            className="p-2 bg-info/10 text-info hover:bg-info hover:text-white rounded-lg transition-all text-[11px] font-black uppercase tracking-widest flex items-center gap-1"
+                          >
+                            <DocumentTextIcon className="w-3.5 h-3.5" /> Docs
+                          </button>
+                          <button
                             onClick={() => handleEditClick(s)}
                             className="p-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg transition-all text-[11px] font-black uppercase tracking-widest"
                           >
                             Edit
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleDelete(s._id, `${s.firstName} ${s.lastName}`)}
                             className="p-2 bg-danger/10 text-danger hover:bg-danger hover:text-white rounded-lg transition-all text-[11px] font-black uppercase tracking-widest"
                           >
@@ -226,17 +235,17 @@ export default function StudentListPage() {
         )}
       </div>
 
-      {/* Edit Modal */}
+      {}
       {isEditing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-surface w-full max-w-lg rounded-3xl p-8 space-y-6 shadow-2xl border border-border fade-in">
             <h2 className="text-2xl font-black text-heading tracking-tight">Edit Student Profile</h2>
-            
+
             <form onSubmit={handleUpdate} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase tracking-widest text-muted">First Name</label>
-                  <input 
+                  <input
                     required
                     value={editFormData.firstName}
                     onChange={(e) => setEditFormData({...editFormData, firstName: e.target.value})}
@@ -245,7 +254,7 @@ export default function StudentListPage() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase tracking-widest text-muted">Last Name</label>
-                  <input 
+                  <input
                     required
                     value={editFormData.lastName}
                     onChange={(e) => setEditFormData({...editFormData, lastName: e.target.value})}
@@ -256,7 +265,7 @@ export default function StudentListPage() {
 
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-muted">Email Address</label>
-                <input 
+                <input
                   required
                   type="email"
                   value={editFormData.email}
@@ -268,7 +277,7 @@ export default function StudentListPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase tracking-widest text-muted">Phone Number</label>
-                  <input 
+                  <input
                     value={editFormData.phone}
                     onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})}
                     className="w-full h-11 px-4 bg-bg border border-border rounded-xl outline-none focus:ring-2 focus:ring-primary/20"
@@ -276,7 +285,7 @@ export default function StudentListPage() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase tracking-widest text-muted">Intake Term</label>
-                  <input 
+                  <input
                     value={editFormData.intakeTerm}
                     onChange={(e) => setEditFormData({...editFormData, intakeTerm: e.target.value})}
                     className="w-full h-11 px-4 bg-bg border border-border rounded-xl outline-none focus:ring-2 focus:ring-primary/20"
@@ -287,7 +296,7 @@ export default function StudentListPage() {
 
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-muted">Specialization</label>
-                <input 
+                <input
                   value={editFormData.specialization}
                   onChange={(e) => setEditFormData({...editFormData, specialization: e.target.value})}
                   className="w-full h-11 px-4 bg-bg border border-border rounded-xl outline-none focus:ring-2 focus:ring-primary/20"
@@ -296,14 +305,14 @@ export default function StudentListPage() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button 
+                <button
                   type="button"
                   onClick={() => setIsEditing(false)}
                   className="flex-1 h-12 bg-bg border border-border rounded-xl font-bold text-heading hover:bg-border transition-all"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
                   disabled={isLoading}
                   className="flex-1 h-12 bg-primary text-white rounded-xl font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50"

@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { 
-  ExclamationTriangleIcon, 
-  ClockIcon, 
-  UserIcon, 
+import {
+  ExclamationTriangleIcon,
+  ClockIcon,
+  UserIcon,
   AcademicCapIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
@@ -43,11 +43,11 @@ export default function EscalationsPage() {
         </div>
         <div className="divide-y divide-border">
           {escalations.map((e, i) => (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.1 }}
-              key={e.id} 
+              key={e.id}
               className="px-8 py-6 flex items-center justify-between hover:bg-bg/50 transition-colors group"
             >
               <div className="flex items-center gap-6">
@@ -76,8 +76,8 @@ export default function EscalationsPage() {
                   <ClockIcon className="w-3.5 h-3.5" /> {e.time}
                 </div>
                 <button className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  e.status === 'Resolved' 
-                    ? 'bg-bg text-muted border border-border' 
+                  e.status === 'Resolved'
+                    ? 'bg-bg text-muted border border-border'
                     : 'bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105'
                 }`}>
                   {e.status === 'Resolved' ? 'View Root Cause' : 'Take Action'}

@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   UsersIcon, ChartBarSquareIcon, CurrencyRupeeIcon,
   EllipsisHorizontalIcon, FireIcon, PlusIcon,
   ArrowRightIcon, ExclamationTriangleIcon,
   PresentationChartLineIcon, ViewColumnsIcon,
   BellAlertIcon, MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, AreaChart, Area, Cell, PieChart, Pie
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -90,7 +90,7 @@ interface AnalyticsData {
 
 export default function ControlTower() {
   const { user } = useAuth();
-  
+
   const [activeTab, setActiveTab] = useState<'pipeline' | 'insights'>('pipeline');
   const [pipelineState, setPipelineState] = useState<PipelineState>({ columns: [], cards: [] });
   const [analytics, setAnalytics] = useState<any>(null);
@@ -98,7 +98,7 @@ export default function ControlTower() {
   const [counsellors, setCounsellors] = useState<CounsellorStats[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('All Gujarat');
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -111,7 +111,7 @@ export default function ControlTower() {
           api.get('/admin/escalations'),
           api.get('/counsellors')
         ]);
-        
+
         setPipelineState(pipelineRes.data);
         setAnalytics(analyticsRes.data);
         setEscalations(escalationsRes.data);
@@ -179,8 +179,8 @@ export default function ControlTower() {
 
   return (
     <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-6 fade-in h-[calc(100vh-64px)] flex flex-col">
-      
-      {/* Page Header & View Toggle */}
+
+      {}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 shrink-0">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
@@ -193,20 +193,20 @@ export default function ControlTower() {
         </div>
 
         <div className="flex items-center bg-surface border border-border p-1 rounded-2xl shadow-sm">
-           <button 
+           <button
              onClick={() => setActiveTab('pipeline')}
              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'pipeline' ? 'bg-primary text-white shadow-md' : 'text-muted hover:text-heading hover:bg-bg/50'}`}
            >
              <ViewColumnsIcon className="w-4 h-4" /> Pipeline
            </button>
-           <button 
+           <button
              onClick={() => setActiveTab('insights')}
              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'insights' ? 'bg-primary text-white shadow-md' : 'text-muted hover:text-heading hover:bg-bg/50'}`}
            >
              <ChartBarSquareIcon className="w-4 h-4" /> Insights
            </button>
         </div>
-        
+
         <div className="flex flex-wrap items-center gap-4">
           <div className="hidden sm:flex bg-surface border border-border rounded-xl px-5 py-3 items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
             <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
@@ -246,30 +246,30 @@ export default function ControlTower() {
 
       <AnimatePresence mode="wait">
         {activeTab === 'pipeline' ? (
-          <motion.div 
+          <motion.div
             key="pipeline"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="flex-1 grid grid-cols-1 xl:grid-cols-4 gap-6 min-h-0 overflow-hidden"
           >
-            
-            {/* Kanban Board (Left 75%) */}
+
+            {}
             <div className="xl:col-span-3 flex flex-col bg-surface border border-border rounded-2xl shadow-sm overflow-hidden min-h-0 relative">
-              
+
               <div className="h-16 border-b border-border flex items-center justify-between px-6 bg-bg/20 shrink-0">
                 <div className="flex items-center gap-4 flex-1">
                    <div className="relative w-64">
                       <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                      <input 
-                        type="text" 
-                        placeholder="Search candidates..." 
+                      <input
+                        type="text"
+                        placeholder="Search candidates..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full h-9 pl-10 pr-4 bg-white border border-border rounded-xl text-xs focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                       />
                    </div>
-                   <select 
+                   <select
                      value={selectedRegion}
                      onChange={(e) => setSelectedRegion(e.target.value)}
                      className="h-9 px-3 bg-white border border-border rounded-xl text-xs font-bold text-heading focus:ring-2 focus:ring-primary/20 outline-none"
@@ -291,17 +291,17 @@ export default function ControlTower() {
              <div className="flex gap-4 h-full w-max min-w-full">
                 {pipelineState.columns?.map((col: Column) => (
                    <div key={col.id} className="w-[280px] flex flex-col shrink-0">
-                      {/* Column Header */}
+                      {}
                       <div className={`mb-3 py-1.5 px-3 rounded-lg flex justify-between items-center border ${col.bg || 'bg-surface/50'} border-border`}>
                         <span className="text-[13px] font-bold text-heading">{col.name}</span>
                         <span className="bg-white text-muted text-[11px] font-bold px-1.5 py-0.5 rounded shadow-sm border border-border/50">{col.count}</span>
                       </div>
-                      
-                      {/* Kanban Cards */}
+
+                      {}
                       <div className="flex-1 overflow-y-auto space-y-3 pb-8 pr-1 custom-scrollbar">
                          {pipelineState.cards?.filter((c: ApplicationCard) => {
                             const stageMatch = c.pipelineStage === col.id;
-                            const searchMatch = !searchQuery || 
+                            const searchMatch = !searchQuery ||
                               `${c.student?.firstName} ${c.student?.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
                               c.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
                               c.university?.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -315,12 +315,12 @@ export default function ControlTower() {
                                  </div>
                                  <button className="text-muted hover:text-heading"><EllipsisHorizontalIcon className="w-5 h-5"/></button>
                                </div>
-                               
+
                                <div className="flex items-center gap-1.5 mb-3">
                                   <div className="w-4 h-4 rounded bg-bg text-muted flex items-center justify-center text-[8px] font-bold">U</div>
                                   <span className="text-[11px] font-semibold text-heading truncate max-w-[180px]">{card.university?.name}</span>
                                </div>
-                               
+
                                <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
                                   <div className="flex items-center gap-1.5">
                                     <div className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-[9px] font-bold">
@@ -334,8 +334,8 @@ export default function ControlTower() {
                                </div>
                             </div>
                          ))}
-                         
-                         {/* Empty Add Card Slot */}
+
+                         {}
                          <div className="h-10 border-2 border-dashed border-border rounded-lg flex items-center justify-center text-muted hover:text-primary hover:border-primary/30 transition-colors cursor-pointer text-xs font-semibold">
                             + Add Card
                          </div>
@@ -346,14 +346,14 @@ export default function ControlTower() {
           </div>
         </div>
 
-        {/* Escalations / Actions (Right 25%) */}
+        {}
         <div className="flex flex-col gap-6 min-h-0 overflow-y-auto pr-1">
-          
+
           <div className="bg-[#FFF4F2] border border-[#FDECEC] rounded-xl p-5 shadow-sm">
             <h3 className="text-[14px] font-bold text-danger flex items-center gap-2 mb-4">
               <ExclamationTriangleIcon className="w-5 h-5" /> Urgent Escalations
             </h3>
-            
+
             <div className="space-y-3">
                {escalations.length === 0 ? (
                  <div className="text-center py-4 text-muted text-xs">No active escalations.</div>
@@ -373,14 +373,14 @@ export default function ControlTower() {
                  ))
                )}
             </div>
-            
+
             {escalations.length > 3 && (
               <button className="w-full mt-4 text-[12px] font-semibold text-danger hover:underline text-center">
                 View all {escalations.length} escalations
               </button>
             )}
           </div>
-          
+
           <div className="bg-surface border border-border rounded-xl p-5 shadow-sm flex-1">
              <h3 className="text-[14px] font-bold text-heading flex items-center gap-2 mb-4">
                <FireIcon className="w-5 h-5 text-primary" /> Top Performers (Counsellors)
@@ -393,8 +393,8 @@ export default function ControlTower() {
                     <div key={counsellor._id} className="flex items-center justify-between">
                        <div className="flex items-center gap-3 w-40">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[12px] ${
-                            index === 0 ? 'bg-success/10 text-success' : 
-                            index === 1 ? 'bg-primary/10 text-primary' : 
+                            index === 0 ? 'bg-success/10 text-success' :
+                            index === 1 ? 'bg-primary/10 text-primary' :
                             'bg-surface text-muted border border-border'
                           }`}>
                             {counsellor.user?.firstName?.[0] || 'C'}
@@ -404,12 +404,12 @@ export default function ControlTower() {
                              <p className="text-[11px] text-muted capitalize">{counsellor.region || 'General'}</p>
                           </div>
                        </div>
-                       
+
                        <div className="flex-1 text-center">
                           <div className="text-[14px] font-extrabold text-heading">{counsellor.performanceStats?.offersSecured || 0}</div>
                           <p className="text-[10px] uppercase text-muted font-bold tracking-wider">Offers</p>
                        </div>
-                       
+
                        <div className="flex-1 text-right">
                           <div className={`text-[13px] font-bold ${
                              parseFloat(counsellor.performanceStats?.conversionRate || '0') > 80 ? 'text-success' : 'text-heading'
@@ -426,16 +426,16 @@ export default function ControlTower() {
         </div>
           </motion.div>
         ) : (
-          <motion.div 
+          <motion.div
             key="insights"
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0 overflow-hidden"
           >
-            {/* Main Stats Column */}
+            {}
             <div className="lg:col-span-2 space-y-6 overflow-y-auto pr-1 custom-scrollbar">
-               {/* Revenue Chart */}
+               {}
                <div className="bg-surface border border-border rounded-3xl p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-8">
                      <div>
@@ -459,7 +459,7 @@ export default function ControlTower() {
                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748B'}} dy={10} />
                            <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748B'}} tickFormatter={(v) => v >= 100000 ? `₹${(v/100000).toFixed(1)}L` : `₹${v/1000}k`} />
-                           <Tooltip 
+                           <Tooltip
                               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', background: '#fff' }}
                               itemStyle={{ fontWeight: 'bold' }}
                            />
@@ -469,9 +469,9 @@ export default function ControlTower() {
                   </div>
                </div>
 
-               {/* Grid Bottom */}
+               {}
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Funnel Chart */}
+                  {}
                   <div className="bg-surface border border-border rounded-3xl p-6 shadow-sm">
                      <h3 className="text-lg font-bold text-heading mb-6">Pipeline Velocity</h3>
                      <div className="h-[250px]">
@@ -490,14 +490,14 @@ export default function ControlTower() {
                      </div>
                   </div>
 
-                  {/* Regional Performance */}
+                  {}
                   <div className="bg-[#002147] rounded-3xl p-6 shadow-xl text-white relative overflow-hidden group">
-                     {/* Decorative Elements */}
+                     {}
                      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
                         <ChartBarSquareIcon className="w-24 h-24" />
                      </div>
                      <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
-                     
+
                      <h3 className="text-lg font-bold mb-6 text-[#A6C8FF] relative z-10">Regional Intensity</h3>
                      <div className="space-y-5 relative z-10">
                         {[
@@ -512,7 +512,7 @@ export default function ControlTower() {
                                  <span>{m.val}%</span>
                               </div>
                               <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                 <motion.div 
+                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${m.val}%` }}
                                     transition={{ duration: 1, delay: 0.5 }}
@@ -526,7 +526,7 @@ export default function ControlTower() {
                </div>
             </div>
 
-            {/* Live Activity Feed Column */}
+            {}
             <div className="flex flex-col gap-6 min-h-0">
                <div className="bg-surface border border-border rounded-3xl p-6 shadow-sm flex-1 flex flex-col min-h-0">
                   <div className="flex items-center justify-between mb-8">
@@ -541,7 +541,7 @@ export default function ControlTower() {
                         <span className="text-[10px] font-bold text-success uppercase">Live</span>
                      </div>
                   </div>
-                  
+
                   <div className="flex-1 overflow-y-auto space-y-7 pr-2 custom-scrollbar">
                      {[
                         { time: '2m ago', user: 'Aditi S.', action: 'Applied to IIT Bombay', color: 'bg-success', detail: 'M.Tech CSE • GATE 740' },
@@ -568,7 +568,7 @@ export default function ControlTower() {
                         </div>
                      ))}
                   </div>
-                  
+
                   <button className="mt-6 w-full py-3 bg-bg hover:bg-border text-heading text-xs font-bold rounded-xl transition-colors">
                      View All Activity
                   </button>

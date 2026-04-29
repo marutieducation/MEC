@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   DocumentArrowDownIcon, ShieldCheckIcon,
   DocumentIcon, CreditCardIcon, XMarkIcon
 } from '@heroicons/react/24/outline';
@@ -39,7 +39,7 @@ export default function Financials() {
   const [summary, setSummary] = useState({ totalPaid: '₹0', totalPending: '₹0', count: 0 });
   const [processingPayment, setProcessingPayment] = useState(false);
 
-  // Create Invoice Modal state
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
@@ -75,15 +75,15 @@ export default function Financials() {
 
   const handlePay = async () => {
     if (!selectedInvoice || selectedInvoice.status === 'paid') return;
-    
+
     setProcessingPayment(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       await api.put(`/finance/invoices/${selectedInvoice._id}/pay`, { paymentMethod: 'razorpay' });
       await fetchInvoices();
       setSelectedInvoice(prev => prev ? { ...prev, status: 'paid' } : null);
-      
+
       alert('Payment Successful via Razorpay!');
     } catch (err: any) {
       console.error('Payment failed', err);
@@ -148,8 +148,8 @@ export default function Financials() {
 
   return (
     <div className="p-6 md:p-8 max-w-[1400px] mx-auto space-y-6 fade-in h-auto lg:h-[calc(100vh-64px)] flex flex-col pb-10">
-      
-      {/* Page Header */}
+
+      {}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
         <div>
           <h1 className="text-h1 text-heading">Payments & Invoicing</h1>
@@ -159,7 +159,7 @@ export default function Financials() {
           <button className="h-10 px-4 bg-surface border border-border text-heading hover:bg-bg rounded-lg font-medium text-[13px] transition-colors flex items-center gap-2 shadow-sm">
             <DocumentArrowDownIcon className="w-4 h-4" /> Download Statement
           </button>
-          <button 
+          <button
             onClick={openCreateModal}
             className="h-11 px-6 bg-heading hover:bg-black text-white rounded-lg font-bold text-[14px] flex items-center justify-center gap-2 transition-all w-full sm:w-auto shadow-sm"
           >
@@ -169,8 +169,8 @@ export default function Financials() {
       </div>
 
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-8 min-h-0">
-        
-        {/* Invoice List (Left 66%) */}
+
+        {}
         <div className="xl:col-span-2 flex flex-col gap-6 min-h-0">
           <div className="flex flex-col bg-surface border border-border rounded-xl shadow-sm min-h-0 overflow-hidden">
             <div className="border-b border-border px-6 py-4 flex justify-between items-center bg-bg/30 shrink-0">
@@ -208,8 +208,8 @@ export default function Financials() {
                   </thead>
                   <tbody className="divide-y divide-border text-[13px]">
                     {invoices.map((inv) => (
-                      <tr 
-                        key={inv._id} 
+                      <tr
+                        key={inv._id}
                         onClick={() => setSelectedInvoice(inv)}
                         className={`hover:bg-bg/50 transition-colors group cursor-pointer ${selectedInvoice?._id === inv._id ? 'bg-primary/5' : ''}`}
                       >
@@ -245,7 +245,7 @@ export default function Financials() {
             </div>
           </div>
 
-          {/* Student Payment Summary Card */}
+          {}
           <div className="bg-surface border border-border rounded-xl shadow-sm p-6">
             <h3 className="text-[15px] font-bold text-heading mb-4">Student Payment Tracker</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -256,7 +256,7 @@ export default function Financials() {
                 });
                 const paid = studentInvoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.amountNumeric, 0);
                 const pending = studentInvoices.filter(inv => inv.status === 'pending').reduce((sum, inv) => sum + inv.amountNumeric, 0);
-                
+
                 return (
                   <div key={name} className="p-4 bg-bg rounded-xl border border-border flex justify-between items-center group hover:border-primary/30 transition-all">
                     <div>
@@ -274,11 +274,11 @@ export default function Financials() {
           </div>
         </div>
 
-        {/* Payment Gateway Mockup (Right 33%) */}
+        {}
         <div className="xl:col-span-1 flex flex-col bg-surface border border-border rounded-xl shadow-lg relative overflow-hidden">
           {selectedInvoice ? (
             <>
-              {/* Header */}
+              {}
               <div className="bg-[#1A1A2E] text-white p-6 relative overflow-hidden shrink-0">
                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary opacity-20 -mr-10 -mt-10 rounded-full blur-2xl"></div>
                  <p className="text-[12px] font-bold tracking-wider text-gray-400 mb-1 uppercase">Payment Overview</p>
@@ -286,7 +286,7 @@ export default function Financials() {
                  <p className="text-[13px] text-gray-300">{selectedInvoice.description} ({selectedInvoice.invoiceId})</p>
               </div>
 
-              {/* Payment Form */}
+              {}
               <div className="p-6 flex-1 overflow-y-auto">
                  <div className="flex items-center gap-3 mb-6">
                     <button className="flex-1 py-2 text-[12px] font-bold text-primary border-b-2 border-primary transition-colors text-center">Credit Card</button>
@@ -328,7 +328,7 @@ export default function Financials() {
                     </div>
                  </div>
 
-                 <button 
+                 <button
                   onClick={handlePay}
                   disabled={selectedInvoice.status === 'paid' || processingPayment}
                   className="w-full mt-6 h-12 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold text-[14px] flex justify-center items-center gap-2 transition-all shadow-[0_4px_14px_rgba(255,107,0,0.39)] hover:shadow-[0_6px_20px_rgba(255,107,0,0.23)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none"
@@ -362,11 +362,11 @@ export default function Financials() {
 
       </div>
 
-      {/* Create Invoice Modal */}
+      {}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-surface w-full max-w-lg rounded-3xl shadow-2xl border border-border fade-in overflow-hidden">
-            {/* Modal Header */}
+            {}
             <div className="bg-[#1A1A2E] text-white px-8 py-6 flex justify-between items-center">
               <div>
                 <h2 className="text-xl font-black tracking-tight">Create New Invoice</h2>
@@ -378,7 +378,7 @@ export default function Financials() {
             </div>
 
             <form onSubmit={handleCreateInvoice} className="p-8 space-y-5">
-              {/* Student Selection */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-black uppercase tracking-widest text-muted">Select Student *</label>
                 {loadingStudents ? (
@@ -402,7 +402,7 @@ export default function Financials() {
                 )}
               </div>
 
-              {/* Description */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-black uppercase tracking-widest text-muted">Description *</label>
                 <input
@@ -415,7 +415,7 @@ export default function Financials() {
                 />
               </div>
 
-              {/* Amount */}
+              {}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-black uppercase tracking-widest text-muted">Amount (₹) *</label>
@@ -442,7 +442,7 @@ export default function Financials() {
                 </div>
               </div>
 
-              {/* Actions */}
+              {}
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"

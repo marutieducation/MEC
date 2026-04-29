@@ -26,7 +26,7 @@ export default function MeetingsPage() {
   const fetchRequests = async () => {
     try {
       const res = await api.get('/admin/counseling-requests');
-      setRequests(res.data); // Fixed: res is already the data object from apiFetch
+      setRequests(res.data);
     } catch (err) {
       console.error('Failed to fetch counseling requests:', err);
     } finally {
@@ -67,7 +67,7 @@ export default function MeetingsPage() {
           <p className="text-muted font-medium">Manage your consultation schedule and live sessions.</p>
         </div>
         <div className="flex gap-4">
-          <button 
+          <button
             onClick={async () => {
               await api.post('/students/book-consultation', { preferredDate: '2024-11-20', preferredTime: '10:00 AM' });
               fetchRequests();
@@ -99,7 +99,7 @@ export default function MeetingsPage() {
         <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-bg/20">
           <h2 className="text-lg font-bold text-heading">Counseling Requests</h2>
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={fetchRequests}
               className="p-2 hover:bg-bg rounded-lg transition-colors text-muted"
             >
@@ -114,10 +114,10 @@ export default function MeetingsPage() {
             <div className="p-12 text-center text-muted font-medium">No counseling requests found.</div>
           ) : (
             requests.map((r) => (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                key={r._id} 
+                key={r._id}
                 className="px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-bg/50 transition-colors group"
               >
                 <div className="flex items-center gap-4">
@@ -145,10 +145,10 @@ export default function MeetingsPage() {
                   <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusColor(r.status)}`}>
                     {r.status.replace('_', ' ')}
                   </span>
-                  
+
                   <div className="flex items-center gap-2">
                     {r.status === 'open' && (
-                      <button 
+                      <button
                         onClick={() => handleUpdateStatus(r._id, 'in_progress')}
                         disabled={updateLoading === r._id}
                         className="px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all disabled:opacity-50"
@@ -157,7 +157,7 @@ export default function MeetingsPage() {
                       </button>
                     )}
                     {(r.status === 'open' || r.status === 'in_progress') && (
-                      <button 
+                      <button
                         onClick={() => handleUpdateStatus(r._id, 'resolved')}
                         disabled={updateLoading === r._id}
                         className="px-4 py-2 bg-success text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-1"

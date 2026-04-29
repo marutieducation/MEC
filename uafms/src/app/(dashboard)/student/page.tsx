@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  PlusIcon, CalendarIcon, 
-  DocumentTextIcon, ExclamationCircleIcon, 
+import {
+  PlusIcon, CalendarIcon,
+  DocumentTextIcon, ExclamationCircleIcon,
   ClockIcon, CheckCircleIcon, ChatBubbleLeftIcon,
   ChevronRightIcon, ShieldCheckIcon, AcademicCapIcon,
   VideoCameraIcon, ArrowUpRightIcon
@@ -13,6 +13,7 @@ import { SparklesIcon, HeartIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import ChatBox from '@/components/chat/ChatBox';
+import { getUniversityLogo } from '@/lib/universityLogos';
 
 interface DashboardData {
   metrics: {
@@ -176,15 +177,15 @@ export default function StudentDashboard() {
 
   return (
     <div className="p-6 md:p-8 max-w-[1400px] mx-auto space-y-8 fade-in transition-colors duration-300">
-      
-      {/* Page Header & Quick Actions */}
+
+      {}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-h1">Welcome Back, {user?.firstName || 'Student'}</h1>
           <p className="text-body mt-1">Here is what is happening with your applications today.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={() => setIsBookingModalOpen(true)}
             className="h-10 px-4 bg-surface border border-border text-heading hover:bg-bg rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
           >
@@ -198,9 +199,9 @@ export default function StudentDashboard() {
 
       <ProfileStrengthMeter progress={85} />
 
-      {/* Metrics Grid */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1 */}
+        {}
         <div className="bg-surface rounded-xl p-5 border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <span className="text-label text-muted">OVERALL PROGRESS</span>
@@ -217,7 +218,7 @@ export default function StudentDashboard() {
           <p className="text-xs text-muted mt-3 font-medium">Profile completion and app readiness.</p>
         </div>
 
-        {/* Metric 2 */}
+        {}
         <div className="bg-surface rounded-xl p-5 border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <span className="text-label text-muted">APPLICATIONS</span>
@@ -231,7 +232,7 @@ export default function StudentDashboard() {
           </p>
         </div>
 
-        {/* Metric 3 */}
+        {}
         <div className="bg-surface rounded-xl p-5 border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <span className="text-label text-muted">PENDING ACTIONS</span>
@@ -245,7 +246,7 @@ export default function StudentDashboard() {
           </p>
         </div>
 
-        {/* Metric 4 */}
+        {}
         <div className="bg-surface rounded-xl p-5 border border-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <span className="text-label text-muted">NEXT DEADLINE</span>
@@ -262,10 +263,10 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Main Content Layout (70 / 30) */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Active Applications (Left Column) */}
+
+        {}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
             <div className="px-6 py-5 border-b border-border flex justify-between items-center">
@@ -273,7 +274,7 @@ export default function StudentDashboard() {
               <a href="/student/apply" className="text-sm font-bold text-primary hover:underline">View All</a>
             </div>
 
-            {/* Scholarship Match Alert */}
+            {}
             <div className="mx-6 mt-4 p-4 bg-gradient-to-r from-primary/10 to-transparent border border-primary/20 rounded-xl flex items-center justify-between group cursor-pointer">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
@@ -288,7 +289,7 @@ export default function StudentDashboard() {
                 View Details <ChevronRightIcon className="w-3 h-3" />
               </a>
             </div>
-            
+
             <div className="divide-y divide-border">
               {applications.length === 0 ? (
                 <div className="p-8 text-center text-muted">
@@ -300,11 +301,11 @@ export default function StudentDashboard() {
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 bg-white rounded-lg border border-border flex items-center justify-center shadow-sm p-2 flex-shrink-0">
-                          <img src={app.university?.logo || "https://ui-avatars.com/api/?name=" + app.university?.name} alt={app.university?.name} className="max-w-full max-h-full object-contain" />
+                          <img src={getUniversityLogo(app.university?.name || '')} alt={app.university?.name || 'Partner University'} className="max-w-full max-h-full object-contain" />
                         </div>
                         <div>
-                          <h4 className="text-[16px] font-semibold text-heading">{app.university?.name}</h4>
-                          <p className="text-sm text-muted">{app.course}</p>
+                          <h4 className="text-[16px] font-semibold text-heading">{app.university?.name || 'Partner University'}</h4>
+                          <p className="text-sm text-muted">{app.course || 'General Admission'}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -319,7 +320,7 @@ export default function StudentDashboard() {
                         <button className="text-muted hover:text-heading p-1"><ChevronRightIcon className="w-5 h-5" /></button>
                       </div>
                     </div>
-                    
+
                     {app.status === 'action_required' && app.missingDocuments && app.missingDocuments.length > 0 && (
                       <div className="bg-[#FDECEC] rounded-md p-3 mb-4 flex items-start gap-3 border border-danger/20">
                         <ExclamationCircleIcon className="w-5 h-5 text-danger mt-0.5 flex-shrink-0" />
@@ -330,21 +331,21 @@ export default function StudentDashboard() {
                       </div>
                     )}
 
-                    {/* Stepper */}
+                    {}
                     <div className="mt-6 flex items-center justify-between relative px-2">
                       <div className="absolute left-6 right-6 top-3 h-[2px] bg-border -z-10"></div>
                       <div className="absolute left-6 top-3 h-[2px] bg-primary -z-10 transition-all duration-500" style={{ width: `${((app.currentStep - 1) / 3) * 100}%` }}></div>
-                      
+
                       {['Draft', 'Submitted', 'Under Review', 'Decision'].map((step, i) => {
                         const stepNumber = i + 1;
                         const isCompleted = app.currentStep > stepNumber || app.status === 'accepted' || app.status === 'rejected';
                         const isCurrent = app.currentStep === stepNumber && app.status !== 'accepted' && app.status !== 'rejected';
-                        
+
                         return (
                           <div key={i} className="flex flex-col items-center gap-2 bg-surface">
                             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                              isCompleted ? 'bg-primary text-white border-2 border-primary' : 
-                              isCurrent ? 'bg-surface border-2 border-primary text-primary shadow-[0_0_0_4px_#FFF0E6]' : 
+                              isCompleted ? 'bg-primary text-white border-2 border-primary' :
+                              isCurrent ? 'bg-surface border-2 border-primary text-primary shadow-[0_0_0_4px_#FFF0E6]' :
                               'bg-surface border-2 border-border text-muted'
                             }`}>
                               {isCompleted ? <CheckCircleIcon className="w-4 h-4" /> : stepNumber}
@@ -361,16 +362,16 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        {/* Right Sidebar (30%) */}
+        {}
         <div className="space-y-6">
-          
-          {/* Upcoming Interview Widget */}
 
-          {/* Visa Status Widget */}
+          {}
+
+          {}
           <div className="bg-surface rounded-xl border border-border shadow-sm p-6 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-light"></div>
             <h3 className="text-h4 mb-4">Your Counsellor</h3>
-            
+
             {counsellor ? (
               <>
                 <div className="flex items-center gap-4 mb-5">
@@ -386,7 +387,7 @@ export default function StudentDashboard() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <button 
+                  <button
                      onClick={() => setIsChatOpen(true)}
                      className="flex items-center justify-center gap-2 h-9 bg-bg hover:bg-border text-heading text-sm font-medium rounded-md transition-colors"
                   >
@@ -398,23 +399,33 @@ export default function StudentDashboard() {
                 </div>
               </>
             ) : (
-              <div className="text-center py-4 text-muted text-sm">
-                No counsellor assigned yet. Complete your profile to get intelligently matched.
-                <button className="mt-3 w-full flex items-center justify-center gap-2 h-9 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-medium rounded-md transition-colors">
-                   Request Counsellor
+              <div className="flex flex-col items-center text-center p-5 bg-surface border border-dashed border-border rounded-xl mt-2 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative w-12 h-12 mb-3">
+                  <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping opacity-50"></div>
+                  <div className="relative w-full h-full bg-surface border-2 border-primary/20 rounded-full flex items-center justify-center text-primary shadow-sm">
+                    <SparklesIcon className="w-6 h-6" />
+                  </div>
+                </div>
+                <h4 className="text-sm font-bold text-heading mb-1">AI Counsellor Match</h4>
+                <p className="text-[11px] text-muted mb-4 leading-relaxed">
+                  Complete your profile to get intelligently matched with an expert admissions guide.
+                </p>
+                <button className="relative z-10 w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-primary to-primary-dark text-white text-[13px] font-bold rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-0.5">
+                  Request Match
                 </button>
               </div>
             )}
           </div>
 
-          {/* AI Recommended Courses */}
+          {}
           <div className="bg-surface rounded-xl border border-border shadow-sm p-6 bg-gradient-to-b from-surface to-info/5">
             <div className="flex items-center gap-2 mb-4">
               <SparklesIcon className="w-5 h-5 text-primary" />
               <h3 className="text-h4">AI Match Recommendations</h3>
             </div>
             <p className="text-xs text-muted mb-4">Based on your profile, you have a 85%+ chance of admission for these programs.</p>
-            
+
             <div className="space-y-4">
               {recommendations.length === 0 ? (
                 <div className="text-center py-4 text-muted text-sm border border-dashed border-border rounded-lg bg-surface">
@@ -425,7 +436,7 @@ export default function StudentDashboard() {
                   <div key={i} className="flex justify-between items-center group cursor-pointer">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded bg-white border border-border flex items-center justify-center p-1 shadow-sm">
-                         <img src={rec.logo || "https://ui-avatars.com/api/?name=" + rec.name} alt={rec.name} className="max-w-full max-h-full object-contain opacity-80" />
+                         <img src={getUniversityLogo(rec.name)} alt={rec.name} className="max-w-full max-h-full object-contain opacity-80" />
                       </div>
                       <div>
                         <h5 className="text-[13px] font-semibold text-heading group-hover:text-primary transition-colors">{rec.topCourse}</h5>
@@ -437,7 +448,7 @@ export default function StudentDashboard() {
                 ))
               )}
             </div>
-            
+
             {recommendations.length > 0 && (
               <button className="w-full mt-5 text-[13px] font-medium text-primary hover:text-primary-dark transition-colors text-center border-t border-border pt-4">
                 View more matches
@@ -449,7 +460,7 @@ export default function StudentDashboard() {
 
       </div>
 
-      {/* Booking Modal */}
+      {}
       {isBookingModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-surface w-full max-w-md rounded-3xl border border-border shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
@@ -472,8 +483,8 @@ export default function StudentDashboard() {
                 <form onSubmit={handleBookCounseling} className="space-y-5">
                   <div className="space-y-2">
                     <label className="text-xs font-black text-muted uppercase tracking-widest">Preferred Date</label>
-                    <input 
-                      type="date" 
+                    <input
+                      type="date"
                       required
                       min={new Date().toISOString().split('T')[0]}
                       className="w-full h-12 px-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-heading font-medium"
@@ -483,8 +494,8 @@ export default function StudentDashboard() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-black text-muted uppercase tracking-widest">Preferred Time</label>
-                    <input 
-                      type="time" 
+                    <input
+                      type="time"
                       required
                       className="w-full h-12 px-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-heading font-medium"
                       value={bookingForm.preferredTime}
@@ -498,7 +509,7 @@ export default function StudentDashboard() {
                     </div>
                   )}
 
-                  <button 
+                  <button
                     type="submit"
                     disabled={bookingLoading}
                     className="w-full py-4 bg-primary text-white font-black rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
@@ -512,13 +523,13 @@ export default function StudentDashboard() {
         </div>
       )}
 
-      {/* Real-time Chat Widget */}
+      {}
       {counsellor && counsellor.user && (
-         <ChatBox 
-            isOpen={isChatOpen} 
-            onClose={() => setIsChatOpen(false)} 
-            recipientId={counsellor.user._id} 
-            recipientName={`${counsellor.user.firstName} ${counsellor.user.lastName}`} 
+         <ChatBox
+            isOpen={isChatOpen}
+            onClose={() => setIsChatOpen(false)}
+            recipientId={counsellor.user._id}
+            recipientName={`${counsellor.user.firstName} ${counsellor.user.lastName}`}
          />
       )}
 

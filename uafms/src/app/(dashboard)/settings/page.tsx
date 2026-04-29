@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { 
+import {
   UserCircleIcon, ShieldCheckIcon, DocumentCheckIcon,
   CodeBracketIcon, BellAlertIcon, ComputerDesktopIcon,
   ArrowDownTrayIcon, LockClosedIcon, CheckCircleIcon
@@ -56,16 +56,16 @@ export default function SettingsAndCompliance() {
 
   return (
     <div className="p-6 md:p-8 max-w-[1400px] mx-auto space-y-6 fade-in min-h-[calc(100vh-64px)] flex flex-col pb-10">
-      
-      {/* Page Header */}
+
+      {}
       <div className="shrink-0 mb-2">
          <h1 className="text-h1 text-heading">Settings & Compliance</h1>
          <p className="text-body text-muted mt-1">Manage your account preferences, security settings, and data privacy.</p>
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row gap-8 min-h-0">
-        
-        {/* Settings Navigation (Left 25%) */}
+
+        {}
         <div className="lg:w-64 shrink-0 overflow-y-auto pr-2 pb-4">
            <nav className="space-y-1">
               {tabs.map((tab) => (
@@ -73,8 +73,8 @@ export default function SettingsAndCompliance() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-[14px] font-medium rounded-lg transition-colors ${
-                    activeTab === tab.id 
-                      ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm' 
+                    activeTab === tab.id
+                      ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm'
                       : 'text-muted hover:text-heading hover:bg-bg/80 border border-transparent'
                   }`}
                 >
@@ -85,12 +85,12 @@ export default function SettingsAndCompliance() {
            </nav>
         </div>
 
-        {/* Settings Content (Right 75%) */}
+        {}
         <div className="flex-1 bg-surface border border-border rounded-xl shadow-sm min-h-0 overflow-y-auto">
-          
+
           {activeTab === 'dpdp' && (
             <div className="p-6 md:p-8 space-y-8 fade-in">
-              
+
               <div className="flex justify-between items-start border-b border-border pb-6">
                  <div>
                     <h2 className="text-h2">GDPR &amp; DPDP Act Compliance</h2>
@@ -102,30 +102,30 @@ export default function SettingsAndCompliance() {
                  </div>
               </div>
 
-              {/* Data Localization Map Mockup */}
+              {}
               <div className="space-y-3">
                  <h3 className="text-h3 flex items-center gap-2">
                    <LockClosedIcon className="w-5 h-5 text-muted" /> Data Residency & Localization
                  </h3>
                  <div className="bg-bg border border-border rounded-xl p-5 flex flex-col md:flex-row items-center gap-6">
                     <div className="w-full md:w-1/2 aspect-[16/9] bg-surface rounded-lg border border-border flex items-center justify-center shadow-inner relative overflow-hidden group">
-                       <Image width={800} height={400} alt="World Map" src="https://upload.wikimedia.org/wikipedia/commons/8/81/World_map_polygons.svg" className="w-[120%] h-[120%] object-cover opacity-20 filter invert-[0.8] mix-blend-multiply" />
-                       
-                       {/* India Marker */}
+                       <Image width={800} height={400} alt="World Map" src="https:
+
+                       {}
                        <div className="absolute top-[48%] left-[68%] flex flex-col items-center group-hover:scale-110 transition-transform">
                           <div className="w-4 h-4 rounded-full bg-primary/30 flex items-center justify-center animate-pulse">
                              <div className="w-2 h-2 rounded-full bg-primary"></div>
                           </div>
                        </div>
-                       
+
                        <div className="absolute bottom-3 right-3 bg-bg/90 backdrop-blur-sm border border-border px-2 py-1 rounded text-[10px] font-bold text-heading shadow-sm uppercase tracking-wide">
                           Server Region: ap-south-1
                        </div>
                     </div>
-                    
+
                     <div className="flex-1 space-y-4">
                        <p className="text-[13px] text-muted">Your application data, documents, and PII are physically stored in the <strong>AWS Mumbai (India)</strong> region to comply with Section 17 of the DPDP Act.</p>
-                       
+
                        <div className="bg-surface border border-border rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-1">
                              <CheckCircleIcon className="w-4 h-4 text-success" />
@@ -137,13 +137,13 @@ export default function SettingsAndCompliance() {
                  </div>
               </div>
 
-              {/* Consent Log */}
+              {}
               <div className="space-y-3">
                  <div className="flex justify-between items-end">
                     <h3 className="text-h3">Consent Audit Trail</h3>
                     <button className="text-[12px] font-bold text-primary hover:underline">Update GSTIN</button>
                  </div>
-                 
+
                  <div className="border border-border rounded-xl overflow-hidden">
                     <table className="w-full text-left text-[13px]">
                        <thead className="bg-bg/50 border-b border-border">
@@ -167,7 +167,7 @@ export default function SettingsAndCompliance() {
                     </table>
                  </div>
               </div>
-              {/* Data Portability / Erasure Actions */}
+              {}
               <div className="pt-6 border-t border-border flex gap-4">
                  <button onClick={handleExportData} disabled={isExporting} className="flex-1 py-3 bg-surface border-2 border-primary text-primary hover:bg-primary/5 rounded-lg text-[14px] font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
                     <ArrowDownTrayIcon className="w-5 h-5" /> {isExporting ? 'Exporting...' : 'Request Data Export (.JSON)'}
@@ -176,7 +176,7 @@ export default function SettingsAndCompliance() {
                     Initiate Account Deletion (RTBF)
                  </button>
               </div>
-              
+
               </div>
            )}
 

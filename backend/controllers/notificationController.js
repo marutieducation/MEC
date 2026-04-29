@@ -1,7 +1,7 @@
 const Notification = require('../models/Notification');
 
-// @desc    Get user's notifications
-// @route   GET /api/notifications
+
+
 const getNotifications = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -32,8 +32,8 @@ const getNotifications = async (req, res) => {
   }
 };
 
-// @desc    Mark a notification as read
-// @route   PUT /api/notifications/:id/read
+
+
 const markAsRead = async (req, res) => {
   try {
     const notification = await Notification.findOneAndUpdate(
@@ -50,8 +50,8 @@ const markAsRead = async (req, res) => {
   }
 };
 
-// @desc    Mark all as read
-// @route   PUT /api/notifications/read-all
+
+
 const markAllAsRead = async (req, res) => {
   try {
     await Notification.updateMany(

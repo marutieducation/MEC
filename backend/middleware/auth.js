@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Protect routes — verify JWT
+
 const protect = async (req, res, next) => {
   let token;
 
@@ -25,10 +25,10 @@ const protect = async (req, res, next) => {
   }
 };
 
-// Role-based guard with Admin super access
+
 const authorize = (...roles) => {
   return (req, res, next) => {
-    // Super access for admin
+
     if (req.user.role === 'admin') {
       return next();
     }

@@ -7,8 +7,8 @@ const Counsellor = require('../models/Counsellor');
 const VerificationCode = require('../models/VerificationCode');
 const crypto = require('crypto');
 
-// @desc    Get control tower pipeline data (Kanban)
-// @route   GET /api/admin/pipeline
+
+
 const getPipeline = async (req, res) => {
   try {
     const stageInfo = [
@@ -33,7 +33,7 @@ const getPipeline = async (req, res) => {
       count: await Application.countDocuments({ pipelineStage: stage.id })
     })));
 
-    // KPIs
+
     const totalActive = await Application.countDocuments({
       status: { $nin: ['accepted', 'rejected'] },
     });
@@ -61,8 +61,8 @@ const getPipeline = async (req, res) => {
   }
 };
 
-// @desc    Move application between pipeline stages
-// @route   PUT /api/admin/pipeline/:id/move
+
+
 const movePipelineCard = async (req, res) => {
   try {
     const { stage } = req.body;
@@ -89,11 +89,11 @@ const movePipelineCard = async (req, res) => {
   }
 };
 
-// @desc    Get analytics / BI dashboard data
-// @route   GET /api/admin/analytics
+
+
 const getAnalytics = async (req, res) => {
   try {
-    // Funnel data
+
     const funnelData = [
       { name: 'Leads', students: await Application.countDocuments({ pipelineStage: 'leads' }) },
       { name: 'Verified', students: await Application.countDocuments({ pipelineStage: 'verified' }) },
@@ -102,7 +102,7 @@ const getAnalytics = async (req, res) => {
       { name: 'Enrolled', students: Math.floor(await Application.countDocuments({ status: 'accepted' }) * 0.7) },
     ];
 
-    // Revenue by region
+
     const revenueData = [
       { name: 'North India', value: 45 },
       { name: 'South India', value: 30 },
@@ -110,7 +110,7 @@ const getAnalytics = async (req, res) => {
       { name: 'East India', value: 10 },
     ];
 
-    // Revenue trend (monthly data)
+
     const trendData = [
       { name: 'Jan', revenue: 4000000 },
       { name: 'Feb', revenue: 3000000 },
@@ -120,7 +120,7 @@ const getAnalytics = async (req, res) => {
       { name: 'Jun', revenue: 8000000 },
     ];
 
-    // KPIs
+
     const totalRevenue = trendData.reduce((sum, t) => sum + t.revenue, 0);
     const totalApps = await Application.countDocuments({});
     const totalOffers = await Application.countDocuments({ status: 'accepted' });
@@ -143,8 +143,8 @@ const getAnalytics = async (req, res) => {
         trendData,
         activePartners,
         kpis: {
-          totalRevenue: totalRevenue >= 10000000 
-            ? `₹${(totalRevenue / 10000000).toFixed(2)} Cr` 
+          totalRevenue: totalRevenue >= 10000000
+            ? `₹${(totalRevenue / 10000000).toFixed(2)} Cr`
             : `₹${(totalRevenue / 100000).toFixed(2)} Lakh`,
           conversionRate: `${conversionRate}%`,
           avgProcessTime: '18 Days',
@@ -157,8 +157,41 @@ const getAnalytics = async (req, res) => {
   }
 };
 
-// @desc    Get escalations
-// @route   GET /api/admin/escalations
+
+
+const getPreferences = async (req, res) => {
+  try {
+    const popularUniversities = await Application.aggregate([
+      { $group: { _id: '$university', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 6 },
+      { $lookup: { from: 'universities', localField: '_id', foreignField: '_id', as: 'universityDetails' } },
+      { $unwind: '$universityDetails' },
+      {
+        $project: {
+          _id: 1,
+          count: 1,
+          name: '$universityDetails.name',
+          location: '$universityDetails.location',
+          country: '$universityDetails.country',
+          logo: '$universityDetails.logo'
+        }
+      }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        popularUniversities
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
 const getEscalations = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -191,8 +224,8 @@ const getEscalations = async (req, res) => {
   }
 };
 
-// @desc    Update escalation
-// @route   PUT /api/admin/escalations/:id
+
+
 const updateEscalation = async (req, res) => {
   try {
     const escalation = await Escalation.findByIdAndUpdate(
@@ -211,8 +244,8 @@ const updateEscalation = async (req, res) => {
   }
 };
 
-// @desc    Get all invite codes
-// @route   GET /api/admin/invite-codes
+
+
 const getInviteCodes = async (req, res) => {
   try {
     const codes = await VerificationCode.find()
@@ -225,18 +258,18 @@ const getInviteCodes = async (req, res) => {
   }
 };
 
-// @desc    Generate a new admin or partner invite code
-// @route   POST /api/admin/invite-codes
+
+
 const generateInviteCode = async (req, res) => {
   try {
     const { type = 'admin_registration' } = req.body;
     const code = crypto.randomBytes(4).toString('hex').toUpperCase();
-    
+
     const newCode = await VerificationCode.create({
       code,
       type,
       createdBy: req.user._id,
-      expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours for new codes
+      expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000)
     });
 
     res.status(201).json({ success: true, data: newCode });
@@ -245,8 +278,8 @@ const generateInviteCode = async (req, res) => {
   }
 };
 
-// @desc    Get all users by role
-// @route   GET /api/admin/users
+
+
 const getUsers = async (req, res) => {
   try {
     const { role } = req.query;
@@ -258,8 +291,8 @@ const getUsers = async (req, res) => {
   }
 };
 
-// @desc    Get all counseling requests
-// @route   GET /api/admin/counseling-requests
+
+
 const getCounselingRequests = async (req, res) => {
   try {
     const Escalation = require('../models/Escalation');
@@ -273,8 +306,8 @@ const getCounselingRequests = async (req, res) => {
   }
 };
 
-// @desc    Update/Resolve counseling request
-// @route   PUT /api/admin/counseling-requests/:id
+
+
 const updateCounselingRequest = async (req, res) => {
   try {
     const Escalation = require('../models/Escalation');
@@ -294,8 +327,50 @@ const updateCounselingRequest = async (req, res) => {
   }
 };
 
-// @desc    Update a user
-// @route   PUT /api/admin/users/:id
+
+
+const createUser = async (req, res) => {
+  try {
+    const { firstName, lastName, email, password, phone, role, universityId } = req.body;
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists with this email' });
+    }
+
+    const userData = {
+      firstName,
+      lastName,
+      email,
+      password,
+      role: role || 'university_partner',
+      phone: phone || '',
+    };
+
+    if (universityId) {
+      userData.universityId = universityId;
+    }
+
+    const user = await User.create(userData);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        universityId: user.universityId,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
 const updateUser = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -313,8 +388,8 @@ const updateUser = async (req, res) => {
   }
 };
 
-// @desc    Delete a user
-// @route   DELETE /api/admin/users/:id
+
+
 const deleteUser = async (req, res) => {
   try {
     console.log(`[ADMIN] Delete request received for ID: ${req.params.id}`);
@@ -327,7 +402,7 @@ const deleteUser = async (req, res) => {
 
     console.log(`[ADMIN] User ${user.email} deleted successfully`);
 
-    // Cascade: delete all related data from MongoDB
+
     const Application = require('../models/Application');
     const Document = require('../models/Document');
 
@@ -338,12 +413,12 @@ const deleteUser = async (req, res) => {
     ]);
 
     console.log(`[ADMIN] Cascade delete — Invoices: ${invoiceResult.deletedCount}, Apps: ${appResult.deletedCount}, Docs: ${docResult.deletedCount}`);
-    
-    // Always try to delete counsellor profile if exists
+
+
     await Counsellor.findOneAndDelete({ user: req.params.id });
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'User and all associated data deleted successfully',
       cascade: {
         invoices: invoiceResult.deletedCount,
@@ -357,9 +432,9 @@ const deleteUser = async (req, res) => {
 };
 
 module.exports = {
-  getPipeline, movePipelineCard, getAnalytics,
+  getPipeline, movePipelineCard, getAnalytics, getPreferences,
   getEscalations, updateEscalation,
   getInviteCodes, generateInviteCode,
-  getUsers, updateUser, deleteUser,
+  getUsers, createUser, updateUser, deleteUser,
   getCounselingRequests, updateCounselingRequest
 };

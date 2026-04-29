@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
-import { 
-  CalendarDaysIcon, VideoCameraIcon, 
+import {
+  CalendarDaysIcon, VideoCameraIcon,
   MapPinIcon, ClockIcon,
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import { SparklesIcon } from '@heroicons/react/24/solid';
+import { api } from '@/lib/api';
 
 const interviews: any[] = [];
 
@@ -19,8 +20,8 @@ export default function InterviewsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Main List */}
+
+        {}
         <div className="lg:col-span-2 space-y-4">
           <h2 className="text-h3 mb-4">Upcoming sessions</h2>
           {interviews.length === 0 ? (
@@ -66,49 +67,57 @@ export default function InterviewsPage() {
           ))}
         </div>
 
-        {/* Prep Widget */}
+        {}
         <div className="space-y-6">
            <div className="p-8 bg-[#0B0F19] rounded-[24px] border border-white/5 text-white relative overflow-hidden group">
-              {/* Animated Glow Backdrop */}
+              {}
               <div className="absolute -right-16 -top-16 w-48 h-48 bg-primary/20 rounded-full blur-[60px] group-hover:bg-primary/30 transition-all duration-700"></div>
-              
+
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2.5">
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_#FF6B00]"></div>
-                    <span className="text-[10px] font-black uppercase tracking-[3px] text-primary">System Online</span>
+                    <span className="text-[10px] font-black uppercase tracking-[3px] text-primary">Live Support</span>
                   </div>
                   <SparklesIcon className="w-5 h-5 text-primary opacity-60" />
                 </div>
 
                 <h3 className="text-2xl font-bold mb-3 tracking-tight">
-                  <span className="text-primary italic">AI</span> Prep Coach
+                  <span className="text-primary italic">Expert</span> Consultation
                 </h3>
-                
+
                 <p className="text-[13px] text-gray-400 mb-8 leading-relaxed font-medium">
-                  "I'm your AI Coach. Once you schedule an interview, I will analyze your application and provide targeted preparation."
+                  Need help with your application or interview strategy? Book a direct session with our senior administration team to get personalized guidance.
                 </p>
 
-                {/* Voice Wave Visualization */}
-                <div className="flex items-center gap-1.5 mb-8 h-8">
-                  {[40, 70, 45, 90, 65, 30, 55, 80, 40, 60].map((h, i) => (
-                    <div 
-                      key={i} 
-                      className="w-1 bg-primary/30 rounded-full animate-wave"
-                      style={{ 
-                        height: `${h}%`,
-                        animationDelay: `${i * 0.1}s`
-                      }}
-                    ></div>
-                  ))}
-                </div>
-
-                <button className="w-full py-4 bg-primary hover:bg-primary-dark text-white text-sm font-black rounded-2xl transition-all shadow-[0_10px_20px_rgba(255,107,0,0.2)] hover:shadow-[0_15px_30px_rgba(255,107,0,0.3)] hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-2">
-                  Start Mock Session <ChevronRightIcon className="w-4 h-4" />
+                <button
+                  onClick={async (e) => {
+                    const btn = e.currentTarget;
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = 'Sending...';
+                    btn.disabled = true;
+                    try {
+                      await api.post('/students/book-consultation', {});
+                      btn.innerHTML = 'Request Sent!';
+                      btn.classList.replace('bg-primary', 'bg-success');
+                      setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        btn.classList.replace('bg-success', 'bg-primary');
+                      }, 3000);
+                    } catch (err: any) {
+                      alert(err.response?.data?.message || 'Failed to send request');
+                      btn.innerHTML = originalText;
+                      btn.disabled = false;
+                    }
+                  }}
+                  className="w-full py-4 bg-primary hover:bg-primary-dark text-white text-sm font-black rounded-2xl transition-all shadow-[0_10px_20px_rgba(255,107,0,0.2)] hover:shadow-[0_15px_30px_rgba(255,107,0,0.3)] hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  Request Admin Consultation <ChevronRightIcon className="w-4 h-4" />
                 </button>
               </div>
            </div>
-           
+
            <div className="p-6 bg-surface border border-border rounded-2xl shadow-sm">
               <h3 className="text-[14px] font-bold text-heading mb-4">Prep Checklist</h3>
               <div className="space-y-3">

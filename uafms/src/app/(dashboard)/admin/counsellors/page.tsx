@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   UserPlusIcon, FunnelIcon, MagnifyingGlassIcon,
   SparklesIcon, ArrowPathIcon, EllipsisVerticalIcon,
   TrashIcon, PencilSquareIcon, XMarkIcon
@@ -27,8 +27,8 @@ export default function CounsellorManagement() {
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // Modal State
+
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [selectedCounsellor, setSelectedCounsellor] = useState<Counsellor | null>(null);
@@ -100,7 +100,7 @@ export default function CounsellorManagement() {
       } else {
         await api.post('/counsellors', payload);
       }
-      
+
       setIsModalOpen(false);
       fetchCounsellors();
       alert(`Counsellor ${modalMode === 'edit' ? 'updated' : 'added'} successfully!`);
@@ -135,15 +135,15 @@ export default function CounsellorManagement() {
     }
   };
 
-  const filteredCounsellors = counsellors.filter(c => 
+  const filteredCounsellors = counsellors.filter(c =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.region.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="p-6 md:p-8 max-w-[1400px] mx-auto space-y-6 fade-in h-auto lg:h-[calc(100vh-64px)] flex flex-col pb-10">
-      
-      {/* Page Header */}
+
+      {}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
         <div>
           <h1 className="text-h1 text-heading">Counsellor Directory</h1>
@@ -153,7 +153,7 @@ export default function CounsellorManagement() {
           <button className="h-10 px-4 bg-surface border border-border text-heading hover:bg-bg rounded-lg font-medium text-[13px] transition-colors flex items-center gap-2 shadow-sm">
             <FunnelIcon className="w-4 h-4" /> Filter
           </button>
-          <button 
+          <button
             onClick={handleOpenAdd}
             className="h-10 px-4 bg-primary text-white hover:bg-primary-dark rounded-lg font-medium text-[13px] transition-colors flex items-center gap-2 shadow-sm"
           >
@@ -163,22 +163,22 @@ export default function CounsellorManagement() {
       </div>
 
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-4 gap-6 min-h-0">
-        
-        {/* Main List Area (Left 75%) */}
+
+        {}
         <div className="xl:col-span-3 flex flex-col bg-surface border border-border rounded-xl shadow-sm overflow-hidden min-h-0">
-          
+
           <div className="p-4 border-b border-border flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-bg/50 shrink-0">
             <div className="relative w-full max-w-sm">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-              <input 
-                type="text" 
-                placeholder="Search staff by name or region..." 
+              <input
+                type="text"
+                placeholder="Search staff by name or region..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-9 pl-9 pr-4 bg-white border border-border rounded-md text-[13px] focus:outline-none focus:border-primary"
               />
             </div>
-            
+
             <div className="flex items-center gap-2 text-[12px] font-semibold text-muted bg-white px-3 py-1.5 border border-border rounded-md shadow-sm">
                Target KPI: <span className="text-success font-bold">{stats?.targetKPI || '85% Utilization'}</span>
             </div>
@@ -228,8 +228,8 @@ export default function CounsellorManagement() {
                     <td className="px-6 py-4 w-48">
                       <div className="flex items-center gap-2">
                         <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
-                           <div 
-                             className={`h-full rounded-full ${c.utilizationRate >= 90 ? 'bg-danger' : c.utilizationRate >= 75 ? 'bg-success' : 'bg-warning'}`} 
+                           <div
+                             className={`h-full rounded-full ${c.utilizationRate >= 90 ? 'bg-danger' : c.utilizationRate >= 75 ? 'bg-success' : 'bg-warning'}`}
                              style={{ width: `${c.utilizationRate}%` }}
                            ></div>
                         </div>
@@ -260,18 +260,18 @@ export default function CounsellorManagement() {
           </div>
         </div>
 
-        {/* Assignment Engine Sidebar (Right 25%) */}
+        {}
         <div className="xl:col-span-1 flex flex-col gap-6 min-h-0">
-          
+
           <div className="bg-gradient-to-br from-[#1A1A2E] to-[#2A2A4A] rounded-xl border border-gray-800 shadow-md p-6 relative overflow-hidden">
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary blur-3xl opacity-20 rounded-full"></div>
-            
+
             <div className="relative z-10 flex flex-col h-full text-white">
                <h3 className="text-[16px] font-bold mb-1 flex items-center gap-2">
                  <SparklesIcon className="w-5 h-5 text-primary" /> Smart Assigner
                </h3>
                <p className="text-[12px] text-gray-400 mb-6">MEC algorithm distributes leads based on regional expertise, language matching, and utilization KPI.</p>
-               
+
                <div className="bg-black/20 rounded-lg border border-white/10 p-4 mb-6">
                  <div className="flex justify-between items-center mb-2">
                     <span className="text-[13px] font-semibold text-gray-200">Unassigned Leads</span>
@@ -281,8 +281,8 @@ export default function CounsellorManagement() {
                     <span className="text-success font-bold">{stats?.highIntentLeads || 0}</span> High Intent • <span className="text-warning font-bold">{stats?.standardLeads || 0}</span> Standard
                  </div>
                </div>
-               
-               <button 
+
+               <button
                 onClick={handleAutoAssign}
                 className="w-full mt-auto py-3 bg-primary hover:bg-primary-dark rounded-lg text-white font-bold text-[13px] flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_20px_rgba(255,107,0,0.5)]"
                >
@@ -290,10 +290,10 @@ export default function CounsellorManagement() {
                </button>
             </div>
           </div>
-          
+
           <div className="bg-surface rounded-xl border border-border shadow-sm p-5 flex-1 overflow-y-auto">
              <h3 className="text-[13px] font-bold text-heading uppercase tracking-wide mb-4">Recent Assignments</h3>
-             
+
              <div className="space-y-4 text-center py-10 text-muted italic text-xs">
                  Coming soon...
              </div>
@@ -303,7 +303,7 @@ export default function CounsellorManagement() {
 
       </div>
 
-      {/* Add/Edit Modal */}
+      {}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-surface w-full max-w-md rounded-2xl shadow-2xl border border-border p-6 space-y-6 fade-in">
@@ -317,8 +317,8 @@ export default function CounsellorManagement() {
              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1">
                    <label className="text-[11px] font-bold text-muted uppercase">Full Name</label>
-                   <input 
-                    required 
+                   <input
+                    required
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                     className="w-full h-11 px-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
@@ -327,8 +327,8 @@ export default function CounsellorManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[11px] font-bold text-muted uppercase">Role</label>
-                    <input 
-                      required 
+                    <input
+                      required
                       value={formData.role}
                       onChange={(e) => setFormData({...formData, role: e.target.value})}
                       className="w-full h-11 px-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
@@ -336,8 +336,8 @@ export default function CounsellorManagement() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[11px] font-bold text-muted uppercase">Region</label>
-                    <input 
-                      required 
+                    <input
+                      required
                       value={formData.region}
                       onChange={(e) => setFormData({...formData, region: e.target.value})}
                       className="w-full h-11 px-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
@@ -346,8 +346,8 @@ export default function CounsellorManagement() {
                 </div>
                 <div className="space-y-1">
                    <label className="text-[11px] font-bold text-muted uppercase">Languages (comma separated)</label>
-                   <input 
-                    required 
+                   <input
+                    required
                     value={formData.languages}
                     onChange={(e) => setFormData({...formData, languages: e.target.value})}
                     className="w-full h-11 px-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
@@ -357,9 +357,9 @@ export default function CounsellorManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[11px] font-bold text-muted uppercase">Student Capacity</label>
-                    <input 
+                    <input
                       type="number"
-                      required 
+                      required
                       value={formData.capacity}
                       onChange={(e) => setFormData({...formData, capacity: parseInt(e.target.value)})}
                       className="w-full h-11 px-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
@@ -367,7 +367,7 @@ export default function CounsellorManagement() {
                   </div>
                   <div className="flex items-center gap-3 pt-6">
                      <label className="text-[11px] font-bold text-muted uppercase cursor-pointer flex items-center gap-2">
-                        <input 
+                        <input
                           type="checkbox"
                           checked={formData.acceptingLeads}
                           onChange={(e) => setFormData({...formData, acceptingLeads: e.target.checked})}

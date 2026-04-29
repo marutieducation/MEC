@@ -1,13 +1,13 @@
 const Invoice = require('../models/Invoice');
 
-// @desc    Get all invoices
-// @route   GET /api/finance/invoices
+
+
 const getInvoices = async (req, res) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
     let query = {};
 
-    // Students only see their own
+
     if (req.user.role === 'student') {
       query.student = req.user._id;
     }
@@ -23,7 +23,7 @@ const getInvoices = async (req, res) => {
       .skip((page - 1) * limit)
       .limit(Number(limit));
 
-    // Calculate totals
+
     const allInvoices = await Invoice.find(req.user.role === 'student' ? { student: req.user._id } : {});
     const totalPaid = allInvoices.filter((i) => i.status === 'paid').reduce((sum, i) => sum + (i.amountNumeric || 0), 0);
     const totalPending = allInvoices.filter((i) => i.status === 'pending').reduce((sum, i) => sum + (i.amountNumeric || 0), 0);
@@ -44,13 +44,13 @@ const getInvoices = async (req, res) => {
   }
 };
 
-// @desc    Create invoice
-// @route   POST /api/finance/invoices
+
+
 const createInvoice = async (req, res) => {
   try {
     const { student, studentName, description, amount, amountNumeric, currency, status } = req.body;
 
-    // Generate invoice ID
+
     const count = await Invoice.countDocuments({});
     const invoiceId = `INV-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
 
@@ -71,8 +71,8 @@ const createInvoice = async (req, res) => {
   }
 };
 
-// @desc    Pay invoice
-// @route   PUT /api/finance/invoices/:id/pay
+
+
 const payInvoice = async (req, res) => {
   try {
     const invoice = await Invoice.findById(req.params.id);

@@ -5,7 +5,7 @@ const Document = require('../models/Document');
 const Invoice = require('../models/Invoice');
 const Setting = require('../models/Setting');
 
-// Default settings seed
+
 const DEFAULT_SETTINGS = [
   { key: 'site_name', value: 'MEC UAFMS', label: 'Platform Name', description: 'Display name across the system', group: 'Platform Configuration', type: 'text' },
   { key: 'maint_mode', value: false, label: 'Maintenance Mode', description: 'Restrict access to the platform', group: 'Platform Configuration', type: 'toggle' },
@@ -17,18 +17,18 @@ const DEFAULT_SETTINGS = [
   { key: 'slack_webhook', value: 'Connected', label: 'Slack Integration', description: 'Sync escalations to Slack', group: 'Notifications', type: 'text' },
 ];
 
-// @desc    Get all platform settings from MongoDB
-// @route   GET /api/settings/platform
+
+
 const getPlatformSettings = async (req, res) => {
   try {
     let settings = await Setting.find({}).sort({ group: 1 });
 
-    // Seed defaults if empty
+
     if (settings.length === 0) {
       settings = await Setting.insertMany(DEFAULT_SETTINGS);
     }
 
-    // Group settings by group name
+
     const grouped = {};
     settings.forEach((s) => {
       if (!grouped[s.group]) grouped[s.group] = [];
@@ -47,11 +47,11 @@ const getPlatformSettings = async (req, res) => {
   }
 };
 
-// @desc    Update platform settings in MongoDB
-// @route   PUT /api/settings/platform
+
+
 const updatePlatformSettings = async (req, res) => {
   try {
-    const { settings } = req.body; // Expects: { settings: { key: value, key2: value2, ... } }
+    const { settings } = req.body;
 
     if (!settings || typeof settings !== 'object') {
       return res.status(400).json({ message: 'Invalid settings payload' });
@@ -67,7 +67,7 @@ const updatePlatformSettings = async (req, res) => {
 
     await Promise.all(ops);
 
-    // Return updated settings
+
     const updated = await Setting.find({}).sort({ group: 1 });
     const grouped = {};
     updated.forEach((s) => {
@@ -87,8 +87,8 @@ const updatePlatformSettings = async (req, res) => {
   }
 };
 
-// @desc    Get consent audit trail
-// @route   GET /api/settings/consent-logs
+
+
 const getConsentLogs = async (req, res) => {
   try {
     const logs = await ConsentLog.find({ user: req.user._id })
@@ -100,8 +100,8 @@ const getConsentLogs = async (req, res) => {
   }
 };
 
-// @desc    Record consent / revocation
-// @route   POST /api/settings/consent
+
+
 const recordConsent = async (req, res) => {
   try {
     const { action, status } = req.body;
@@ -119,13 +119,13 @@ const recordConsent = async (req, res) => {
   }
 };
 
-// @desc    Request data export (JSON)
-// @route   POST /api/settings/data-export
+
+
 const requestDataExport = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Gather all user data
+
     const user = await User.findById(userId).select('-password');
     const applications = await Application.find({ student: userId }).populate('university', 'name');
     const documents = await Document.find({ student: userId });
@@ -147,7 +147,7 @@ const requestDataExport = async (req, res) => {
       consentLogs,
     };
 
-    // Record consent
+
     await ConsentLog.create({
       user: userId,
       action: 'Requested Data Export (JSON)',
@@ -161,13 +161,13 @@ const requestDataExport = async (req, res) => {
   }
 };
 
-// @desc    Delete account (Right To Be Forgotten)
-// @route   DELETE /api/settings/account
+
+
 const deleteAccount = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Record the deletion consent before removing
+
     await ConsentLog.create({
       user: userId,
       action: 'Account Deletion Initiated (RTBF / Right to be Forgotten)',
@@ -175,7 +175,7 @@ const deleteAccount = async (req, res) => {
       ipAddress: req.ip || '0.0.0.0',
     });
 
-    // Delete user data
+
     await Application.deleteMany({ student: userId });
     await Document.deleteMany({ student: userId });
     await Invoice.deleteMany({ student: userId });

@@ -55,7 +55,7 @@ export default function DigitalLocker() {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('name', file.name);
-    formData.append('category', 'academic'); // Default category for now
+    formData.append('category', 'academic');
 
     setIsUploading(true);
     try {
@@ -84,7 +84,7 @@ export default function DigitalLocker() {
   const downloadFile = async (id: string, name: string) => {
     try {
       const token = localStorage.getItem('uafms_token');
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8080/api';
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http:
       const response = await fetch(`${apiBase}/documents/${id}/download`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -116,10 +116,10 @@ export default function DigitalLocker() {
   return (
     <div className="p-6 md:p-8 max-w-[1400px] mx-auto space-y-6 fade-in h-auto lg:h-[calc(100vh-64px)] flex flex-col pb-10">
 
-      {/* File Input */}
+      {}
       <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
 
-      {/* Page Header & Actions */}
+      {}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-h1 text-heading flex items-center gap-2">
@@ -142,10 +142,10 @@ export default function DigitalLocker() {
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0">
 
-        {/* Main Document Area (Left 75%) */}
+        {}
         <div className="lg:col-span-3 flex flex-col space-y-4">
 
-          {/* Categories Tab */}
+          {}
           <div className="border-b border-border">
             <nav className="-mb-px flex space-x-6">
               {['All Documents', 'Academic', 'Identity', 'Financial', 'Language Tests'].map((tab, idx) => (
@@ -163,7 +163,7 @@ export default function DigitalLocker() {
             </nav>
           </div>
 
-          {/* Document Grid */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto pr-2 pb-4 pt-2">
 
             {documents.length === 0 && !isUploading && (
@@ -217,7 +217,7 @@ export default function DigitalLocker() {
               </div>
             ))}
 
-            {/* Upload Zone Card */}
+            {}
             <div onClick={handleUploadClick} className="bg-bg/50 border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-surface hover:border-primary transition-all group min-h-[160px]">
               <div className="w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
                 <DocumentArrowUpIcon className="w-5 h-5 text-muted group-hover:text-primary transition-colors" />
@@ -229,7 +229,7 @@ export default function DigitalLocker() {
           </div>
         </div>
 
-        {/* Audit Trail Sidebar (Right 25%) */}
+        {}
         <div className="bg-surface rounded-xl border border-border shadow-sm p-5 flex flex-col h-[500px] lg:h-full">
           <div className="flex items-center gap-2 mb-6 tracking-tight">
             <LockClosedIcon className="w-4 h-4 text-muted" />
@@ -239,7 +239,7 @@ export default function DigitalLocker() {
           <div className="flex flex-col gap-4 overflow-y-auto pr-2 relative">
             <div className="absolute left-[11px] top-2 bottom-4 w-px bg-border -z-10"></div>
 
-            {/* Log 1 */}
+            {}
             <div className="flex gap-4">
               <div className="w-6 h-6 rounded-full bg-surface border-2 border-success flex items-center justify-center shrink-0 mt-0.5 z-10">
                 <ShieldCheckIcon className="w-3 h-3 text-success" />
@@ -255,7 +255,7 @@ export default function DigitalLocker() {
               </div>
             </div>
 
-            {/* Log 2 */}
+            {}
             <div className="flex gap-4">
               <div className="w-6 h-6 rounded-full bg-surface border-2 border-primary flex items-center justify-center shrink-0 mt-0.5 z-10">
                 <DocumentArrowUpIcon className="w-3 h-3 text-primary" />
@@ -271,7 +271,7 @@ export default function DigitalLocker() {
               </div>
             </div>
 
-            {/* Log 3 */}
+            {}
             <div className="flex gap-4">
               <div className="w-6 h-6 rounded-full bg-surface border-2 border-border flex items-center justify-center shrink-0 mt-0.5 z-10">
                 <ShareIcon className="w-3 h-3 text-muted" />

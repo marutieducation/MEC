@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
     countryCode: { type: String, default: '+91' },
     city: { type: String, default: '' },
 
-    // Student onboarding fields
+
     selectedDestinations: [{ type: String }],
     selectedDegrees: [{ type: String }],
     specialization: { type: String, default: '' },
@@ -38,12 +38,12 @@ const userSchema = new mongoose.Schema(
       cat: { type: Number, default: null },
     },
 
-    // 2FA
+
     twoFactorEnabled: { type: Boolean, default: false },
     twoFactorCode: { type: String, default: null },
     twoFactorExpiry: { type: Date, default: null },
 
-    // University partner link
+
     universityId: { type: mongoose.Schema.Types.ObjectId, ref: 'University', default: null },
 
     avatar: { type: String, default: '' },
@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash password before save
+
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(12);
@@ -59,12 +59,12 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-// Compare entered password with hashed
+
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Virtual for full name
+
 userSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName}`;
 });

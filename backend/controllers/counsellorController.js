@@ -1,8 +1,8 @@
 const Counsellor = require('../models/Counsellor');
 const Application = require('../models/Application');
 
-// @desc    Get all counsellors
-// @route   GET /api/counsellors
+
+
 const getCounsellors = async (req, res) => {
   try {
     const { search, region } = req.query;
@@ -23,7 +23,7 @@ const getCounsellors = async (req, res) => {
       .populate('user', 'firstName lastName email')
       .sort({ name: 1 });
 
-    // Get unassigned leads count
+
     const unassignedLeads = await Application.countDocuments({ counsellor: null, pipelineStage: 'leads' });
     const highIntentLeads = Math.floor(unassignedLeads * 0.6);
 
@@ -42,8 +42,8 @@ const getCounsellors = async (req, res) => {
   }
 };
 
-// @desc    Add new counsellor
-// @route   POST /api/counsellors
+
+
 const addCounsellor = async (req, res) => {
   try {
     const counsellor = await Counsellor.create(req.body);
@@ -53,8 +53,8 @@ const addCounsellor = async (req, res) => {
   }
 };
 
-// @desc    Update counsellor
-// @route   PUT /api/counsellors/:id
+
+
 const updateCounsellor = async (req, res) => {
   try {
     const counsellor = await Counsellor.findByIdAndUpdate(
@@ -73,11 +73,11 @@ const updateCounsellor = async (req, res) => {
   }
 };
 
-// @desc    Auto-assign unassigned leads to counsellors
-// @route   POST /api/counsellors/auto-assign
+
+
 const autoAssignLeads = async (req, res) => {
   try {
-    // Get available counsellors (sorted by utilization, ascending = least busy first)
+
     const counsellors = await Counsellor.find({ acceptingLeads: true })
       .sort({ utilizationRate: 1 });
 
@@ -85,7 +85,7 @@ const autoAssignLeads = async (req, res) => {
       return res.status(400).json({ message: 'No counsellors available for assignment' });
     }
 
-    // Get unassigned lead applications
+
     const unassigned = await Application.find({
       counsellor: null,
       pipelineStage: 'leads',
@@ -101,7 +101,7 @@ const autoAssignLeads = async (req, res) => {
     for (const app of unassigned) {
       const counsellor = counsellors[counsellorIdx % counsellors.length];
 
-      // Check capacity
+
       if (counsellor.activeStudents < counsellor.capacity) {
         app.counsellor = counsellor._id;
         await app.save();
@@ -109,7 +109,7 @@ const autoAssignLeads = async (req, res) => {
         counsellor.activeStudents += 1;
         counsellor.utilizationRate = Math.round((counsellor.activeStudents / counsellor.capacity) * 100);
 
-        // If at capacity, stop accepting leads
+
         if (counsellor.activeStudents >= counsellor.capacity) {
           counsellor.acceptingLeads = false;
         }
@@ -138,9 +138,9 @@ const autoAssignLeads = async (req, res) => {
   }
 };
 
-// @desc    Delete counsellor
-// @route   DELETE /api/counsellors/:id
-// @access  Private/Admin
+
+
+
 const deleteCounsellor = async (req, res) => {
   try {
     const counsellor = await Counsellor.findByIdAndDelete(req.params.id);
@@ -158,10 +158,10 @@ const deleteCounsellor = async (req, res) => {
   }
 };
 
-module.exports = { 
-  getCounsellors, 
-  addCounsellor, 
-  updateCounsellor, 
+module.exports = {
+  getCounsellors,
+  addCounsellor,
+  updateCounsellor,
   autoAssignLeads,
   deleteCounsellor
 };

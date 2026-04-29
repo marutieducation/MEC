@@ -13,19 +13,21 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userIdFor2FA, setUserIdFor2FA] = useState<string | null>(null);
-  
+
   const { login } = useAuth();
 
     const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
     setIsLoading(true);
 
     try {
-      const response = await api.post('/auth/login', { 
-        email, 
+      const response = await api.post('/auth/login', {
+        email,
         password,
         role: 'student'
       });
@@ -33,9 +35,9 @@ export default function LoginPage() {
       if (response.requires2FA) {
         setUserIdFor2FA(response.userId);
         setShow2FA(true);
-        setError(''); // Ensure error is explicitly cleared when switching to 2FA
+        setError('');
       } else {
-        setError(''); // Clear error on success
+        setError('');
         login(response, response.token);
       }
     } catch (err: any) {
@@ -70,8 +72,8 @@ export default function LoginPage() {
         userId: userIdFor2FA,
         otp: code
       });
-      
-      setError(''); // Clear error on successful 2FA
+
+      setError('');
       setShow2FA(false);
       login(response, response.token);
       } catch (err: any) {
@@ -84,7 +86,7 @@ export default function LoginPage() {
   return (
     <div className="flex relative items-center justify-center min-h-screen font-sans bg-bg w-full">
       <div className="flex w-full h-screen bg-bg flex-col lg:flex-row">
-        {/* Left Brand Panel */}
+        {}
         <div className="hidden lg:flex w-full lg:w-[55%] bg-[#1A1A2E] text-white flex-col relative justify-center items-start px-12 lg:px-24 py-16 overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-primary opacity-20 -mr-24 -mt-24 transform rotate-45 pointer-events-none skew-x-12"></div>
           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary opacity-10 rounded-full blur-3xl pointer-events-none -mb-32 -ml-32"></div>
@@ -104,7 +106,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Form Panel */}
+        {}
         <div className="w-full lg:w-[45%] bg-surface flex flex-col justify-center items-center px-8 sm:px-16 py-12 relative overflow-y-auto min-h-screen lg:min-h-0">
           <div className="w-full max-w-[400px]">
             <div className="flex lg:hidden mb-8 items-center gap-3">
@@ -122,7 +124,12 @@ export default function LoginPage() {
                   {error}
                 </div>
               )}
-              
+              {successMsg && (
+                <div className="p-3 bg-success/10 text-success rounded-lg text-sm font-medium border border-success/20">
+                  {successMsg}
+                </div>
+              )}
+
               <div className="flex flex-col gap-1.5">
                 <label className="text-h4">Email Address</label>
                 <div className="relative">
@@ -136,13 +143,15 @@ export default function LoginPage() {
                   <label className="text-h4">Password</label>
                   <button onClick={async (e) => {
                     e.preventDefault();
+                    setError('');
+                    setSuccessMsg('');
                     if (!email) {
-                      setError("Please hover over the email address field to reset password.");
+                      setError("Please enter your email address to reset password.");
                       return;
                     }
                     try {
                       await api.post('/auth/forgot-password', { email });
-                      alert("If an account exists, a password reset link has been sent to your email.");
+                      setSuccessMsg("If an account exists, a password reset link has been sent to your email.");
                     } catch (e: any) {
                       setError(e.message || "Failed to reset password");
                     }
@@ -157,7 +166,7 @@ export default function LoginPage() {
               <button type="submit" disabled={isLoading} className="w-full h-10 mt-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-semibold text-[14px] uppercase tracking-wide flex justify-center items-center gap-2 transition-all duration-150 active:scale-[0.98] disabled:opacity-70">
                 {isLoading ? 'Signing In...' : 'Sign In'} <ArrowRightIcon className="w-4 h-4" />
               </button>
-              
+
               <div className="mt-8 pt-6 border-t border-border/50 text-center">
                 <div className="mt-2">
                   Don&apos;t have an account? <Link href="/signup" className="text-primary hover:underline hover:text-primary-dark font-medium pl-1">Create student account</Link>
@@ -169,7 +178,7 @@ export default function LoginPage() {
 
             <div className="mt-12 pb-6">
               <div className="flex flex-col gap-2 items-center text-center">
-                <p className="text-[12px] text-muted leading-tight">By continuing, you acknowledge that you have read and agree to our <a href="#" className="text-primary hover:underline">Terms of Service</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a>.</p>
+                <p className="text-[12px] text-muted leading-tight">By continuing, you acknowledge that you have read and agree to our <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.</p>
                 <div className="flex items-center gap-1.5 text-[11px] text-muted bg-[#FDECEC] px-3 py-1 rounded-full text-danger border border-[#FDECEC] justify-center mt-2 font-medium">
                   <LockClosedIcon className="w-3 h-3" /> GDPR &amp; DPDP Act Compliant
                 </div>
@@ -179,7 +188,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* 2FA Modal */}
+      {}
       <AnimatePresence>
         {show2FA && (
           <>

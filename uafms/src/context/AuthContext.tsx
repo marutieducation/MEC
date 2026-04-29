@@ -10,6 +10,11 @@ interface User {
   email: string;
   role: 'student' | 'admin' | 'university_partner';
   profileCompleted: boolean;
+  universityId?: {
+    _id: string;
+    name: string;
+    logo?: string;
+  } | null;
 }
 
 interface AuthContextType {
@@ -38,7 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Validate token on app load
+
   useEffect(() => {
     const validateSession = async () => {
       const savedToken = localStorage.getItem('uafms_token');
@@ -50,8 +55,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       try {
-        // Verify the token is still valid by calling /api/auth/me
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8080/api';
+
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http:
         const response = await fetch(`${API_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${savedToken}` },
         });
@@ -60,24 +65,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const userData = await response.json();
           setUser(userData);
           setToken(savedToken);
-          // Update stored user data with fresh data from server
+
           localStorage.setItem('uafms_user', JSON.stringify(userData));
         } else if (response.status === 401 || response.status === 403) {
-          // Token is explicitly invalid or expired — clear everything
+
           console.warn('Session expired. Please log in again.');
           localStorage.removeItem('uafms_token');
           localStorage.removeItem('uafms_user');
           setUser(null);
           setToken(null);
         } else {
-          // Server error (5xx) or timeout — use cached data to maintain UX
+
           console.log(`📡 Server error ${response.status}, using cached session.`);
           const parsedUser = JSON.parse(savedUser);
           setUser(parsedUser);
           setToken(savedToken);
         }
       } catch (err) {
-        // Network error — use cached data to allow offline-ish experience
+
         console.warn('📡 Network error during validation, using cached session.');
         const parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
@@ -96,7 +101,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem('uafms_user', JSON.stringify(userData));
     localStorage.setItem('uafms_token', authToken);
 
-    // Route based on role
+
     if (userData.role === 'admin') {
       router.push('/admin');
     } else if (userData.role === 'university_partner') {

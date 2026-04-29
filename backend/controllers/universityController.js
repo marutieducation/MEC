@@ -1,15 +1,16 @@
 const University = require('../models/University');
 const Application = require('../models/Application');
+const { fetchLogo } = require('../utils/logoFetcher');
 
-// @desc    Search universities and courses
-// @route   GET /api/universities/search
+
+
 const searchUniversities = async (req, res) => {
   try {
     const { q, country, degreeLevel, page = 1, limit = 20 } = req.query;
 
     let query = {};
 
-    // Text search
+
     if (q) {
       query.$or = [
         { name: { $regex: q, $options: 'i' } },
@@ -18,12 +19,12 @@ const searchUniversities = async (req, res) => {
       ];
     }
 
-    // Country filter
+
     if (country) {
       query.country = country;
     }
 
-    // Degree level filter
+
     if (degreeLevel) {
       query['courses.degreeLevel'] = degreeLevel;
     }
@@ -34,9 +35,32 @@ const searchUniversities = async (req, res) => {
       .limit(Number(limit))
       .sort({ name: 1 });
 
-    // Flatten to course-level results
+
     const results = [];
-    universities.forEach((uni) => {
+    const updatePromises = [];
+
+    for (const uni of universities) {
+      
+      if (!uni.logo || uni.logoSource === 'fallback') {
+        
+        const updateTask = (async () => {
+          try {
+            const logoData = await fetchLogo(uni.name);
+            
+            if (logoData.source !== 'fallback' || !uni.logo) {
+              uni.logo = logoData.logo;
+              uni.logoSource = logoData.source;
+              if (logoData.domain) uni.officialDomain = logoData.domain;
+              uni.logoLastUpdated = new Date();
+              await uni.save();
+            }
+          } catch (e) {
+            console.error(`Failed to auto-update logo for ${uni.name}:`, e.message);
+          }
+        })();
+        updatePromises.push(updateTask);
+      }
+
       const filteredCourses = degreeLevel
         ? uni.courses.filter((c) => c.degreeLevel === degreeLevel)
         : uni.courses;
@@ -53,11 +77,19 @@ const searchUniversities = async (req, res) => {
           duration: course.duration,
           intake: course.intake,
           degreeLevel: course.degreeLevel,
-          // Mock match score
           matchScore: Math.floor(75 + Math.random() * 25),
         });
       });
-    });
+    }
+
+    
+    
+    
+    
+    await Promise.race([
+      Promise.all(updatePromises),
+      new Promise(resolve => setTimeout(resolve, 3000))
+    ]);
 
     res.json({
       total,
@@ -71,8 +103,8 @@ const searchUniversities = async (req, res) => {
   }
 };
 
-// @desc    Get university details
-// @route   GET /api/universities/:id
+
+
 const getUniversity = async (req, res) => {
   try {
     const university = await University.findById(req.params.id);
@@ -85,18 +117,18 @@ const getUniversity = async (req, res) => {
   }
 };
 
-// @desc    Get AI match recommendations for a student
-// @route   GET /api/universities/recommendations
+
+
 const getRecommendations = async (req, res) => {
   try {
-    // Get student's applications to know their interests
+
     const applications = await Application.find({ student: req.user._id })
       .populate('university', 'name logo');
 
-    // Get all universities
+
     const universities = await University.find({}).limit(14);
 
-    // Generate recommendations (mock AI scoring)
+
     const recommendations = universities.map((uni) => {
       const courses = uni.courses.map((course) => ({
         universityId: uni._id,
@@ -109,7 +141,7 @@ const getRecommendations = async (req, res) => {
       return courses;
     }).flat();
 
-    // Sort by match score
+
     recommendations.sort((a, b) => b.matchScore - a.matchScore);
 
     res.json(recommendations.slice(0, 14));
@@ -118,9 +150,9 @@ const getRecommendations = async (req, res) => {
   }
 };
 
-// @desc    Create new university
-// @route   POST /api/universities
-// @access  Private/Admin
+
+
+
 const createUniversity = async (req, res) => {
   try {
     const university = await University.create(req.body);
@@ -136,9 +168,9 @@ const createUniversity = async (req, res) => {
   }
 };
 
-// @desc    Get all universities (admin list)
-// @route   GET /api/universities
-// @access  Private/Admin
+
+
+
 const getUniversities = async (req, res) => {
   try {
     const universities = await University.find({}).sort({ name: 1 });
@@ -148,9 +180,9 @@ const getUniversities = async (req, res) => {
   }
 };
 
-// @desc    Update university
-// @route   PUT /api/universities/:id
-// @access  Private/Admin
+
+
+
 const updateUniversity = async (req, res) => {
   try {
     const university = await University.findByIdAndUpdate(req.params.id, req.body, {
@@ -171,9 +203,6 @@ const updateUniversity = async (req, res) => {
   }
 };
 
-// @desc    Delete university
-// @route   DELETE /api/universities/:id
-// @access  Private/Admin
 const deleteUniversity = async (req, res) => {
   try {
     const university = await University.findByIdAndDelete(req.params.id);
@@ -191,12 +220,40 @@ const deleteUniversity = async (req, res) => {
   }
 };
 
-module.exports = { 
-  searchUniversities, 
-  getUniversity, 
-  getRecommendations, 
-  createUniversity, 
+
+
+
+const refreshUniversityLogo = async (req, res) => {
+  try {
+    const university = await University.findById(req.params.id);
+    if (!university) {
+      return res.status(404).json({ message: 'University not found' });
+    }
+
+    const logoData = await fetchLogo(university.name);
+    university.logo = logoData.logo;
+    university.logoSource = logoData.source;
+    if (logoData.domain) university.officialDomain = logoData.domain;
+    university.logoLastUpdated = new Date();
+    
+    await university.save();
+
+    res.json({
+      success: true,
+      data: university,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  searchUniversities,
+  getUniversity,
+  getRecommendations,
+  createUniversity,
   getUniversities,
   updateUniversity,
-  deleteUniversity
+  deleteUniversity,
+  refreshUniversityLogo
 };

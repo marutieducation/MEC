@@ -1,13 +1,15 @@
 'use client';
 
 import React from 'react';
-import { 
-  MagnifyingGlassIcon, 
+import {
+  MagnifyingGlassIcon,
   BuildingLibraryIcon,
   MapPinIcon,
   EnvelopeIcon,
   PhoneIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  PlusIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 
@@ -27,13 +29,51 @@ interface Partner {
 
 export default function PartnerListPage() {
   const [partners, setPartners] = React.useState<Partner[]>([]);
+  const [universities, setUniversities] = React.useState<any[]>([]);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
+
+  const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [newPartner, setNewPartner] = React.useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    phone: '',
+    universityId: ''
+  });
+
   React.useEffect(() => {
     fetchPartners();
+    fetchUniversities();
   }, []);
+
+  const fetchUniversities = async () => {
+    try {
+      const res = await api.get('/universities');
+      setUniversities(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch universities', err);
+    }
+  };
+
+  const handleAddPartner = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await api.post('/admin/users', { ...newPartner, role: 'university_partner' });
+      setIsAddModalOpen(false);
+      setNewPartner({ firstName: '', lastName: '', email: '', password: '', phone: '', universityId: '' });
+      fetchPartners();
+    } catch (err: any) {
+      alert(err.response?.data?.message || err.message || 'Failed to add partner');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const fetchPartners = async () => {
     setIsLoading(true);
@@ -47,7 +87,7 @@ export default function PartnerListPage() {
     }
   };
 
-  const filteredPartners = (partners || []).filter(p => 
+  const filteredPartners = (partners || []).filter(p =>
     `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.universityId?.name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -60,14 +100,21 @@ export default function PartnerListPage() {
           <h1 className="text-3xl font-black text-heading tracking-tight">Partner Directory</h1>
           <p className="text-muted font-medium">Verified representatives from our global university network.</p>
         </div>
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-content font-bold rounded-xl hover:bg-primary-dark transition-colors shadow-sm"
+        >
+          <PlusIcon className="w-5 h-5" />
+          Add Partner
+        </button>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-          <input 
-            type="text" 
-            placeholder="Search by name, email, or university..." 
+          <input
+            type="text"
+            placeholder="Search by name, email, or university..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-12 pl-12 pr-4 bg-surface border border-border rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
@@ -149,6 +196,84 @@ export default function PartnerListPage() {
           </div>
         )}
       </div>
+
+      {}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bg/80 backdrop-blur-sm">
+          <div className="bg-surface w-full max-w-lg rounded-3xl shadow-xl border border-border overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <h2 className="text-xl font-black text-heading">Add New Partner</h2>
+              <button
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-2 text-muted hover:bg-bg rounded-full transition-colors"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddPartner} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-muted uppercase tracking-widest">First Name</label>
+                  <input required type="text" value={newPartner.firstName} onChange={e => setNewPartner({...newPartner, firstName: e.target.value})} className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-muted uppercase tracking-widest">Last Name</label>
+                  <input required type="text" value={newPartner.lastName} onChange={e => setNewPartner({...newPartner, lastName: e.target.value})} className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-muted uppercase tracking-widest">Email Address</label>
+                <input required type="email" value={newPartner.email} onChange={e => setNewPartner({...newPartner, email: e.target.value})} className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-muted uppercase tracking-widest">Password</label>
+                  <input required type="text" minLength={6} value={newPartner.password} onChange={e => setNewPartner({...newPartner, password: e.target.value})} className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-muted uppercase tracking-widest">Phone Number</label>
+                  <input type="tel" value={newPartner.phone} onChange={e => setNewPartner({...newPartner, phone: e.target.value})} className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-muted uppercase tracking-widest">Assigned University</label>
+                <select
+                  required
+                  value={newPartner.universityId}
+                  onChange={e => setNewPartner({...newPartner, universityId: e.target.value})}
+                  className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                >
+                  <option value="">Select a university...</option>
+                  {universities.map(uni => (
+                    <option key={uni._id} value={uni._id}>{uni.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-6 py-2.5 text-sm font-bold text-heading hover:bg-bg rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 bg-primary text-primary-content text-sm font-bold rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Creating...' : 'Create Partner'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

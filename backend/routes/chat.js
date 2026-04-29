@@ -1,4 +1,4 @@
-// File: backend/routes/chat.js
+
 const express = require('express');
 const router = express.Router();
 const { getConversation, sendMessage } = require('../controllers/chatController');

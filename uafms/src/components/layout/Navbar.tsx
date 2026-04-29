@@ -14,7 +14,7 @@ export const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 bg-surface shadow-sm border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-        {/* Logo */}
+        {}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative">
             <div className="absolute -inset-1 bg-gradient-to-r from-[#FF6B00] to-orange-400 rounded-lg blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
@@ -30,7 +30,7 @@ export const Navbar = () => {
           </div>
         </Link>
 
-        {/* Desktop Nav */}
+        {}
         <div className="hidden lg:flex items-center gap-6 text-[14px] font-medium text-body h-full">
           <div className="relative group h-full flex items-center">
             <Link href="/#colleges" className="hover:text-[#FF6B00] transition-colors py-5">Colleges</Link>
@@ -54,7 +54,7 @@ export const Navbar = () => {
           <Link href="/#scholarships" className="hover:text-[#FF6B00] transition-colors py-5">Scholarships</Link>
         </div>
 
-        {/* CTA Buttons */}
+        {}
         <div className="hidden lg:flex items-center gap-3">
           <ThemeToggle />
           <Link href="/login" className="text-[13px] font-semibold text-body hover:text-primary transition-colors px-3 py-2">
@@ -65,13 +65,13 @@ export const Navbar = () => {
           </Link>
         </div>
 
-        {/* Mobile Hamburger */}
+        {}
         <button className="lg:hidden p-2 text-body" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
           {mobileMenuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-surface border-t border-border px-4 py-4 flex flex-col gap-3">
           {['Colleges', 'Exams', 'Courses', 'Counselling', 'Scholarships'].map(item => (

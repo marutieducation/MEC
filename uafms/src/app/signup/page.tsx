@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  UserIcon, AcademicCapIcon, GlobeAltIcon, 
+import {
+  UserIcon, AcademicCapIcon, GlobeAltIcon,
   MapPinIcon, CheckCircleIcon, ArrowRightIcon,
   BookOpenIcon, CurrencyRupeeIcon, PresentationChartLineIcon,
   ChevronLeftIcon, LightBulbIcon, DocumentTextIcon
@@ -47,14 +47,14 @@ function CreateProfile() {
   const searchParams = useSearchParams();
   const collegeParam = searchParams?.get('college');
 
-  // Form State
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
-  
+
   const [specialization, setSpecialization] = useState('');
   const [intakeTerm, setIntakeTerm] = useState('Fall 2024');
   const [budget, setBudget] = useState('₹15 Lakhs - ₹30 Lakhs');
@@ -63,7 +63,7 @@ function CreateProfile() {
   const [isConsultationRequested, setIsConsultationRequested] = useState(true);
   const [consultationDate, setConsultationDate] = useState('');
   const [consultationTime, setConsultationTime] = useState('');
-  
+
   const { login } = useAuth();
 
   const toggleDestination = (dest: string) => {
@@ -89,7 +89,7 @@ function CreateProfile() {
          setCurrentStep(1);
          return;
       }
-      
+
       setIsLoading(true);
       setError('');
 
@@ -108,7 +108,7 @@ function CreateProfile() {
         budget
       });
 
-      // If user checked the consultation box, explicitly book it using their new token
+
       if (isConsultationRequested) {
          try {
            await api.post('/students/book-consultation', {
@@ -122,7 +122,7 @@ function CreateProfile() {
          }
       }
 
-      // Navigate to dashboard automatically
+
       login(response, response.token);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -137,7 +137,7 @@ function CreateProfile() {
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
-      {/* minimal header */}
+      {}
       <header className="h-16 border-b border-border bg-surface flex items-center px-6 md:px-12 shrink-0">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 bg-white rounded-lg shadow-sm border border-border p-1 flex items-center justify-center transition-all duration-300 group-hover:shadow-md group-hover:scale-105">
@@ -151,12 +151,12 @@ function CreateProfile() {
       </header>
 
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
-        
-        {/* Decorative Background Elements */}
+
+        {}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10 -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none -z-10 translate-y-1/3 -translate-x-1/4"></div>
 
-        {/* Left Sidebar - Progress */}
+        {}
         <div className="w-full lg:w-[320px] xl:w-[400px] shrink-0 p-8 lg:p-12 lg:border-r border-border bg-surface/50 flex flex-col justify-center">
           <div>
             <span className="text-[11px] font-bold text-primary uppercase tracking-wider mb-2 block">Student Onboarding</span>
@@ -171,10 +171,10 @@ function CreateProfile() {
                     {step.id !== steps.length && (
                        <div className={`absolute left-[19px] top-10 w-0.5 h-10 ${currentStep > step.id ? 'bg-primary' : 'bg-border'}`}></div>
                     )}
-                    
+
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-2 transition-all duration-300 ${
-                       currentStep > step.id ? 'bg-primary border-primary text-white' : 
-                       currentStep === step.id ? 'bg-surface border-primary text-primary shadow-[0_0_0_4px_#FFF0E6]' : 
+                       currentStep > step.id ? 'bg-primary border-primary text-white' :
+                       currentStep === step.id ? 'bg-surface border-primary text-primary shadow-[0_0_0_4px_#FFF0E6]' :
                        'bg-surface border-border text-muted'
                     }`}>
                        {currentStep > step.id ? <CheckCircleIcon className="w-5 h-5"/> : <step.icon className="w-5 h-5" />}
@@ -186,7 +186,7 @@ function CreateProfile() {
                  </div>
                ))}
             </div>
-            
+
             <div className="mt-12 p-4 bg-primary/5 border border-primary/20 rounded-xl relative overflow-hidden">
                <SparklesIcon className="w-24 h-24 text-primary opacity-5 absolute -right-4 -bottom-4" />
                <div className="flex items-start gap-2 text-primary font-bold text-[13px] mb-1">
@@ -199,13 +199,13 @@ function CreateProfile() {
           </div>
         </div>
 
-        {/* Right Content - Form Area */}
+        {}
         <div className="flex-1 overflow-y-auto p-6 md:p-12 lg:px-24 flex flex-col pt-10 pb-32">
-          
+
           <div className="w-full max-w-2xl mx-auto flex-1 flex flex-col justify-center">
             <AnimatePresence mode="wait">
-              
-              {/* Step 1: Personal Info */}
+
+              {}
               {currentStep === 1 && (
                 <motion.div
                   key="step1"
@@ -216,13 +216,13 @@ function CreateProfile() {
                   className="space-y-6"
                 >
                   <h2 className="text-2xl font-bold text-heading mb-6">Tell us about yourself</h2>
-                  
+
                   {error && currentStep === 1 && (
                     <div className="p-3 bg-danger/10 text-danger rounded-lg text-sm font-medium border border-danger/20 mb-4">
                       {error}
                     </div>
                   )}
-                  
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                      <div className="space-y-1.5">
                        <label className="text-label">First Name <span className="text-danger">*</span></label>
@@ -237,11 +237,11 @@ function CreateProfile() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="space-y-1.5">
                       <label className="text-label">Email Address <span className="text-danger">*</span></label>
-                      <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className="w-full h-11 px-3 bg-surface border border-border rounded-lg text-body text-heading focus:outline-none focus:border-primary transition-all" />
+                      <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="off" className="w-full h-11 px-3 bg-surface border border-border rounded-lg text-body text-heading focus:outline-none focus:border-primary transition-all" />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-label">Password <span className="text-danger">*</span></label>
-                      <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="w-full h-11 px-3 bg-surface border border-border rounded-lg text-body text-heading focus:outline-none focus:border-primary transition-all" />
+                      <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="new-password" className="w-full h-11 px-3 bg-surface border border-border rounded-lg text-body text-heading focus:outline-none focus:border-primary transition-all" />
                     </div>
                   </div>
 
@@ -256,7 +256,7 @@ function CreateProfile() {
                        <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="98765 43210" className="w-full h-11 px-3 bg-surface border border-border rounded-r-lg text-body text-heading focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all" />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-1.5">
                     <label className="text-label">Current City of Residence <span className="text-danger">*</span></label>
                     <div className="relative">
@@ -268,7 +268,7 @@ function CreateProfile() {
                 </motion.div>
               )}
 
-              {/* Step 2: Academic Goals */}
+              {}
               {currentStep === 2 && (
                 <motion.div
                   key="step2"
@@ -285,7 +285,7 @@ function CreateProfile() {
 
                   <div className="flex items-center gap-2">
                      <input type="checkbox" id="terms" className="w-4 h-4 text-primary focus:ring-primary" />
-                     <label htmlFor="terms" className="text-sm font-medium text-heading">I confirm all provided information is accurate and I agree to the <a href="#" className="text-primary hover:underline">Terms of Service</a> &amp; <a href="#" className="text-primary hover:underline">Privacy Policy</a>.</label>
+                     <label htmlFor="terms" className="text-sm font-medium text-heading">I confirm all provided information is accurate and I agree to the <Link href="/terms" target="_blank" className="text-primary hover:underline">Terms of Service</Link> &amp; <Link href="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link>.</label>
                   </div>
 
                   <div className="space-y-3">
@@ -303,11 +303,11 @@ function CreateProfile() {
                            const isSelected = selectedDegrees.includes(deg.name);
                            const disabled = !isSelected && selectedDegrees.length >= 2;
                            return (
-                              <button 
+                              <button
                                 key={deg.name}
                                 onClick={() => !disabled && toggleDegree(deg.name)}
                                 className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                                   isSelected ? 'bg-primary/5 border-primary text-primary shadow-[0_0_15px_rgba(255,107,0,0.1)]' : 
+                                   isSelected ? 'bg-primary/5 border-primary text-primary shadow-[0_0_15px_rgba(255,107,0,0.1)]' :
                                    disabled ? 'bg-bg border-border text-muted/50 cursor-not-allowed opacity-50' :
                                    'bg-surface border-border text-heading hover:border-primary/50 hover:bg-bg/50'
                                 }`}
@@ -330,8 +330,8 @@ function CreateProfile() {
                               <option key={course} value={course}>{course}</option>
                             ));
                           }
-                          
-                          // Default backup courses if no specific college was selected
+
+
                           const defaultCourses = ['Engineering', 'Management', 'Computer Science', 'Commerce', 'Arts & Humanities', 'Law', 'Pharmacy', 'Science'];
                           return defaultCourses.map(course => (
                             <option key={course} value={course}>{course}</option>
@@ -339,7 +339,7 @@ function CreateProfile() {
                         })()}
                      </select>
                   </div>
-                  
+
                   <div className="space-y-3">
                      <label className="text-label">Target Intake Term</label>
                      <div className="grid grid-cols-2 gap-3">
@@ -357,7 +357,7 @@ function CreateProfile() {
                 </motion.div>
               )}
 
-              {/* Step 3: Preferences */}
+              {}
               {currentStep === 3 && (
                 <motion.div
                   key="step3"
@@ -371,7 +371,7 @@ function CreateProfile() {
                      <h2 className="text-2xl font-bold text-heading mb-1">Destinations & Budget</h2>
                      <p className="text-[13px] text-muted">Where do you want to study?</p>
                   </div>
-                  
+
                   <div className="space-y-3">
                      <label className="text-label flex justify-between">
                        Target Cities / Regions <span className="text-[11px] font-normal text-muted">(Select up to 3)</span>
@@ -381,12 +381,12 @@ function CreateProfile() {
                            const isSelected = selectedDestinations.includes(country);
                            const disabled = !isSelected && selectedDestinations.length >= 3;
                            return (
-                              <button 
+                              <button
                                 key={country}
                                 onClick={() => !disabled && toggleDestination(country)}
                                 className={`h-11 rounded-lg border-2 text-[13px] font-medium transition-all ${
-                                   isSelected ? 'bg-primary/5 border-primary text-primary shadow-[0_0_10px_rgba(255,107,0,0.1)]' : 
-                                   disabled ? 'bg-bg border-border text-muted/50 cursor-not-allowed opacity-50' : 
+                                   isSelected ? 'bg-primary/5 border-primary text-primary shadow-[0_0_10px_rgba(255,107,0,0.1)]' :
+                                   disabled ? 'bg-bg border-border text-muted/50 cursor-not-allowed opacity-50' :
                                    'bg-surface border-border text-heading hover:border-primary/50'
                                 }`}
                               >
@@ -411,12 +411,12 @@ function CreateProfile() {
                      </div>
                   </div>
 
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setIsConsultationRequested(!isConsultationRequested)}
                     className={`w-full p-4 rounded-xl flex items-start text-left gap-3 transition-all border-2 ${
-                      isConsultationRequested 
-                        ? 'bg-primary/5 border-primary shadow-[0_0_15px_rgba(255,107,0,0.1)]' 
+                      isConsultationRequested
+                        ? 'bg-primary/5 border-primary shadow-[0_0_15px_rgba(255,107,0,0.1)]'
                         : 'bg-surface border-border hover:border-primary/30'
                     }`}
                   >
@@ -435,7 +435,7 @@ function CreateProfile() {
 
                   <AnimatePresence>
                      {isConsultationRequested && (
-                        <motion.div 
+                        <motion.div
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
@@ -443,20 +443,20 @@ function CreateProfile() {
                         >
                            <div>
                               <label className="text-label mb-2 block">Select preferred date</label>
-                              <input 
-                                type="date" 
+                              <input
+                                type="date"
                                 min={new Date().toISOString().split('T')[0]}
-                                value={consultationDate} 
+                                value={consultationDate}
                                 onChange={e => setConsultationDate(e.target.value)}
-                                className="w-full h-11 px-3 bg-bg border border-border rounded-lg text-body text-heading focus:outline-none focus:border-primary transition-all" 
+                                className="w-full h-11 px-3 bg-bg border border-border rounded-lg text-body text-heading focus:outline-none focus:border-primary transition-all"
                               />
                            </div>
-                           
+
                            <div>
                               <label className="text-label mb-2 block">Select preferred time block</label>
                               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                                  {['10:00 AM - 12:00 PM', '12:00 PM - 02:00 PM', '02:00 PM - 04:00 PM', '04:00 PM - 06:00 PM'].map(time => (
-                                    <button 
+                                    <button
                                       key={time}
                                       onClick={() => setConsultationTime(time)}
                                       className={`py-2 px-1 text-[11px] font-semibold border rounded-lg transition-all ${
@@ -477,10 +477,10 @@ function CreateProfile() {
 
             </AnimatePresence>
           </div>
-          
-          {/* Form Actions Footer */}
+
+          {}
           <div className="w-full max-w-2xl mx-auto mt-12 flex items-center justify-between border-t border-border pt-6">
-             <button 
+             <button
                onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
                className={`h-11 px-5 rounded-lg font-medium text-[14px] flex items-center gap-2 transition-colors ${
                   currentStep === 1 ? 'opacity-0 pointer-events-none' : 'bg-surface border border-border text-heading hover:bg-bg'
@@ -488,16 +488,16 @@ function CreateProfile() {
              >
                 <ChevronLeftIcon className="w-4 h-4" /> Back
              </button>
-             
+
              {currentStep < 3 ? (
-                <button 
+                <button
                   onClick={() => setCurrentStep(prev => Math.min(3, prev + 1))}
                   className="h-11 px-8 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold text-[14px] flex items-center gap-2 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
                 >
                    Continue <ArrowRightIcon className="w-4 h-4" />
                 </button>
              ) : (
-                <button 
+                <button
                   onClick={handleRegister}
                   disabled={isLoading}
                   className="h-11 px-8 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold text-[14px] flex items-center gap-2 transition-all shadow-md hover:shadow-lg focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"

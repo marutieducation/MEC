@@ -10,7 +10,7 @@ router.get('/dashboard', protect, authorize('university_partner'), getPortalDash
 router.get('/applicants', protect, authorize('university_partner'), getApplicants);
 router.put('/applicants/:id/decide', protect, authorize('university_partner'), decideApplicant);
 
-// New endpoint for uploading Offer Letters
+
 router.post('/applicants/:id/offer', protect, authorize('university_partner'), upload.single('offer'), uploadOfferLetter);
 
 module.exports = router;

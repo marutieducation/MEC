@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   BuildingOfficeIcon, CheckCircleIcon, XMarkIcon,
   SparklesIcon, UserIcon, EnvelopeIcon, FunnelIcon,
   DocumentMagnifyingGlassIcon, ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { getUniversityLogo } from '@/lib/universityLogos';
 
 interface Applicant {
   _id: string;
@@ -33,7 +34,7 @@ export default function UniversityPortal() {
     try {
       setIsLoading(true);
       const res = await api.get('/university-portal/applicants');
-      // res is { success, data, pagination }
+
       setApplicants(res.data || []);
     } catch (err: any) {
       setError(err.message || 'Failed to load applicants');
@@ -49,10 +50,10 @@ export default function UniversityPortal() {
   const handleDecision = async (id: string, decision: 'accepted' | 'rejected') => {
     try {
       setIsProcessing(id);
-      
+
       if (decision === 'accepted') {
-        // In a real flow, this would trigger a file picker for the offer letter
-        // For this demo/implementation, we'll call the decision endpoint directly
+
+
         await api.post(`/university-portal/applicants/${id}/offer`, {
           status: 'accepted',
           note: 'Offer issued via Partner Portal'
@@ -60,8 +61,8 @@ export default function UniversityPortal() {
       } else {
         await api.put(`/api/applications/${id}`, { status: 'rejected' });
       }
-      
-      // Refresh list
+
+
       await fetchApplicants();
     } catch (err: any) {
       alert(err.message || 'Action failed');
@@ -80,19 +81,23 @@ export default function UniversityPortal() {
 
   return (
     <div className="p-6 md:p-8 max-w-[1400px] mx-auto space-y-6 fade-in h-[calc(100vh-64px)] flex flex-col">
-      
-      {/* Page Header (Partner Context) */}
+
+      {}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 bg-[#002147] text-white p-6 rounded-xl border border-[#001730] shadow-md relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-[#ffffff15] to-transparent pointer-events-none"></div>
-        
+
         <div className="flex items-center gap-5 relative z-10">
           <div className="w-16 h-16 rounded-full bg-white border-2 border-white flex items-center justify-center shadow-lg p-1 shrink-0">
-             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Oxford-University-Circlet.svg/1024px-Oxford-University-Circlet.svg.png" alt="University Logo" className="max-w-full max-h-full object-contain" />
+             <img 
+               src={getUniversityLogo(user?.universityId?.name || '')} 
+               alt="University Logo" 
+               className="max-w-full max-h-full object-contain" 
+             />
           </div>
           <div>
-            <h1 className="text-2xl font-bold font-serif tracking-tight">{user?.firstName ? `${user.lastName} Partner` : 'University Partner Portal'}</h1>
+            <h1 className="text-2xl font-bold font-serif tracking-tight">{user?.universityId?.name || 'Partner Portal'}</h1>
             <p className="text-[13px] text-[#A6C8FF] mt-1 flex items-center gap-1.5 font-medium">
-               <BuildingOfficeIcon className="w-4 h-4" /> Global Admissions Network
+               <BuildingOfficeIcon className="w-4 h-4" /> Official Admissions Network
             </p>
           </div>
         </div>
@@ -109,10 +114,10 @@ export default function UniversityPortal() {
       </div>
 
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-4 gap-6 min-h-0">
-        
-        {/* Incoming Applications Pipeline (Left 75%) */}
+
+        {}
         <div className="xl:col-span-3 flex flex-col bg-surface border border-border rounded-xl shadow-sm min-h-0 overflow-hidden">
-          
+
           <div className="p-4 border-b border-border flex justify-between items-center bg-bg/50 shrink-0">
              <h3 className="text-[15px] font-bold text-heading">Applicant Verification Queue</h3>
              <div className="flex gap-2">
@@ -179,16 +184,16 @@ export default function UniversityPortal() {
                                 <ArrowPathIcon className="w-6 h-6 animate-spin text-muted" />
                             ) : (
                                 <>
-                                  <button 
+                                  <button
                                     onClick={() => handleDecision(app._id, 'accepted')}
-                                    className="p-1.5 text-success hover:bg-success/10 rounded transition-colors" 
+                                    className="p-1.5 text-success hover:bg-success/10 rounded transition-colors"
                                     title="Accept & Issue Offer"
                                   >
                                     <CheckCircleIcon className="w-6 h-6" />
                                   </button>
-                                  <button 
+                                  <button
                                     onClick={() => handleDecision(app._id, 'rejected')}
-                                    className="p-1.5 text-danger hover:bg-danger/10 rounded transition-colors" 
+                                    className="p-1.5 text-danger hover:bg-danger/10 rounded transition-colors"
                                     title="Reject Application"
                                   >
                                     <XMarkIcon className="w-6 h-6" />
@@ -205,7 +210,7 @@ export default function UniversityPortal() {
           </div>
         </div>
 
-        {/* Agency Relationship Panel (Right 25%) */}
+        {}
         <div className="xl:col-span-1 flex flex-col gap-6 min-h-0">
           <div className="bg-surface rounded-xl border border-border shadow-sm p-6">
              <h3 className="text-[11px] font-bold text-muted uppercase tracking-wider mb-4">MEC Account Support</h3>
@@ -218,15 +223,15 @@ export default function UniversityPortal() {
                    <p className="text-[12px] text-muted">Director of Partnerships</p>
                 </div>
              </div>
-             
+
              <div className="space-y-2">
                 <button className="w-full h-9 bg-bg hover:bg-border text-heading border border-border rounded-lg text-[12px] font-semibold flex items-center justify-center gap-2 transition-colors">
                    <EnvelopeIcon className="w-4 h-4" /> Message
                 </button>
              </div>
           </div>
-          
-          {/* Quality Metrics */}
+
+          {}
           <div className="bg-bg rounded-xl border border-border shadow-sm p-5 flex-1 overflow-y-auto">
              <h3 className="text-[12px] font-bold text-heading uppercase tracking-wider mb-4 border-b border-border pb-2">Partnership Health</h3>
              <div className="space-y-5 text-[13px]">

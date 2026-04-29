@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  PlusIcon, 
-  ShieldCheckIcon, 
-  ClockIcon, 
-  CheckCircleIcon, 
+import {
+  PlusIcon,
+  ShieldCheckIcon,
+  ClockIcon,
+  CheckCircleIcon,
   ClipboardDocumentIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
@@ -68,14 +68,14 @@ export default function AdminInvitesPage() {
           <p className="text-muted font-medium">Generate and manage secure invitation codes for Admins and Partners.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={() => generateCode('university_partner')}
             disabled={isGenerating}
             className="h-10 px-4 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all flex items-center gap-2"
           >
             <PlusIcon className="w-4 h-4" /> Partner Invite
           </button>
-          <button 
+          <button
             onClick={() => generateCode('admin_registration')}
             disabled={isGenerating}
             className="h-10 px-4 bg-[#1A1A2E] text-white rounded-xl text-xs font-bold shadow-lg hover:scale-105 transition-all flex items-center gap-2"
@@ -93,7 +93,7 @@ export default function AdminInvitesPage() {
               <ArrowPathIcon className="w-4 h-4" />
             </button>
           </div>
-          
+
           {isLoading ? (
             <div className="p-12 text-center text-muted font-bold">Accessing secure repository...</div>
           ) : (
@@ -121,7 +121,7 @@ export default function AdminInvitesPage() {
                             <code className="px-3 py-1.5 bg-bg border border-border rounded-lg font-mono text-sm font-bold text-primary">
                               {c.code}
                             </code>
-                            <button 
+                            <button
                               onClick={() => copyToClipboard(c.code)}
                               className="text-muted hover:text-primary transition-colors"
                               title="Copy to clipboard"
@@ -140,8 +140,8 @@ export default function AdminInvitesPage() {
                         </td>
                         <td className="px-6 py-5">
                           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                            c.used ? 'bg-muted/10 text-muted' : 
-                            new Date(c.expiresAt) < new Date() ? 'bg-danger/10 text-danger' : 
+                            c.used ? 'bg-muted/10 text-muted' :
+                            new Date(c.expiresAt) < new Date() ? 'bg-danger/10 text-danger' :
                             'bg-success/10 text-success'
                           }`}>
                             {c.used ? 'Redeemed' : new Date(c.expiresAt) < new Date() ? 'Expired' : 'Active'}
@@ -157,14 +157,14 @@ export default function AdminInvitesPage() {
                           {c.used ? (
                             <span className="text-[10px] font-black text-muted uppercase tracking-widest">Audit Only</span>
                           ) : (
-                            <button 
+                            <button
                               onClick={async () => {
                                 const registerPath = c.type === 'university_partner' ? '/partner/register' : '/super/register';
                                 const registerUrl = `${window.location.origin}${registerPath}?code=${c.code}`;
                                 const inviteText = c.type === 'university_partner'
                                   ? `You're invited to join MEC UAFMS as a University Partner! Register here: ${registerUrl}`
                                   : `You're invited to join MEC UAFMS as an Admin! Register here: ${registerUrl}`;
-                                
+
                                 if (navigator.share) {
                                   try {
                                     await navigator.share({
@@ -182,7 +182,7 @@ export default function AdminInvitesPage() {
                                   setCopySuccess(c.code);
                                   setTimeout(() => setCopySuccess(null), 2000);
                                 }
-                              }} 
+                              }}
                               className="text-[11px] font-black text-primary hover:underline uppercase tracking-widest"
                             >
                               Share Invite

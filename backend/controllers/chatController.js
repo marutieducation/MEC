@@ -1,9 +1,9 @@
-// File: backend/controllers/chatController.js
+
 const Message = require('../models/Message');
 const User = require('../models/User');
 
-// @desc    Get conversation history with a specific user
-// @route   GET /api/chat/:userId
+
+
 const getConversation = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -22,8 +22,8 @@ const getConversation = async (req, res) => {
   }
 };
 
-// @desc    Send a new message
-// @route   POST /api/chat/:userId
+
+
 const sendMessage = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -40,10 +40,10 @@ const sendMessage = async (req, res) => {
       content,
     });
 
-    // Populate sender info before emitting via socket
+
     const populatedMessage = await Message.findById(message._id).populate('sender', 'firstName lastName');
 
-    // Emit via Socket.io to the recipient's room
+
     if (req.io) {
       req.io.to(userId.toString()).emit('receiveMessage', populatedMessage);
     }

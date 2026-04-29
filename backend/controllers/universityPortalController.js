@@ -1,17 +1,17 @@
 const Application = require('../models/Application');
 const University = require('../models/University');
 
-// @desc    Get university portal dashboard
-// @route   GET /api/university-portal/dashboard
+
+
 const getPortalDashboard = async (req, res) => {
   try {
-    // Find the university linked to this partner
+
     const university = await University.findOne({ partnerUser: req.user._id });
     if (!university) {
       return res.status(404).json({ message: 'No university linked to this account' });
     }
 
-    // Get applications to this university
+
     const totalApps = await Application.countDocuments({ university: university._id });
     const newApps = await Application.countDocuments({ university: university._id, status: 'submitted' });
     const reviewing = await Application.countDocuments({ university: university._id, status: 'under_review' });
@@ -36,8 +36,8 @@ const getPortalDashboard = async (req, res) => {
   }
 };
 
-// @desc    Get applicant verification queue
-// @route   GET /api/university-portal/applicants
+
+
 const getApplicants = async (req, res) => {
   try {
     const university = await University.findOne({ partnerUser: req.user._id });
@@ -89,11 +89,11 @@ const getApplicants = async (req, res) => {
   }
 };
 
-// @desc    Accept or reject applicant
-// @route   PUT /api/university-portal/applicants/:id/decide
+
+
 const decideApplicant = async (req, res) => {
   try {
-    const { decision } = req.body; // 'accepted' or 'rejected'
+    const { decision } = req.body;
 
     if (!['accepted', 'rejected'].includes(decision)) {
       return res.status(400).json({ message: 'Decision must be "accepted" or "rejected"' });
@@ -120,8 +120,8 @@ const decideApplicant = async (req, res) => {
   }
 };
 
-// @desc    Upload Official Offer Letter
-// @route   POST /api/university-portal/applicants/:id/offer
+
+
 const uploadOfferLetter = async (req, res) => {
   try {
     const Document = require('../models/Document');
@@ -137,25 +137,25 @@ const uploadOfferLetter = async (req, res) => {
     const fileSizeBytes = req.file.size;
     const fileSizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(1) + ' MB';
 
-    // 1. Create the Secure Document
+
     const offerDoc = await Document.create({
        student: application.student,
        name: `Offer Letter - ${university.name}`,
-       category: 'academic', // Or custom if UI supports it
+       category: 'academic',
        filePath: req.file.path,
        fileSize: fileSizeMB,
        originalName: req.file.originalname,
-       status: 'verified', // Pre-verified since it comes from partner
+       status: 'verified',
     });
 
-    // 2. Accept the Student Automatically
+
     application.status = 'accepted';
     application.currentStep = 4;
     application.pipelineStage = 'decision';
     application.decisionDate = new Date();
     await application.save();
 
-    // 3. Notify the Student
+
     const newNotif = await Notification.create({
        user: application.student,
        title: 'Offer Letter Received! 🎉',

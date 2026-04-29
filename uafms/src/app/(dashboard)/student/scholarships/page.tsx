@@ -104,7 +104,7 @@ export default function ScholarshipsPage() {
                 <div className="px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[12px] font-bold border border-primary/20">
                   {s.match}% Match
                 </div>
-                <button 
+                <button
                   onClick={() => handleApply(s.applyUrl)}
                   className="px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all"
                 >

@@ -54,12 +54,6 @@ const studentNav = [
       { name: 'Interviews', href: '/student/interviews', icon: CalendarDaysIcon },
     ]
   },
-  {
-    category: 'ACCOUNT',
-    items: [
-      { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
-    ]
-  }
 ];
 
 const adminNav = [
@@ -153,7 +147,7 @@ export function Sidebar() {
         
         
         
-        {/* Help Center CTA */}
+        {}
         <div className="mt-8 px-3">
           <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 relative overflow-hidden group cursor-pointer">
             <div className="relative z-10">

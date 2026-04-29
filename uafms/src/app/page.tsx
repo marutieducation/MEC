@@ -13,54 +13,55 @@ import {
 import { SparklesIcon } from '@heroicons/react/24/solid';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Navbar } from '@/components/layout/Navbar';
+import { getUniversityLogo } from '@/lib/universityLogos';
 
 const featuredColleges = [
   {
     id: 1, name: 'Alliance School of Business', location: 'Bangalore, Karnataka', rank: 'Top Management',
     courses: ['MBA', 'PGDM', 'BBA', 'B.Com'],
-    fee: 'Contact for info', logo: 'https://ui-avatars.com/api/?name=ASB&background=random&color=fff&size=200',
+    fee: '₹12,00,000/yr', logo: getUniversityLogo('Alliance University'),
     tag: 'Top Management', color: 'blue'
   },
   {
     id: 2, name: 'Alliance School of Law', location: 'Bangalore, Karnataka', rank: 'Top Law',
     courses: ['BA LLB (Hons)', 'BBA LLB (Hons)', 'LLM'],
-    fee: 'Contact for info', logo: 'https://ui-avatars.com/api/?name=ASL&background=random&color=fff&size=200',
+    fee: '₹4,50,000/yr', logo: getUniversityLogo('Alliance University'),
     tag: 'Best Private Law', color: 'green'
   },
   {
     id: 3, name: 'Alliance College of Engg & Design', location: 'Bangalore, Karnataka', rank: 'Top Engineering',
     courses: ['B.Tech CSE', 'AI & ML', 'Data Science'],
-    fee: 'Contact for info', logo: 'https://ui-avatars.com/api/?name=ACED&background=random&color=fff&size=200',
+    fee: '₹3,50,000/yr', logo: getUniversityLogo('Alliance University'),
     tag: 'Top Tech', color: 'purple'
   },
   {
     id: 4, name: 'Alliance School of Liberal Arts', location: 'Bangalore, Karnataka', rank: 'Top Liberal Arts',
     courses: ['Liberal Arts', 'Humanities', 'Psychology'],
-    fee: 'Contact for info', logo: 'https://ui-avatars.com/api/?name=ASLA&background=random&color=fff&size=200',
+    fee: '₹2,50,000/yr', logo: getUniversityLogo('Alliance University'),
     tag: 'Top Liberal Arts', color: 'orange'
   },
   {
     id: 5, name: 'Alliance School of Sciences', location: 'Bangalore, Karnataka', rank: 'Top Science',
     courses: ['B.Sc', 'M.Sc', 'Research'],
-    fee: 'Contact for info', logo: 'https://ui-avatars.com/api/?name=ASS&background=random&color=fff&size=200',
+    fee: '₹1,50,000/yr', logo: getUniversityLogo('Alliance University'),
     tag: 'Research Oriented', color: 'blue'
   },
   {
     id: 6, name: 'Alliance School of Design', location: 'Bangalore, Karnataka', rank: 'Top Design',
     courses: ['B.Des', 'Fashion Design', 'Interior Design'],
-    fee: 'Contact for info', logo: 'https://ui-avatars.com/api/?name=ASD&background=random&color=fff&size=200',
+    fee: '₹4,00,000/yr', logo: getUniversityLogo('Alliance University'),
     tag: 'Top Innovation', color: 'green'
   },
   {
     id: 7, name: 'Alliance School of Economics', location: 'Bangalore, Karnataka', rank: 'Top Economics',
     courses: ['B.A. Economics', 'M.A. Economics'],
-    fee: 'Contact for info', logo: 'https://ui-avatars.com/api/?name=ASE&background=random&color=fff&size=200',
+    fee: '₹2,00,000/yr', logo: getUniversityLogo('Alliance University'),
     tag: 'Top Economics', color: 'purple'
   },
   {
     id: 8, name: 'Alliance Ascent College', location: 'Bangalore, Karnataka', rank: 'Top Multi-Disciplinary',
     courses: ['BBA', 'B.Com', 'MBA'],
-    fee: 'Contact for info', logo: 'https://ui-avatars.com/api/?name=AAC&background=random&color=fff&size=200',
+    fee: '₹3,00,000/yr', logo: getUniversityLogo('Alliance University'),
     tag: 'Top Professional', color: 'orange'
   }
 ];
@@ -88,10 +89,12 @@ const streams = ['Engineering', 'Management', 'Medical', 'Science', 'Commerce', 
 const topExams = ['JEE Main', 'JEE Advanced', 'NEET UG', 'CAT', 'GATE', 'CLAT', 'XAT', 'CUET'];
 
 const universityPartners = [
-  { name: 'Nirma University', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3e/Nirma_University_Logo.svg/100px-Nirma_University_Logo.svg.png' },
-  { name: 'MSU Baroda', logo: 'https://ui-avatars.com/api/?name=MSU&background=random&color=fff&size=200' },
-  { name: 'DA-IICT', logo: 'https://ui-avatars.com/api/?name=DAIICT&background=random&color=fff&size=200' },
-  { name: 'PDEU', logo: 'https://ui-avatars.com/api/?name=PDEU&background=random&color=fff&size=200' },
+  { name: 'Nirma University', logo: getUniversityLogo('Nirma University') },
+  { name: 'MSU Baroda', logo: getUniversityLogo('MSU Baroda') },
+  { name: 'DA-IICT', logo: getUniversityLogo('DA-IICT') },
+  { name: 'PDEU', logo: getUniversityLogo('Pandit Deendayal Energy Univ') },
+  { name: 'SRM University', logo: getUniversityLogo('SRM University') },
+  { name: 'Amity University', logo: getUniversityLogo('Amity University') },
 ];
 
 export default function LandingPage() {
@@ -103,17 +106,17 @@ export default function LandingPage() {
     <div className="min-h-screen font-sans bg-bg text-body transition-colors duration-300">
       <Navbar />
 
-      {/* ── HERO SECTION ── */}
+      {}
 
-      {/* ── HERO SECTION ── */}
+      {}
       <section className="relative bg-gradient-to-br from-[#1A1A2E] via-[#16213E] to-[#0F3460] text-white overflow-hidden min-h-[580px] flex items-center">
-        {/* Decorative blobs */}
+        {}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#FF6B00] opacity-10 rounded-full blur-3xl -mr-48 -mt-48 pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500 opacity-10 rounded-full blur-3xl -ml-32 -mb-32 pointer-events-none"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
           <div>
-            {/* Badge */}
+            {}
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-[12px] font-bold px-3 py-1.5 rounded-full mb-6 backdrop-blur-sm">
               <SparklesIcon className="w-3.5 h-3.5 text-yellow-400" />
               #1 Ranked College Admissions Platform in India
@@ -128,7 +131,7 @@ export default function LandingPage() {
               <span className="text-[#FF6B00] font-semibold">one student at a time.</span>
             </p>
 
-            {/* Search Box */}
+            {}
             <div className="relative bg-white rounded-xl shadow-lg mb-6 flex items-center overflow-hidden">
               <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 ml-4 shrink-0" />
               <input
@@ -138,7 +141,7 @@ export default function LandingPage() {
                 placeholder="Search colleges, courses, exams..."
                 className="flex-1 h-14 px-3 text-gray-800 text-[15px] focus:outline-none placeholder:text-gray-400"
               />
-              <button 
+              <button
                 onClick={() => router.push(`/search?query=${searchQuery}`)}
                 className="h-14 px-6 bg-[#FF6B00] hover:bg-orange-600 text-white font-bold text-[14px] flex items-center gap-2 transition-colors shrink-0"
               >
@@ -156,7 +159,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Stats cards */}
+          {}
           <div className="hidden lg:grid grid-cols-2 gap-4">
             {[
               { val: '500+', label: 'Partner Colleges', icon: '🏛️' },
@@ -174,30 +177,32 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── PARTNER TICKER (INFINITE SCROLL) ── */}
+      {}
         <div className="py-16 bg-surface border-b border-border overflow-hidden relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center">
            <h2 className="text-[15px] font-bold text-heading opacity-70 tracking-widest uppercase">Trusted by India&apos;s Elite Institutions</h2>
         </div>
-        
+
         <div className="relative flex overflow-hidden">
-          {/* Animated Ticker Container */}
+          {}
           <div className="flex gap-20 animate-ticker items-center whitespace-nowrap w-max will-change-transform">
             {[...universityPartners, ...universityPartners, ...universityPartners, ...universityPartners].map((uni, idx) => (
-              <div key={idx} className="flex items-center gap-4 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer">
-                <img src={uni.logo} alt={uni.name} className="h-10 w-auto object-contain dark:invert dark:brightness-150" />
+              <div key={idx} className="flex items-center gap-4 transition-all cursor-pointer hover:scale-105">
+                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center p-2 shadow-sm">
+                  <img src={uni.logo} alt={uni.name} className="h-10 w-auto object-contain" />
+                </div>
                 <span className="font-extrabold text-[18px] text-heading tracking-tight">{uni.name}</span>
               </div>
             ))}
           </div>
         </div>
-        
-        {/* Gradient overlays for smooth fade edges */}
+
+        {}
         <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-surface to-transparent z-10 pointer-events-none"></div>
         <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-surface to-transparent z-10 pointer-events-none"></div>
       </div>
 
-      {/* ── HOW IT WORKS STEPS ── */}
+      {}
       <section className="bg-surface py-10 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -214,7 +219,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── FEATURES GRID ── */}
+      {}
       <section className="py-20 bg-bg" id="courses">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
@@ -245,7 +250,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── STREAM TABS + FEATURED COLLEGES ── */}
+      {}
       <section className="py-20 bg-surface" id="colleges">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
@@ -253,7 +258,7 @@ export default function LandingPage() {
             <p className="text-[16px] text-muted">Discover top colleges, exams, and opportunities in your preferred field.</p>
           </div>
 
-          {/* Stream Tabs */}
+          {}
           <div className="flex overflow-x-auto gap-1 pb-2 mb-8 scrollbar-hide">
             {streams.map(s => (
               <button
@@ -266,11 +271,11 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* College Cards */}
+          {}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
             {featuredColleges.map(college => (
               <div key={college.id} className="bg-surface border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all group cursor-pointer">
-                {/* Card Header */}
+                {}
                 <div className="h-28 bg-bg flex items-center justify-center p-4 relative">
                   <img src={college.logo} alt={college.name} className="h-16 w-auto object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                   <div className={`absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold text-white ${college.color === 'blue' ? 'bg-blue-500' : college.color === 'orange' ? 'bg-orange-500' : college.color === 'green' ? 'bg-green-500' : 'bg-purple-500'}`}>
@@ -314,7 +319,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── IMPORTANT EXAMS ── */}
+      {}
       <section className="py-16 bg-bg" id="exams">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <h2 className="text-[28px] font-black text-heading mb-8 text-center">Important Entrance Exams</h2>
@@ -328,7 +333,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CTA BANNER ── */}
+      {}
       <section className="py-20 bg-gradient-to-r from-[#FF6B00] to-orange-500 text-white" id="counselling">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <div className="text-[13px] font-bold uppercase tracking-wider mb-3 opacity-90">🏆 #1 India&apos;s Largest Common Application Form</div>
@@ -347,7 +352,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
+      {}
       <section className="py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <h2 className="text-[28px] font-black text-heading mb-10 text-center">What Students Say About Us</h2>
@@ -375,7 +380,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
+      {}
       <footer className="bg-[#1A1A2E] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
@@ -423,13 +428,13 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
               <p className="text-[12px] text-gray-500">© 2026 Maruti Education &amp; Consultancy. All rights reserved.</p>
               <div className="text-[12px] text-gray-500 bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                Made by <a href="https://www.technofixer.com/" className="text-[#FF6B00] hover:underline font-bold" target="_blank" rel="noopener noreferrer">Techno Fixer</a>
+                Made by <a href="https:
               </div>
             </div>
             <div className="flex gap-4">
-              <Link href="#" className="text-[12px] text-gray-500 hover:text-white transition-colors">Privacy Policy</Link>
-              <Link href="#" className="text-[12px] text-gray-500 hover:text-white transition-colors">Terms of Service</Link>
-              <Link href="#" className="text-[12px] text-gray-500 hover:text-white transition-colors">GSTIN: 27AABCU9603R1ZX</Link>
+              <Link href="/privacy" className="text-[12px] text-gray-500 hover:text-white transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="text-[12px] text-gray-500 hover:text-white transition-colors">Terms of Service</Link>
+              <span className="text-[12px] text-gray-500 transition-colors">GSTIN: 27AABCU9603R1ZX</span>
             </div>
           </div>
         </div>

@@ -26,11 +26,11 @@ export default function NotificationBell() {
   useEffect(() => {
     if (!user) return;
 
-    // Fetch initial notifications
+    
     const fetchNotifications = async () => {
       try {
         const res = await api.get('/notifications');
-        // Handle both raw array and wrapped { data: [] } responses
+        
         setNotifications(Array.isArray(res) ? res : (res?.data || []));
       } catch (err) {
         console.error('Failed to fetch notifications:', err);
@@ -39,8 +39,8 @@ export default function NotificationBell() {
     };
     fetchNotifications();
 
-    // Connect to WebSockets
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://127.0.0.1:8080';
+    
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http:
     socketRef.current = io(socketUrl);
 
     socketRef.current.on('connect', () => {
@@ -56,7 +56,7 @@ export default function NotificationBell() {
     };
   }, [user]);
 
-  // Close dropdown on outside click
+  
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {

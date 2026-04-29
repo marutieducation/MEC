@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userIdFor2FA, setUserIdFor2FA] = useState<string | null>(null);
-  
+
   const { login } = useAuth();
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -24,8 +24,8 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await api.post('/auth/login', { 
-        email, 
+      const response = await api.post('/auth/login', {
+        email,
         password,
         role: 'university_partner'
       });
@@ -68,7 +68,7 @@ export default function LoginPage() {
         userId: userIdFor2FA,
         otp: code
       });
-      
+
       setShow2FA(false);
       login(response, response.token);
       } catch (err: any) {
@@ -81,7 +81,7 @@ export default function LoginPage() {
   return (
     <div className="flex relative items-center justify-center min-h-screen font-sans bg-bg w-full">
       <div className="flex w-full h-screen bg-bg flex-col lg:flex-row">
-        {/* Left Brand Panel */}
+        {}
         <div className="hidden lg:flex w-full lg:w-[55%] bg-[#1A1A2E] text-white flex-col relative justify-center items-start px-12 lg:px-24 py-16 overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-primary opacity-20 -mr-24 -mt-24 transform rotate-45 pointer-events-none skew-x-12"></div>
           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary opacity-10 rounded-full blur-3xl pointer-events-none -mb-32 -ml-32"></div>
@@ -101,7 +101,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Form Panel */}
+        {}
         <div className="w-full lg:w-[45%] bg-surface flex flex-col justify-center items-center px-8 sm:px-16 py-12 relative overflow-y-auto min-h-screen lg:min-h-0">
           <div className="w-full max-w-[400px]">
             <div className="flex lg:hidden mb-8 items-center gap-3">
@@ -119,7 +119,7 @@ export default function LoginPage() {
                   {error}
                 </div>
               )}
-              
+
               <div className="flex flex-col gap-1.5">
                 <label className="text-h4">Email Address</label>
                 <div className="relative">
@@ -154,7 +154,7 @@ export default function LoginPage() {
               <button type="submit" disabled={isLoading} className="w-full h-10 mt-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-semibold text-[14px] uppercase tracking-wide flex justify-center items-center gap-2 transition-all duration-150 active:scale-[0.98] disabled:opacity-70">
                 {isLoading ? 'Signing In...' : 'Sign In'} <ArrowRightIcon className="w-4 h-4" />
               </button>
-              
+
               <div className="mt-5 text-center text-[13px] font-medium text-muted">
                 Want to become a partner? <Link href="/partner/register" className="text-primary hover:underline hover:text-primary-dark pl-1">Register here</Link>
               </div>
@@ -164,7 +164,7 @@ export default function LoginPage() {
 
             <div className="mt-12 pb-6">
               <div className="flex flex-col gap-2 items-center text-center">
-                <p className="text-[12px] text-muted leading-tight">By continuing, you acknowledge that you have read and agree to our <a href="#" className="text-primary hover:underline">Terms of Service</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a>.</p>
+                <p className="text-[12px] text-muted leading-tight">By continuing, you acknowledge that you have read and agree to our <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.</p>
                 <div className="flex items-center gap-1.5 text-[11px] text-muted bg-[#FDECEC] px-3 py-1 rounded-full text-danger border border-[#FDECEC] justify-center mt-2 font-medium">
                   <LockClosedIcon className="w-3 h-3" /> GDPR &amp; DPDP Act Compliant
                 </div>
@@ -174,7 +174,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* 2FA Modal */}
+      {}
       <AnimatePresence>
         {show2FA && (
           <>

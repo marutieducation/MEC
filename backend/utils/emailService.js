@@ -12,6 +12,15 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async ({ to, subject, html }) => {
   try {
+    if (process.env.EMAIL_USER === 'your_email@gmail.com' || !process.env.EMAIL_USER) {
+      console.log(`\n================= MOCK EMAIL =================`);
+      console.log(`To: ${to}`);
+      console.log(`Subject: ${subject}`);
+      console.log(`Body: ${html}`);
+      console.log(`==============================================\n`);
+      return { messageId: 'mock-id-12345' };
+    }
+
     const info = await transporter.sendMail({
       from: `"MEC UAFMS" <${process.env.EMAIL_USER}>`,
       to,
@@ -22,7 +31,7 @@ const sendEmail = async ({ to, subject, html }) => {
     return info;
   } catch (error) {
     console.error(`❌ Email error: ${error.message}`);
-    // Don't throw — email failures shouldn't crash the app
+
     return null;
   }
 };

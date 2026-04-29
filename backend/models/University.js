@@ -21,21 +21,24 @@ const universitySchema = new mongoose.Schema(
     location: { type: String, default: '' },
     country: { type: String, default: 'India' },
     logo: { type: String, default: '' },
+    logoSource: { type: String, enum: ['manual', 'auto_clearbit', 'auto_wikipedia', 'fallback', 'hardcoded'], default: 'fallback' },
+    logoLastUpdated: { type: Date, default: null },
+    officialDomain: { type: String, default: '' },
     description: { type: String, default: '' },
     courses: [courseSchema],
 
-    // University partner link
+
     partnerUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 
-    // Dashboard stats
+
     ytdEnrolled: { type: Number, default: 0 },
     pendingAction: { type: Number, default: 0 },
 
-    // Quality metrics
+
     documentAccuracy: { type: Number, default: 99.2 },
     offerExtensionRate: { type: Number, default: 74 },
 
-    // Partner events
+
     events: [
       {
         title: { type: String },

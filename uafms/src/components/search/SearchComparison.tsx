@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { 
+import { getUniversityLogo } from '@/lib/universityLogos';
+import {
   AdjustmentsHorizontalIcon, MapPinIcon, CurrencyRupeeIcon,
   CalendarDaysIcon, MagnifyingGlassIcon,
   ChevronDownIcon, AcademicCapIcon, ChartBarIcon,
@@ -13,13 +14,13 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 const INDIAN_STATES_AND_UTS = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 
-  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 
-  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 
-  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 
-  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
   'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-  'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 
+  'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
   'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
 ];
 
@@ -50,7 +51,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
     const loadInitialData = async () => {
       setIsLoading(true);
       try {
-        // Attempt to get user data and applications, but don't fail if guest
+
         let ids: string[] = [];
         try {
           const [apps] = await Promise.all([
@@ -62,7 +63,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
         } catch (authErr) {
           console.log('Guest user or auth failed, skipping profile pre-sets');
         }
-        
+
         const res = await api.get('/universities/search?limit=50');
         const mapped = res.results.map((r: any) => ({
           id: r.courseId,
@@ -75,11 +76,11 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
           duration: r.duration,
           intake: r.intake,
           degreeLevel: r.degreeLevel,
-          logo: r.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.universityName)}&background=random&color=fff&size=200`
+          logo: getUniversityLogo(r.universityName)
         }));
         setResults(mapped);
 
-        // Pre-select applied universities if they match courses in results
+
         const appliedCourseIds = mapped.filter((m: any) => ids.includes(m.universityId)).map((m: any) => m.id);
         setSelectedIds(prev => Array.from(new Set([...prev, ...appliedCourseIds])));
 
@@ -136,7 +137,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
   };
 
   const handleApply = async (univId: string, universityName: string, courseName: string, courseId: string) => {
-    // Check if token exists in localStorage to determine if logged in
+
     const token = localStorage.getItem('uafms_token');
     if (!token) {
       router.push(`/login?redirect=/search&query=${searchTerm}`);
@@ -144,7 +145,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
     }
 
     if (appliedIds.includes(univId)) return;
-    
+
     setIsApplying(true);
     try {
       await api.post('/applications', {
@@ -182,7 +183,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
           course: r.course,
           source: 'Web'
         }));
-      
+
       if (apps.length === 0) {
         alert('All selected programs are already applied to.');
         return;
@@ -203,13 +204,13 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
 
   const filteredResults = results.filter(course => {
     const term = normalize(searchTerm);
-    const matchesSearch = 
+    const matchesSearch =
       normalize(course.name).includes(term) ||
       normalize(course.course).includes(term) ||
       normalize(course.location).includes(term);
-    
+
     const matchesState = filterState === 'Any State' || course.location.includes(filterState);
-    
+
     let matchesDegree = filterDegree === 'All Levels';
     if (!matchesDegree) {
       if (filterDegree === 'Undergraduate (UG)') {
@@ -222,7 +223,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
         matchesDegree = course.course.includes(filterDegree);
       }
     }
-    
+
     return matchesSearch && matchesState && matchesDegree;
   });
 
@@ -244,11 +245,11 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
 
   return (
     <div className="p-6 md:p-8 max-w-[1400px] mx-auto space-y-6 fade-in h-auto flex flex-col pb-24">
-      
-      {/* Success Notification */}
+
+      {}
       <AnimatePresence>
         {showSuccess && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -265,14 +266,14 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
         )}
       </AnimatePresence>
 
-      {/* Search Header */}
+      {}
       <div className="bg-surface border border-border rounded-xl p-4 shadow-sm">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="relative flex-1">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
-            <input 
-              type="text" 
-              placeholder="Search by course, university, or skill" 
+            <input
+              type="text"
+              placeholder="Search by course, university, or skill"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full h-12 pl-10 pr-4 bg-bg border border-border rounded-lg text-heading placeholder:text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all text-[15px] font-medium"
@@ -280,7 +281,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
           </div>
           <div className="flex gap-3">
              <div className="relative group text-heading">
-               <select 
+               <select
                  value={filterState}
                  onChange={(e) => setFilterState(e.target.value)}
                  className="h-12 px-4 pl-10 bg-bg border border-border text-heading hover:bg-border/50 rounded-lg font-medium text-[14px] transition-colors appearance-none cursor-pointer focus:ring-2 focus:ring-primary/20 outline-none min-w-[160px]"
@@ -295,7 +296,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
              </div>
 
              <div className="relative group" ref={degreeDropdownRef}>
-               <button 
+               <button
                  onClick={() => setIsDegreeDropdownOpen(!isDegreeDropdownOpen)}
                  className="h-12 px-4 pl-10 pr-10 bg-bg border border-border text-heading hover:bg-border/50 rounded-lg font-medium text-[14px] transition-colors flex items-center gap-2 min-w-[180px] w-full lg:w-auto relative"
                >
@@ -313,7 +314,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                      transition={{ duration: 0.2 }}
                      className="absolute top-full left-0 mt-2 w-64 bg-surface border border-border rounded-xl shadow-xl z-50 overflow-hidden py-2"
                    >
-                     <div 
+                     <div
                        className="px-4 py-2 hover:bg-bg cursor-pointer transition-colors text-heading font-semibold text-[13px] border-b border-border/50"
                        onClick={() => {
                          setFilterDegree('All Levels');
@@ -333,7 +334,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                            onClick={() => setExpandedCategory(expandedCategory === category.id ? null : category.id)}
                            className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-bg transition-colors group"
                          >
-                           <span 
+                           <span
                              className="text-[13px] font-bold text-muted group-hover:text-primary transition-colors flex-1 text-left"
                              onClick={(e) => {
                                e.stopPropagation();
@@ -378,7 +379,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                </AnimatePresence>
              </div>
 
-             <button 
+             <button
                onClick={() => alert('Advanced filters coming soon...')}
                className="h-12 px-4 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 rounded-lg font-semibold text-[14px] transition-colors flex items-center gap-2 whitespace-nowrap hidden sm:flex"
              >
@@ -388,13 +389,14 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
         </div>
       </div>
 
+
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0">
-        
-        {/* Main Results Area (Left 75%) */}
+
+        {}
         <div className="lg:col-span-3 flex flex-col space-y-4">
           <div className="flex justify-between items-center px-1">
              <h2 className="text-[16px] font-bold text-heading">{filteredResults.length} Programs Found</h2>
-              <select 
+              <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="text-[13px] text-primary bg-transparent border-none font-bold cursor-pointer focus:ring-0 p-0"
@@ -421,21 +423,25 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
               const isSelected = selectedIds.includes(course.id);
               const isApplied = appliedIds.includes(course.universityId);
               return (
-                <motion.div 
+                <motion.div
                   layout
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.2 }} 
-                  key={course.id} 
+                  transition={{ duration: 0.2 }}
+                  key={course.id}
                   onClick={() => toggleSelection(course.id)}
                   className={`bg-surface border rounded-xl p-5 transition-all flex flex-col sm:flex-row gap-5 cursor-pointer ${
                     isSelected ? 'border-primary shadow-[0_0_0_1px_#FF6B00] shadow-primary/10' : 'border-border hover:border-muted hover:shadow-sm'
                   }`}
                 >
                   <div className="flex flex-col items-center gap-3 shrink-0 sm:w-24">
-                    <div className="w-16 h-16 rounded-lg bg-white border border-border shadow-sm flex items-center justify-center p-2">
-                       <img src={course.logo} alt={course.name} className="max-w-full max-h-full object-contain" />
+                    <div className="w-16 h-16 rounded-lg bg-[#f8f9fa] border border-border shadow-sm flex items-center justify-center p-2">
+                        <img 
+                          src={getUniversityLogo(course.name)} 
+                          alt={course.name} 
+                          className="max-w-full max-h-full object-contain" 
+                        />
                     </div>
                     <div className="text-center">
                       <span className="text-[10px] uppercase font-bold text-success tracking-wider leading-none">Match</span>
@@ -476,16 +482,16 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                           {course.intake}
                         </span>
                       </div>
-                      
-                      <button 
+
+                      <button
                          onClick={(e) => {
                            e.stopPropagation();
                            handleApply(course.universityId, course.name, course.course, course.id);
                          }}
                          disabled={isApplied || isApplying}
                          className={`px-5 py-2 rounded-lg text-[13px] font-bold transition-all flex items-center gap-2 ${
-                           isApplied 
-                           ? 'bg-success/10 text-success border border-success/20 cursor-default' 
+                           isApplied
+                           ? 'bg-success/10 text-success border border-success/20 cursor-default'
                            : 'bg-primary text-white hover:bg-primary-dark shadow-sm'
                          }`}
                       >
@@ -500,10 +506,10 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
           </div>
         </div>
 
-        {/* Sidebar (Right 25%) */}
+        {}
         <div className="lg:col-span-1 flex flex-col gap-6">
-          
-          {/* My Selection Card */}
+
+          {}
           <div className="bg-surface rounded-xl border border-border shadow-sm p-6 flex flex-col h-fit sticky top-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[16px] font-bold text-heading">My Selection</h3>
@@ -524,13 +530,13 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                   return (
                     <div key={res.id} className="flex items-center gap-3 p-2 rounded-lg bg-bg/50 border border-border/50">
                       <div className="w-10 h-10 rounded bg-white border border-border flex items-center justify-center p-1 shrink-0">
-                        <img src={res.logo} alt={res.name} className="max-w-full max-h-full object-contain" />
+                        <img src={getUniversityLogo(res.name)} alt={res.name} className="max-w-full max-h-full object-contain" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[12px] font-bold text-heading line-clamp-1 leading-tight">{res.course}</p>
                         <p className="text-[11px] text-muted line-clamp-1">{res.name}</p>
                       </div>
-                      <button 
+                      <button
                         onClick={() => toggleSelection(res.id)}
                         className={`p-1.5 rounded-md transition-colors ${
                           isApplied ? 'text-success cursor-default' : 'text-muted hover:text-error hover:bg-error/10'
@@ -545,14 +551,14 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
             )}
 
             <div className="flex flex-col gap-2">
-              <button 
+              <button
                 onClick={compareSelected}
                 disabled={selectedIds.length === 0}
                 className="w-full h-11 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2 text-[13px]"
               >
                 <ChartBarIcon className="w-4 h-4" /> Compare Programs
               </button>
-              <button 
+              <button
                 onClick={clearAll}
                 disabled={selectedIds.length === 0}
                 className="w-full h-10 text-muted font-semibold hover:text-heading transition-colors text-[12px]"
@@ -562,7 +568,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
             </div>
           </div>
 
-          {/* Cost Estimator Widget */}
+          {}
           <div className="bg-surface rounded-xl border border-border shadow-sm p-6 flex flex-col h-fit">
             <h3 className="text-[16px] font-bold text-heading mb-1">Cost Estimator</h3>
             <p className="text-[12px] text-muted mb-6">Estimate monthly living expenses.</p>
@@ -610,10 +616,10 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
         </div>
       </div>
 
-      {/* Floating Compare Bar */}
+      {}
       <AnimatePresence>
         {selectedIds.length > 0 && (
-          <motion.div 
+          <motion.div
             initial={{ translateY: 100 }}
             animate={{ translateY: 0 }}
             exit={{ translateY: 100 }}
@@ -623,7 +629,11 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
               <div className="hidden sm:flex -space-x-2">
                 {selectedResults.map((res, idx) => (
                   <div key={res.id} style={{ zIndex: 40 - idx }} className="w-10 h-10 rounded-full bg-surface border-2 border-[#1A1A2E] flex items-center justify-center p-1 shadow-sm overflow-hidden text-heading">
-                    <img src={res.logo} className="w-full h-full object-contain dark:invert dark:brightness-150" alt={res.name} />
+                    <img 
+                      src={getUniversityLogo(res.name)} 
+                      className="w-full h-full object-contain" 
+                      alt={res.name} 
+                    />
                   </div>
                 ))}
               </div>
@@ -631,10 +641,10 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                 <span className="font-bold block text-sm">{selectedIds.length} Programs Selected</span>
               </div>
             </div>
-            
+
             <div className="flex gap-4">
               <button onClick={clearAll} className="px-4 h-10 text-sm font-semibold text-gray-300 hover:text-white">Clear All</button>
-              <button 
+              <button
                 onClick={compareSelected}
                 className="px-6 h-10 rounded-lg bg-primary hover:bg-primary-dark text-white text-[14px] font-bold transition-colors shadow-sm flex items-center gap-2"
               >
@@ -645,10 +655,10 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
         )}
       </AnimatePresence>
 
-      {/* Comparison Modal */}
+      {}
       <AnimatePresence>
         {isComparing && (() => {
-          // Pre-compute best values for highlighting
+
           const getFeeNum = (f: string) => parseFloat(f.replace(/[^0-9.]/g, '')) || 0;
           const fees = selectedResults.map(r => getFeeNum(r.fee));
           const matches = selectedResults.map(r => r.match);
@@ -665,7 +675,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
 
           const getDurationYears = (d: string) => parseFloat(d.replace(/[^0-9.]/g, '')) || 0;
 
-          // Render a comparison row
+
           const CompRow = ({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) => (
             <div className="grid border-b border-border/50" style={{ gridTemplateColumns: `200px repeat(${selectedResults.length}, 1fr)` }}>
               <div className="p-4 text-[13px] font-semibold text-muted border-r border-border flex items-center gap-2">
@@ -682,20 +692,20 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
           );
 
           return (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 lg:p-8"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="bg-surface w-full max-w-6xl h-full max-h-[90vh] rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden"
             >
-              {/* Header */}
+              {}
               <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-bg/50 shrink-0">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
@@ -711,19 +721,23 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                 </button>
               </div>
 
-              {/* Content */}
+              {}
               <div className="flex-1 overflow-auto">
                 <div className="min-w-[800px]">
 
-                  {/* University Header */}
+                  {}
                   <div className="sticky top-0 z-10 bg-surface border-b border-border">
                     <div className="grid" style={{ gridTemplateColumns: `200px repeat(${selectedResults.length}, 1fr)` }}>
                       <div className="p-4 border-r border-border"></div>
                       {selectedResults.map((res, idx) => (
                         <div key={res.id} className={`p-4 text-center ${idx < selectedResults.length - 1 ? 'border-r border-border' : ''}`}>
                           <div className="flex flex-col items-center gap-2">
-                            <div className="w-14 h-14 bg-white border border-border rounded-xl flex items-center justify-center p-1.5 shadow-sm">
-                              <img src={res.logo} alt={res.name} className="max-w-full max-h-full object-contain" />
+                            <div className="w-14 h-14 bg-[#f8f9fa] border border-border rounded-xl flex items-center justify-center p-1.5 shadow-sm">
+                              <img 
+                                src={getUniversityLogo(res.name)} 
+                                alt={res.name} 
+                                className="max-w-full max-h-full object-contain" 
+                              />
                             </div>
                             <span className="text-[13px] font-bold text-heading line-clamp-2 leading-tight">{res.name}</span>
                             <span className="text-[11px] text-muted line-clamp-1">{res.course}</span>
@@ -738,7 +752,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                     </div>
                   </div>
 
-                  {/* Section: Match & Compatibility */}
+                  {}
                   <div className="border-b border-border">
                     <div className="px-6 py-3 bg-primary/5 border-b border-border">
                       <h3 className="text-[11px] font-black text-primary uppercase tracking-[2px]">Match & Compatibility</h3>
@@ -765,7 +779,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                     </CompRow>
                   </div>
 
-                  {/* Section: Financial Overview */}
+                  {}
                   <div className="border-b border-border">
                     <div className="px-6 py-3 bg-green-500/5 border-b border-border">
                       <h3 className="text-[11px] font-black text-green-600 uppercase tracking-[2px]">Financial Overview</h3>
@@ -811,7 +825,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                     </CompRow>
                   </div>
 
-                  {/* Section: Academic Details */}
+                  {}
                   <div className="border-b border-border">
                     <div className="px-6 py-3 bg-blue-500/5 border-b border-border">
                       <h3 className="text-[11px] font-black text-blue-600 uppercase tracking-[2px]">Academic Details</h3>
@@ -856,7 +870,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                     </CompRow>
                   </div>
 
-                  {/* Section: Location & Logistics */}
+                  {}
                   <div className="border-b border-border">
                     <div className="px-6 py-3 bg-purple-500/5 border-b border-border">
                       <h3 className="text-[11px] font-black text-purple-600 uppercase tracking-[2px]">Location & Logistics</h3>
@@ -880,7 +894,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                     </CompRow>
                   </div>
 
-                  {/* Section: Quick Actions */}
+                  {}
                   <div>
                     <div className="px-6 py-3 bg-amber-500/5 border-b border-border">
                       <h3 className="text-[11px] font-black text-amber-600 uppercase tracking-[2px]">Quick Actions</h3>
@@ -912,7 +926,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                 </div>
               </div>
 
-              {/* Footer */}
+              {}
               <div className="px-8 py-5 border-t border-border flex items-center justify-between bg-bg/50 shrink-0">
                 <div className="text-[12px] text-muted">
                   <span className="font-semibold text-heading">{selectedResults.length}</span> programs compared

@@ -16,7 +16,7 @@ const counsellorSchema = new mongoose.Schema(
     totalOffers: { type: Number, default: 0 },
     isOnline: { type: Boolean, default: false },
 
-    // Recent assignments
+
     recentAssignments: [
       {
         studentName: { type: String },

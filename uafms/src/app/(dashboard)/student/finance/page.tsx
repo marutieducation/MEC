@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  BanknotesIcon, 
-  CalculatorIcon, 
+import {
+  BanknotesIcon,
+  CalculatorIcon,
   AcademicCapIcon,
   HomeIcon,
   ChevronRightIcon,
@@ -13,16 +13,16 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function FinancePlanner() {
-  const [tuition, setTuition] = useState(2500000); // 25L
-  const [livingMonth, setLivingMonth] = useState(60000); // 60k
+  const [tuition, setTuition] = useState(2500000);
+  const [livingMonth, setLivingMonth] = useState(60000);
   const [insurance, setInsurance] = useState(50000);
   const [duration, setDuration] = useState(2);
   const [currency, setCurrency] = useState('INR');
-  const [savings, setSavings] = useState(800000); // 8L
+  const [savings, setSavings] = useState(800000);
   const [showModal, setShowModal] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
-  // Derived Values
+
   const totalLiving = livingMonth * 12 * duration;
   const totalTuition = tuition * duration;
   const grandTotal = totalTuition + totalLiving + insurance;
@@ -44,7 +44,7 @@ export default function FinancePlanner() {
     }, 2000);
   };
 
-  // Internal Components
+
   const BreakdownItem = ({ label, amount, icon: Icon, color }: any) => (
     <div className="flex items-center justify-between p-4 bg-surface border border-border rounded-2xl transition-all hover:border-primary/30 group">
       <div className="flex items-center gap-4">
@@ -64,7 +64,7 @@ export default function FinancePlanner() {
 
   return (
     <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8 fade-in relative min-h-screen">
-      {/* Pre-Approval Modal */}
+      {}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-surface border border-border w-full max-w-md rounded-[40px] p-10 space-y-8 shadow-2xl scale-in relative overflow-hidden">
@@ -73,7 +73,7 @@ export default function FinancePlanner() {
                 <XMarkIcon className="w-6 h-6" />
               </button>
             </div>
-            
+
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
                 <ShieldCheckIcon className="w-10 h-10" />
@@ -96,7 +96,7 @@ export default function FinancePlanner() {
               </div>
             </div>
 
-            <button 
+            <button
               onClick={() => setShowModal(false)}
               className="w-full py-5 bg-heading text-white font-black text-xs uppercase tracking-[2px] rounded-2xl hover:opacity-95 transition-all shadow-xl active:scale-[0.98]"
             >
@@ -106,20 +106,20 @@ export default function FinancePlanner() {
         </div>
       )}
 
-      {/* Header */}
+      {}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-4xl md:text-5xl font-black text-heading tracking-tight">Finance <span className="text-primary italic">Planner.</span></h1>
           <p className="text-lg text-body">Calculate the total cost of your education and check eligibility.</p>
         </div>
         <div className="flex bg-surface border border-border rounded-2xl p-1.5 shadow-sm self-start">
-          <button 
+          <button
             onClick={() => setCurrency('INR')}
             className={`px-6 py-2 text-xs font-bold rounded-xl transition-all ${currency === 'INR' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-muted hover:text-body'}`}
           >
             INR
           </button>
-          <button 
+          <button
             onClick={() => setCurrency('USD')}
             className={`px-6 py-2 text-xs font-bold rounded-xl transition-all ${currency === 'USD' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-muted hover:text-body'}`}
           >
@@ -129,17 +129,17 @@ export default function FinancePlanner() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left: Inputs */}
+        {}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-surface border border-border rounded-[32px] p-8 space-y-8 shadow-sm">
             <h3 className="text-xs font-black text-heading uppercase tracking-[3px] border-b border-border pb-6 flex items-center justify-between">
               Variable Costs <CalculatorIcon className="w-4 h-4 text-muted" />
             </h3>
-            
+
             <div className="space-y-8">
               <div className="group">
                 <label className="text-[10px] font-black text-muted uppercase tracking-[2px] mb-4 block group-hover:text-primary transition-colors">Yearly Tuition Fee</label>
-                <input 
+                <input
                   type="range" min="100000" max="5000000" step="50000"
                   value={tuition} onChange={(e) => setTuition(Number(e.target.value))}
                   className="w-full h-1.5 bg-bg rounded-lg appearance-none cursor-pointer accent-primary border border-border/50"
@@ -152,7 +152,7 @@ export default function FinancePlanner() {
 
               <div className="group">
                 <label className="text-[10px] font-black text-muted uppercase tracking-[2px] mb-4 block group-hover:text-primary transition-colors">Monthly Living</label>
-                <input 
+                <input
                   type="range" min="10000" max="200000" step="5000"
                   value={livingMonth} onChange={(e) => setLivingMonth(Number(e.target.value))}
                   className="w-full h-1.5 bg-bg rounded-lg appearance-none cursor-pointer accent-primary border border-border/50"
@@ -165,7 +165,7 @@ export default function FinancePlanner() {
 
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-muted uppercase tracking-[2px] block">Course Duration</label>
-                <select 
+                <select
                   value={duration} onChange={(e) => setDuration(Number(e.target.value))}
                   className="w-full bg-bg border border-border rounded-2xl px-5 py-3.5 text-sm font-black text-heading focus:border-primary focus:outline-none transition-all shadow-sm"
                 >
@@ -183,7 +183,7 @@ export default function FinancePlanner() {
               </div>
               <h4 className="text-sm font-black text-heading mb-2 uppercase tracking-tight">Loan Eligibility</h4>
               <p className="text-[12px] text-body mb-6 leading-relaxed font-medium">Based on your target profile, you are eligible for up to **{format(grandTotal * 0.85)}** with deferred payments.</p>
-              <button 
+              <button
                 onClick={() => setShowModal(true)}
                 className="w-full py-3.5 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-[2px] rounded-xl hover:bg-primary hover:text-white transition-all active:scale-[0.98]"
               >
@@ -193,11 +193,11 @@ export default function FinancePlanner() {
           </div>
         </div>
 
-        {/* Right: Results */}
+        {}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-[#0B0F19] rounded-[48px] p-10 md:p-12 text-white relative overflow-hidden border border-white/5 shadow-2xl">
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full -mr-64 -mt-64 blur-[120px]"></div>
-            
+
             <div className="relative z-10 space-y-10">
               <div className="space-y-2">
                 <p className="text-[11px] font-black text-primary uppercase tracking-[4px] opacity-80">Total Estimated Budget</p>
@@ -230,7 +230,7 @@ export default function FinancePlanner() {
             <h3 className="text-xs font-black text-heading flex items-center gap-3 uppercase tracking-[3px]">
               <CalculatorIcon className="w-6 h-6 text-primary" /> Savings & Grants Tracker
             </h3>
-            
+
             <div className="space-y-10">
               <div className="relative pb-4">
                 <div className="flex justify-between text-[11px] font-black uppercase tracking-[2px] mb-4">
@@ -238,18 +238,18 @@ export default function FinancePlanner() {
                   <span className="text-primary">{savingsPercent}% Achieved</span>
                 </div>
                 <div className="h-4 w-full bg-bg rounded-full overflow-hidden border border-border/50 p-1">
-                  <div 
-                    className="h-full bg-primary rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(255,107,0,0.3)]" 
+                  <div
+                    className="h-full bg-primary rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(255,107,0,0.3)]"
                     style={{ width: `${savingsPercent}%` }}
                   ></div>
                 </div>
-                
+
                 <div className="mt-8 p-6 bg-bg/50 rounded-[32px] border border-border/50 border-dashed space-y-4">
                   <p className="text-xs text-body font-bold leading-relaxed">
                     Adjust your currently saved amount to see your financial gap.
                   </p>
                   <div className="flex items-center gap-6">
-                    <input 
+                    <input
                       type="range" min="0" max={grandTotal} step="10000"
                       value={savings} onChange={(e) => setSavings(Number(e.target.value))}
                       className="flex-1 h-1.5 bg-border rounded-lg appearance-none cursor-pointer accent-primary"
@@ -258,8 +258,8 @@ export default function FinancePlanner() {
                   </div>
                 </div>
               </div>
-              
-              <button 
+
+              <button
                 onClick={handleDownload}
                 disabled={downloading}
                 className={`w-full py-5 ${downloading ? 'bg-bg' : 'bg-heading hover:opacity-90'} text-white text-[11px] font-black uppercase tracking-[3px] rounded-2xl transition-all flex items-center justify-center gap-4 shadow-xl active:scale-[0.98]`}

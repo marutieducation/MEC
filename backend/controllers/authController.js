@@ -3,34 +3,34 @@ const VerificationCode = require('../models/VerificationCode');
 const generateToken = require('../utils/generateToken');
 const { sendEmail } = require('../utils/emailService');
 
-// @desc    Register new user
-// @route   POST /api/auth/register
+
+
 const register = async (req, res) => {
   try {
-    const { 
+    const {
       firstName, lastName, email, password, role, adminCode,
       phone, city, selectedDestinations, selectedDegrees,
       specialization, intakeTerm, budget
     } = req.body;
 
-    // Check if user exists
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
 
-    // Role-specific validation
+
     let vCode = null;
     if (role === 'admin' || role === 'university_partner') {
       if (!adminCode) {
         return res.status(403).json({ message: `${role === 'admin' ? 'Admin' : 'Partner'} Verification Code is required` });
       }
-      
+
       const normalizedCode = adminCode.trim().toUpperCase();
       const codeType = role === 'admin' ? 'admin_registration' : 'university_partner';
-      
-      vCode = await VerificationCode.findOne({ 
-        code: { $regex: new RegExp(`^${normalizedCode}$`, 'i') }, 
+
+      vCode = await VerificationCode.findOne({
+        code: { $regex: new RegExp(`^${normalizedCode}$`, 'i') },
         type: codeType,
         expiresAt: { $gt: new Date() }
       });
@@ -40,8 +40,8 @@ const register = async (req, res) => {
       }
     }
 
-    // Enable 2FA for admin/partner
-    // DISABLED for admin as per user request
+
+
     const twoFactorEnabled = role === 'university_partner';
 
     const user = await User.create({
@@ -51,7 +51,7 @@ const register = async (req, res) => {
       password,
       role: role || 'student',
       twoFactorEnabled,
-      // Student specific fields
+
       phone,
       city,
       selectedDestinations,
@@ -59,11 +59,11 @@ const register = async (req, res) => {
       specialization,
       intakeTerm,
       budget,
-      profileCompleted: true // Mark profile as completed for students who register this way
+      profileCompleted: true
     });
 
 
-    // Send welcome email (non-blocking)
+
     sendEmail({
       to: email,
       subject: 'Welcome to MEC UAFMS',
@@ -88,14 +88,14 @@ const register = async (req, res) => {
   }
 };
 
-// @desc    Forgot Password (Mock)
-// @route   POST /api/auth/forgot-password
+
+
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
-      // Return 200 even if not found to prevent user enumeration
+
       return res.status(200).json({ message: 'If an account exists, a reset link has been sent.' });
     }
 
@@ -105,12 +105,12 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
+
+
 const login = async (req, res) => {
   const startTime = Date.now();
   console.log(`\n[AUTH] 🔑 Login attempt: ${req.body.email} (IP: ${req.ip})`);
-  
+
   try {
     const { email, password, role } = req.body;
 
@@ -120,11 +120,11 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Role verification
+
     if (role && user.role !== role) {
       console.warn(`[AUTH] ⚠️ Role mismatch: Expecting ${role}, found ${user.role} for ${email}`);
-      return res.status(401).json({ 
-        message: `Access denied. This account is registered as a ${user.role}.` 
+      return res.status(401).json({
+        message: `Access denied. This account is registered as a ${user.role}.`
       });
     }
 
@@ -138,15 +138,15 @@ const login = async (req, res) => {
 
     console.log(`[AUTH] ✅ Success: ${email} logged in. Generating token...`);
 
-    // If 2FA enabled, generate and send OTP
-    // Skip 2FA for Admin role as per user request
+
+
     if (user.twoFactorEnabled && user.role !== 'admin') {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       user.twoFactorCode = otp;
-      user.twoFactorExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+      user.twoFactorExpiry = new Date(Date.now() + 10 * 60 * 1000);
       await user.save();
 
-      // Send OTP email (non-blocking)
+
       console.log(`\n${'='.repeat(40)}`);
       console.log(`🔐 SECURITY CODE [${user.role.toUpperCase()}]: ${user.email}`);
       console.log(`👉 CODE: ${otp}`);
@@ -183,8 +183,8 @@ const login = async (req, res) => {
   }
 };
 
-// @desc    Verify 2FA OTP
-// @route   POST /api/auth/verify-2fa
+
+
 const verify2FA = async (req, res) => {
   try {
     const { userId, otp } = req.body;
@@ -194,22 +194,22 @@ const verify2FA = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // DEV BYPASS
+
     if (otp === '123456') {
        console.log('--- 2FA DEV BYPASS ACTIVATED ---');
     } else {
-      // Check expiry FIRST
+
       if (user.twoFactorExpiry && user.twoFactorExpiry < new Date()) {
         return res.status(400).json({ message: 'Verification code has expired' });
       }
 
-      // Then validate the OTP
+
       if (user.twoFactorCode !== otp) {
         return res.status(400).json({ message: 'Invalid verification code' });
       }
     }
 
-    // Clear OTP
+
     user.twoFactorCode = null;
     user.twoFactorExpiry = null;
     await user.save();
@@ -228,19 +228,19 @@ const verify2FA = async (req, res) => {
   }
 };
 
-// @desc    Get current user
-// @route   GET /api/auth/me
+
+
 const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).populate('universityId');
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Update user profile
-// @route   PUT /api/auth/profile
+
+
 const updateProfile = async (req, res) => {
   try {
     const allowedFields = [

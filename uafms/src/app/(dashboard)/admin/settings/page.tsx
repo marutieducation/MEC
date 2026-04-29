@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  BuildingOfficeIcon, 
-  ShieldCheckIcon, 
-  BellIcon, 
+import {
+  BuildingOfficeIcon,
+  ShieldCheckIcon,
+  BellIcon,
   ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { api } from '@/lib/api';
 
-// Icon mapping for groups
+
 const groupIcons: Record<string, React.ElementType> = {
   'Platform Configuration': BuildingOfficeIcon,
   'Security & Access': ShieldCheckIcon,
@@ -31,7 +31,7 @@ export default function AdminSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
-  // Track pending changes as a flat key-value map
+
   const [pendingChanges, setPendingChanges] = useState<Record<string, string | boolean | number>>({});
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function AdminSettingsPage() {
   const handleToggle = (key: string, currentValue: boolean) => {
     const newValue = !currentValue;
     setPendingChanges((prev) => ({ ...prev, [key]: newValue }));
-    // Also update local state for immediate UI feedback
+
     setSettingsGroups((prev) => {
       const updated = { ...prev };
       for (const group in updated) {
@@ -117,7 +117,7 @@ export default function AdminSettingsPage() {
               {saveMessage}
             </span>
           )}
-          <button 
+          <button
             onClick={handleSave}
             disabled={isSaving || Object.keys(pendingChanges).length === 0}
             className="h-11 px-6 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -140,7 +140,7 @@ export default function AdminSettingsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Navigation */}
+          {}
           <div className="lg:col-span-1 space-y-2">
             {groupNames.map((groupName) => {
               const Icon = groupIcons[groupName] || BuildingOfficeIcon;
@@ -149,8 +149,8 @@ export default function AdminSettingsPage() {
                   key={groupName}
                   onClick={() => setActiveGroup(groupName)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
-                    activeGroup === groupName 
-                      ? 'bg-primary text-white shadow-md' 
+                    activeGroup === groupName
+                      ? 'bg-primary text-white shadow-md'
                       : 'bg-surface text-muted hover:bg-bg border border-transparent hover:border-border'
                   }`}
                 >
@@ -167,9 +167,9 @@ export default function AdminSettingsPage() {
             </div>
           </div>
 
-          {/* Settings Content */}
+          {}
           <div className="lg:col-span-3">
-            <motion.div 
+            <motion.div
               key={activeGroup}
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -191,15 +191,15 @@ export default function AdminSettingsPage() {
                     </div>
                     <div className="flex items-center gap-4">
                       {setting.type === 'toggle' ? (
-                        <button 
+                        <button
                           onClick={() => handleToggle(setting.key, setting.value as boolean)}
                           className={`w-12 h-6 rounded-full relative transition-colors ${setting.value ? 'bg-success' : 'bg-muted/30'}`}
                         >
                           <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${setting.value ? 'left-7' : 'left-1'}`}></div>
                         </button>
                       ) : (
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           value={setting.value as string}
                           onChange={(e) => handleTextChange(setting.key, e.target.value)}
                           className="h-10 px-4 bg-bg border border-border rounded-xl text-sm font-bold text-heading focus:ring-2 focus:ring-primary/20 outline-none min-w-[200px]"

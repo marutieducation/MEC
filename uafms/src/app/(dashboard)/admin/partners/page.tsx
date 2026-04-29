@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { 
-  ChatBubbleLeftRightIcon, 
-  BuildingLibraryIcon, 
+import {
+  ChatBubbleLeftRightIcon,
+  BuildingLibraryIcon,
   MapPinIcon,
   CheckCircleIcon,
   ClockIcon
@@ -27,11 +27,11 @@ export default function PartnerRepliesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           {replies.map((r, i) => (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              key={r.id} 
+              key={r.id}
               className="bg-surface border border-border rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow group cursor-pointer"
             >
               <div className="flex justify-between items-start mb-4">
@@ -97,7 +97,7 @@ export default function PartnerRepliesPage() {
                <CheckCircleIcon className="w-24 h-24" />
             </div>
           </div>
-          
+
           <div className="bg-surface border border-border rounded-3xl p-6 shadow-sm">
             <h3 className="text-sm font-black text-muted uppercase tracking-widest mb-6">Partner Health</h3>
             <div className="space-y-6">

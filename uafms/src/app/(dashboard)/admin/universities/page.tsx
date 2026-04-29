@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  BuildingLibraryIcon, 
-  PlusIcon, 
-  TrashIcon, 
+import {
+  BuildingLibraryIcon,
+  PlusIcon,
+  TrashIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
   MapPinIcon,
@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getUniversityLogo } from '@/lib/universityLogos';
 
 interface Course {
   name: string;
@@ -41,7 +42,7 @@ export default function UniversityManagement() {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
-  // Form State
+
   const [formData, setFormData] = useState({
     name: '',
     location: '',
@@ -88,7 +89,7 @@ export default function UniversityManagement() {
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`)) return;
-    
+
     setIsLoading(true);
     try {
       await api.delete(`/universities/${id}`);
@@ -100,6 +101,7 @@ export default function UniversityManagement() {
       setIsLoading(false);
     }
   };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -139,8 +141,8 @@ export default function UniversityManagement() {
         await api.post('/universities', payload);
         setStatus({ type: 'success', message: 'University added successfully!' });
       }
-      
-      // Reset and switch back
+
+
       setTimeout(() => {
         setView('list');
         setEditingId(null);
@@ -149,16 +151,16 @@ export default function UniversityManagement() {
         setStatus(null);
       }, 1500);
     } catch (err: any) {
-      setStatus({ 
-        type: 'error', 
-        message: err.response?.data?.message || `Failed to ${view === 'edit' ? 'update' : 'add'} university` 
+      setStatus({
+        type: 'error',
+        message: err.response?.data?.message || `Failed to ${view === 'edit' ? 'update' : 'add'} university`
       });
       setIsLoading(false);
     }
   };
 
-  const filteredUnis = (universities || []).filter(u => 
-    u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredUnis = (universities || []).filter(u =>
+    u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.location?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -184,9 +186,9 @@ export default function UniversityManagement() {
             <>
               <div className="relative w-64">
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                <input 
-                  type="text" 
-                  placeholder="Search directory..." 
+                <input
+                  type="text"
+                  placeholder="Search directory..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full h-11 pl-10 pr-4 bg-surface border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm"
@@ -242,20 +244,16 @@ export default function UniversityManagement() {
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 bg-bg rounded-xl flex items-center justify-center border border-border overflow-hidden shrink-0">
-                        {uni.logo ? (
-                          <img src={uni.logo} alt={uni.name} className="w-full h-full object-contain" />
-                        ) : (
-                          <BuildingLibraryIcon className="w-6 h-6 text-muted" />
-                        ) }
+                        <img src={getUniversityLogo(uni.name)} alt={uni.name} className="w-full h-full object-contain" />
                       </div>
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button 
+                         <button
                           onClick={(e) => { e.stopPropagation(); handleEdit(uni); }}
                           className="p-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg transition-all"
                          >
-                           <PlusIcon className="w-4 h-4" /> {/* Using Plus for Edit as a general action icon, or could use another */}
+                           <PlusIcon className="w-4 h-4" /> {}
                          </button>
-                         <button 
+                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(uni._id, uni.name); }}
                           className="p-2 bg-danger/10 text-danger hover:bg-danger hover:text-white rounded-lg transition-all"
                          >
@@ -267,7 +265,7 @@ export default function UniversityManagement() {
                     <h3 className="text-base font-bold text-heading group-hover:text-primary transition-colors line-clamp-1 mb-1">
                       {uni.name}
                     </h3>
-                    
+
                     <div className="flex items-center gap-1 text-muted text-xs font-medium mb-4">
                       <MapPinIcon className="w-3.5 h-3.5" />
                       {uni.location}, {uni.country}
@@ -302,18 +300,23 @@ export default function UniversityManagement() {
                 <h3 className="text-lg font-bold text-heading flex items-center gap-2">
                    <BuildingLibraryIcon className="w-5 h-5 text-primary" /> Basic Information
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-xs font-black uppercase tracking-widest text-muted">University Name</label>
-                    <input
-                      required
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="w-full h-12 px-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                      placeholder="e.g. IIT Delhi"
-                    />
+                    <div className="flex gap-3">
+                      <input
+                        required
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className="flex-1 h-12 px-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                        placeholder="e.g. IIT Delhi"
+                      />
+                      <div className="w-12 h-12 bg-white rounded-xl border border-border flex items-center justify-center p-1.5 shadow-sm shrink-0 overflow-hidden">
+                        <img src={getUniversityLogo(formData.name)} alt="Logo Preview" className="w-full h-full object-contain" />
+                      </div>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-black uppercase tracking-widest text-muted">Location</label>
@@ -337,14 +340,15 @@ export default function UniversityManagement() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-muted">Logo URL</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-muted">Logo URL (optional override)</label>
                     <input
                       name="logo"
                       value={formData.logo}
                       onChange={handleInputChange}
                       className="w-full h-12 px-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                      placeholder="https://..."
+                      placeholder="Leave blank to use static logo map"
                     />
+                    <p className="text-[11px] text-muted">Logos are automatically resolved from the built-in university map. Only set this if you need a manual override.</p>
                   </div>
                 </div>
 
@@ -377,8 +381,8 @@ export default function UniversityManagement() {
 
                 <div className="space-y-4">
                   {courses.map((course, index) => (
-                    <motion.div 
-                      key={index} 
+                    <motion.div
+                      key={index}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       className="p-4 bg-bg border border-border rounded-2xl relative group"
