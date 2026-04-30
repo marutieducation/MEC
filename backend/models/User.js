@@ -54,10 +54,18 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
+
+  // If the password already looks like a bcrypt hash (starts with $2b$ and is 60 chars),
+  // and it wasn't explicitly modified (handled by isModified), do not hash it again.
+  if (this.password && this.password.startsWith('$2') && this.password.length === 60) {
+    return next();
+  }
+
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
+
 
 
 userSchema.methods.matchPassword = async function (enteredPassword) {

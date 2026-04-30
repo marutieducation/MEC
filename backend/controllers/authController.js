@@ -142,9 +142,11 @@ const login = async (req, res) => {
 
     if (user.twoFactorEnabled && user.role !== 'admin') {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      user.twoFactorCode = otp;
-      user.twoFactorExpiry = new Date(Date.now() + 10 * 60 * 1000);
-      await user.save();
+      await User.findByIdAndUpdate(user._id, {
+        twoFactorCode: otp,
+        twoFactorExpiry: new Date(Date.now() + 10 * 60 * 1000)
+      });
+
 
 
       console.log(`\n${'='.repeat(40)}`);
@@ -210,9 +212,10 @@ const verify2FA = async (req, res) => {
     }
 
 
-    user.twoFactorCode = null;
-    user.twoFactorExpiry = null;
-    await user.save();
+    await User.findByIdAndUpdate(user._id, {
+      twoFactorCode: null,
+      twoFactorExpiry: null
+    });
 
     res.json({
       _id: user._id,
