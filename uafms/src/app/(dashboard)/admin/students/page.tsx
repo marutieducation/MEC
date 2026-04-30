@@ -207,7 +207,7 @@ export default function StudentListPage() {
                       <td className="px-6 py-5 text-right pr-6">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
-                            onClick={() => router.push(`/admin/students/${s._id}/documents`)}
+                            onClick={() => router.push(`/admin/students/documents?id=${s._id}`)}
                             className="p-2 bg-info/10 text-info hover:bg-info hover:text-white rounded-lg transition-all text-[11px] font-black uppercase tracking-widest flex items-center gap-1"
                           >
                             <DocumentTextIcon className="w-3.5 h-3.5" /> Docs

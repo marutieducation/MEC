@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import {
   CheckCircleIcon,
@@ -68,8 +68,9 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: '📄 Other',
 };
 
-export default function StudentDocumentsPage() {
-  const { id } = useParams<{ id: string }>();
+function StudentDocumentsContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
   const router = useRouter();
 
   const [student, setStudent] = useState<Student | null>(null);
@@ -87,6 +88,7 @@ export default function StudentDocumentsPage() {
   const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
 
   const fetchData = useCallback(async () => {
+    if (!id) return;
     setIsLoading(true);
     setError(null);
     try {
@@ -134,6 +136,10 @@ export default function StudentDocumentsPage() {
       setIsActioning(false);
     }
   };
+
+  if (!id) {
+    return <div className="p-8 text-center text-danger font-bold">No student ID provided.</div>;
+  }
 
   const uploaded = documents.length;
   const verified = documents.filter(d => d.status === 'verified').length;
@@ -410,5 +416,13 @@ export default function StudentDocumentsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function StudentDocumentsClient() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted animate-pulse font-bold">Loading...</div>}>
+      <StudentDocumentsContent />
+    </Suspense>
   );
 }

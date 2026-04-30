@@ -1,6 +1,6 @@
 
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http:
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000/api';
 
 
 const getToken = () => {
