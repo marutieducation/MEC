@@ -428,7 +428,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
               <p className="text-[12px] text-gray-500">© 2026 Maruti Education &amp; Consultancy. All rights reserved.</p>
               <div className="text-[12px] text-gray-500 bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                Made by <a href="https:
+                Made by <a href="https://github.com/rajkhare" target="_blank" className="font-bold hover:text-primary transition-colors">Raj Khare</a>
               </div>
             </div>
             <div className="flex gap-4">

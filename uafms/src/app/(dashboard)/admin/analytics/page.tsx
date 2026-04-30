@@ -101,7 +101,7 @@ export default function IntelligenceHub() {
          </div>
 
          <div className="bg-gradient-to-br from-primary to-primary-dark border border-primary-dark rounded-xl p-5 shadow-md relative overflow-hidden text-white">
-            <div className="absolute right-0 top-0 w-full h-full bg-[url('https:
+            <div className="absolute right-0 top-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none"></div>
             <div className="flex items-start justify-between relative z-10">
                <div>
                   <p className="text-[12px] font-bold text-primary-light uppercase tracking-wider mb-1">Active Partners</p>

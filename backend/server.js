@@ -57,7 +57,7 @@ const authLimiter = rateLimit({
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-  : ['http:
+  : ['http://localhost:3000', 'http://localhost:5000'];
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -146,7 +146,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 const serverInstance = server.listen(PORT, () => {
   console.log(`🚀 UAFMS Backend running on port ${PORT}`);
-  console.log(`   Health check: http:
+  console.log(`   Health check: http://localhost:${PORT}/api/health`);
 });
 
 

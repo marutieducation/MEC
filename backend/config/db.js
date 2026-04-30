@@ -30,7 +30,7 @@ const connectDB = async (retries = 5) => {
       if (attempt === retries) {
         console.warn('⚠️ All DB retry attempts to primary URI failed. Attempting fallback to local MongoDB...');
         try {
-          const fallbackUri = 'mongodb:
+          const fallbackUri = 'mongodb://127.0.0.1:27017/uafms';
           const conn = await mongoose.connect(fallbackUri, {
             maxPoolSize: 10,
             serverSelectionTimeoutMS: 5000,

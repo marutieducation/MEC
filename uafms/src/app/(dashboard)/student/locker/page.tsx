@@ -84,7 +84,7 @@ export default function DigitalLocker() {
   const downloadFile = async (id: string, name: string) => {
     try {
       const token = localStorage.getItem('uafms_token');
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http:
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
       const response = await fetch(`${apiBase}/documents/${id}/download`, {
         headers: {
           'Authorization': `Bearer ${token}`

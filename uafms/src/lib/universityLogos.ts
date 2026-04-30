@@ -66,7 +66,7 @@ export const getInitialsAvatar = (name: string): string => {
     .toUpperCase();
     
   const color = getUniversityColor(name).replace('#', '');
-  return `https:
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=${color}&color=fff&bold=true`;
 };
 
 

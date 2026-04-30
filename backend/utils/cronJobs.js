@@ -30,7 +30,7 @@ const initCronJobs = () => {
               <p>Please log in to your MEC dashboard and upload the required files to avoid delays in your processing.</p>
               <p><strong>Missing Items:</strong> ${app.missingDocuments.join(', ') || 'Pending verification'}</p>
               <br/>
-              <a href="${process.env.FRONTEND_URL || 'http:
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/student/applications"
                  style="background: #FF6B00; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
                  Complete Application
               </a>

@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { 
   HomeIcon, 
   DocumentTextIcon, 
@@ -98,26 +99,33 @@ export function Sidebar() {
                     studentNav;
 
   return (
-    <div className="flex bg-surface w-64 flex-col h-full border-r border-border transition-colors duration-300">
-      <div className="flex h-16 shrink-0 items-center px-6 border-b border-border">
-        <div className="flex items-center gap-3 group px-1">
+    <motion.div 
+      initial={{ x: -250 }}
+      animate={{ x: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="flex flex-col h-full w-64 glass-panel border-r border-border/50 transition-colors duration-300 z-20"
+    >
+      <div className="flex h-[72px] shrink-0 items-center px-6 border-b border-border/30 bg-bg/20">
+        <div className="flex items-center gap-3 group px-1 cursor-pointer">
           <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-br from-primary to-primary-dark rounded-lg blur opacity-10 group-hover:opacity-30 transition duration-500"></div>
+            <div className="absolute -inset-2 bg-gradient-to-br from-primary to-primary-light rounded-xl blur-lg opacity-20 group-hover:opacity-60 transition duration-500 animate-pulse-slow"></div>
             <img 
               src="/logo.jpeg" 
               alt="MEC Logo" 
-              className="relative w-9 h-9 rounded-lg object-contain bg-white p-1 border border-border transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/10" 
+              className="relative w-10 h-10 rounded-xl object-contain bg-white p-1 border border-white/20 transition-all duration-300 group-hover:scale-105" 
             />
           </div>
-          <span className="text-xl font-bold tracking-tight text-heading">MEC UAFMS</span>
+          <span className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-heading to-primary-light">
+            MEC UAFMS
+          </span>
         </div>
       </div>
       
-      <div className="flex flex-1 flex-col overflow-y-auto px-4 py-6">
+      <div className="flex flex-1 flex-col overflow-y-auto px-4 py-6 scrollbar-hide">
         <nav className="flex-1 space-y-8">
           {navCategories.map((group) => (
-            <div key={group.category} className="space-y-2">
-              <h3 className="px-3 text-[10px] font-black text-muted uppercase tracking-[2px]">
+            <div key={group.category} className="space-y-3">
+              <h3 className="px-3 text-[10px] font-black text-muted uppercase tracking-[0.2em]">
                 {group.category}
               </h3>
               <div className="space-y-1">
@@ -127,16 +135,25 @@ export function Sidebar() {
                     <Link
                       key={item.name}
                       href={item.href}
-                      className={`group flex items-center px-3 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                        isActive 
-                        ? 'bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(255,107,0,0.2)]' 
-                        : 'text-body hover:text-heading hover:bg-bg'
-                      }`}
+                      className="block relative group"
                     >
-                      <item.icon className={`mr-3 h-5 w-5 transition-colors ${
-                        isActive ? 'text-primary' : 'text-muted group-hover:text-primary'
-                      }`} aria-hidden="true" />
-                      {item.name}
+                      {isActive && (
+                        <motion.div
+                          layoutId="active-nav"
+                          className="absolute inset-0 bg-primary/10 rounded-xl border border-primary/20 shadow-[inset_0_0_15px_rgba(var(--primary-color),0.1)]"
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                      <div className={`relative flex items-center px-3 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${
+                        isActive 
+                        ? 'text-primary' 
+                        : 'text-body hover:text-heading hover:bg-surface/50'
+                      }`}>
+                        <item.icon className={`mr-3 h-5 w-5 transition-transform duration-300 ${
+                          isActive ? 'text-primary scale-110' : 'text-muted group-hover:text-primary group-hover:scale-110'
+                        }`} aria-hidden="true" />
+                        {item.name}
+                      </div>
                     </Link>
                   );
                 })}
@@ -145,38 +162,44 @@ export function Sidebar() {
           ))}
         </nav>
         
-        
-        
-        {}
+        {/* Help Widget */}
         <div className="mt-8 px-3">
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 relative overflow-hidden group cursor-pointer">
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 relative overflow-hidden group cursor-pointer shadow-lg"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/40 transition-colors duration-500" />
             <div className="relative z-10">
-              <p className="text-[12px] font-bold text-heading mb-1">Need help?</p>
-              <p className="text-[10px] text-muted mb-3">Chat with our AI guide or a real counsellor.</p>
-              <div className="flex items-center text-[11px] font-bold text-primary group-hover:gap-2 transition-all">
-                Contact Support <CommandLineIcon className="w-3.5 h-3.5 ml-1" />
+              <p className="text-[13px] font-black text-heading mb-1">Need help?</p>
+              <p className="text-[11px] text-muted mb-3 font-medium">Chat with our AI guide or a real counsellor.</p>
+              <div className="flex items-center text-[11px] font-black text-primary group-hover:gap-2 transition-all">
+                Contact Support <CommandLineIcon className="w-4 h-4 ml-1" />
               </div>
             </div>
-            <QuestionMarkCircleIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-primary/5 group-hover:scale-110 transition-transform" />
-          </div>
+            <QuestionMarkCircleIcon className="absolute -right-3 -bottom-3 w-20 h-20 text-primary/10 group-hover:rotate-12 transition-transform duration-500" />
+          </motion.div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-border">
-          <div className="flex items-center px-3 py-3 rounded-2xl bg-bg border border-border hover:bg-surface transition-colors cursor-pointer group">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mr-3 text-primary text-xs font-bold border border-primary/20 group-hover:scale-105 transition-transform">
+        {/* User Profile Footer */}
+        <div className="mt-8 pt-6 border-t border-border/30">
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            className="flex items-center px-3 py-3 rounded-2xl bg-surface/40 backdrop-blur-md border border-border/50 hover:bg-surface/80 hover:border-primary/30 transition-all cursor-pointer group shadow-sm"
+          >
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center mr-3 text-white text-sm font-black shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform">
               {user?.firstName?.charAt(0) || 'U'}{user?.lastName?.charAt(0) || ''}
             </div>
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-heading font-bold text-sm truncate">{user?.firstName} {user?.lastName}</span>
-              <span className="text-muted text-[10px] font-black uppercase tracking-wider">
+              <span className="text-heading font-black text-sm truncate">{user?.firstName} {user?.lastName}</span>
+              <span className="text-primary text-[10px] font-black uppercase tracking-wider">
                 {user?.role?.replace('_', ' ') || 'Guest'}
               </span>
             </div>
-            <Cog6ToothIcon className="w-4 h-4 text-muted group-hover:text-body" />
-          </div>
+            <Cog6ToothIcon className="w-5 h-5 text-muted group-hover:text-primary transition-colors" />
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -184,18 +207,23 @@ export function Header() {
   const { logout } = useAuth();
 
   return (
-    <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-surface border-b border-border shadow-sm">
+    <motion.div 
+      initial={{ y: -50, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+      className="sticky top-0 z-10 flex h-[72px] flex-shrink-0 glass-panel border-b border-border/30 shadow-sm"
+    >
       <div className="flex flex-1 items-center justify-between px-6">
         <div className="flex flex-1 items-center">
           <form className="flex w-full md:ml-0" action="#" method="GET">
             <label htmlFor="search-field" className="sr-only">Search</label>
-            <div className="relative w-full text-muted max-w-md">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <SearchIcon className="h-4 w-4" aria-hidden="true" />
+            <div className="relative w-full text-muted max-w-lg group">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                <SearchIcon className="h-5 w-5 text-muted group-focus-within:text-primary transition-colors" aria-hidden="true" />
               </div>
               <input
                 id="search-field"
-                className="block h-9 w-full rounded-md border border-border bg-bg py-2 pl-10 pr-3 text-sm placeholder:text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm transition-all"
+                className="block h-11 w-full rounded-full border border-border/50 bg-surface/50 backdrop-blur-sm py-2 pl-12 pr-4 text-sm font-medium placeholder:text-muted focus:border-primary/50 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-inner"
                 placeholder="Search resources, universities, statuses..."
                 type="search"
                 name="search"
@@ -203,18 +231,24 @@ export function Header() {
             </div>
           </form>
         </div>
-        <div className="ml-4 flex items-center md:ml-6 gap-4">
-          <ThemeToggle />
-          <NotificationBell />
+        <div className="ml-4 flex items-center md:ml-6 gap-5">
+          <div className="flex items-center gap-2 bg-surface/50 backdrop-blur-sm p-1.5 rounded-full border border-border/50 shadow-sm">
+            <ThemeToggle />
+            <NotificationBell />
+          </div>
 
-          <button 
+          <div className="h-6 w-px bg-border/50 mx-2"></div>
+
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={logout}
-            className="text-sm font-medium text-danger hover:underline focus:outline-none"
+            className="text-sm font-bold text-danger px-4 py-2 rounded-xl hover:bg-danger/10 border border-transparent hover:border-danger/20 transition-all focus:outline-none"
           >
             Sign out
-          </button>
+          </motion.button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

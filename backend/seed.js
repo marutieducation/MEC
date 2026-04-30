@@ -115,26 +115,11 @@ const seed = async () => {
         requirements: ["High School / Bachelors", "Entrance Exam Based"]
       }));
 
-      
-      const logoMappings = {
-        'Alliance University': 'https:
-        'Manipal Academy': 'https:
-        'Parul University': 'https:
-        'SRM University': 'https:
-        'Amity University': 'https:
-        'Mahindra University': 'https:
-        'Symbiosis Institute of Tech': 'https:
-        'Karnavati University': 'https:
-      };
-
-      const logoUrl = logoMappings[name] || `https:
-
       return {
         name,
         location: data.loc,
-        about: "A premier institution known for excellence in education and holistic development.",
-        ranking: idx + 10,
-        logo: logoUrl,
+        description: "A premier institution known for excellence in education and holistic development.",
+        logo: '',
         officialDomain: data.domain,
         courses: coursesMap
       };

@@ -109,7 +109,7 @@ export default function SettingsAndCompliance() {
                  </h3>
                  <div className="bg-bg border border-border rounded-xl p-5 flex flex-col md:flex-row items-center gap-6">
                     <div className="w-full md:w-1/2 aspect-[16/9] bg-surface rounded-lg border border-border flex items-center justify-center shadow-inner relative overflow-hidden group">
-                       <Image width={800} height={400} alt="World Map" src="https:
+                       <Image width={800} height={400} alt="World Map" src="https://images.unsplash.com/photo-1589519160732-57fc498494f8?q=80&w=2070&auto=format&fit=crop" className="w-full h-full object-cover opacity-20 grayscale group-hover:scale-110 transition-transform duration-700" />
 
                        {}
                        <div className="absolute top-[48%] left-[68%] flex flex-col items-center group-hover:scale-110 transition-transform">
