@@ -480,7 +480,7 @@ export default function ControlTower() {
                               <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fontSize: 11, fontWeight: 700}} width={90} />
                               <Tooltip cursor={{fill: 'rgba(59, 130, 246, 0.05)'}} />
                               <Bar dataKey="value" name="Volume" radius={[0, 10, 10, 0]} barSize={24}>
-                                 {funnelData.map((entry, index) => (
+                                 {funnelData.map((entry: any, index: number) => (
                                     <Cell key={`cell-${index}`} fill={entry.fill} />
                                  ))}
                               </Bar>
