@@ -1,23 +1,11 @@
-{
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "uafms/package.json",
-      "use": "@vercel/next"
+      "source": "/api/(.*)",
+      "destination": "https://mec-backend-9uu9.onrender.com/api/$1"
     },
     {
-      "src": "backend/server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "backend/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "uafms/$1"
+      "source": "/(.*)",
+      "destination": "/uafms/$1"
     }
   ]
 }
