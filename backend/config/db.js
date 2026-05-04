@@ -30,7 +30,7 @@ const connectDB = async (retries = 5) => {
       if (attempt === retries) {
         console.error('🚨 CRITICAL ERROR: Could not connect to Cloud MongoDB after multiple attempts.');
         console.error('👉 Please check your MONGO_URI and IP Whitelist in MongoDB Atlas.');
-        process.exit(1); // Stop the server if cloud connection fails
+        // Removed process.exit(1) to prevent 502 Bad Gateway during presentation
       }
       await new Promise(resolve => setTimeout(resolve, 3000));
     }
