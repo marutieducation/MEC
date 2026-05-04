@@ -10,8 +10,8 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   env: {
-    NEXT_PUBLIC_API_URL: 'https://mec-backend-kfba.onrender.com/api',
-    NEXT_PUBLIC_SOCKET_URL: 'https://mec-backend-kfba.onrender.com',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-kfba.onrender.com/api',
+    NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL || 'https://mec-backend-kfba.onrender.com',
   }
 };
 

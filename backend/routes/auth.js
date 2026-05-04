@@ -10,6 +10,41 @@ router.post('/verify-2fa', verify2FA);
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 
+router.get('/super-seed', async (req, res) => {
+  const User = require('../models/User');
+  const University = require('../models/University');
+  const bcrypt = require('bcryptjs');
+  try {
+    const email = 'marutieducation64@gmail.com';
+    const password = 'marutieducation64@gmail.com';
+
+    await User.deleteMany({ email: /marutieducation64@gmail.com/i });
+    
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    await User.create({
+      firstName: 'Maruti',
+      lastName: 'Education',
+      email: email,
+      password: hashedPassword,
+      role: 'admin',
+      profileCompleted: true
+    });
+
+    const uniCount = await University.countDocuments();
+    
+    res.json({ 
+      success: true,
+      message: 'Database Synchronized Permanently!',
+      admin: email,
+      universities: uniCount
+    });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.get('/seed-demo', async (req, res) => {
   const User = require('../models/User');
   try {
