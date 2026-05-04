@@ -1,6 +1,11 @@
+const getBaseUrl = () => {
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:5000/api';
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-kfba.onrender.com/api';
+};
 
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000/api';
+const baseUrl = getBaseUrl();
 
 
 const getToken = () => {
@@ -38,7 +43,7 @@ const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   };
 
   try {
-    const response = await fetch(`${BASE_URL}${endpoint}`, config);
+    const response = await fetch(`${baseUrl}${endpoint}`, config);
     clearTimeout(timeoutId);
     
     let data;

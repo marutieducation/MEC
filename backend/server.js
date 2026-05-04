@@ -60,25 +60,13 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   : ['*'];
 
 app.use(cors({
-  origin: function (origin, callback) {
-
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-
-    if (process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
-
-    console.warn(`🚨 CORS Blocked: Origin ${origin} not in [${allowedOrigins.join(', ')}]`);
-    return callback(new Error('Not allowed by CORS'));
-  },
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
 }));
+
+app.options('*', cors());
 
 
 const io = new Server(server, {
