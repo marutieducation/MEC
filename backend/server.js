@@ -17,9 +17,12 @@ dotenv.config();
 const REQUIRED_ENV = ['MONGO_URI', 'JWT_SECRET'];
 const missingEnv = REQUIRED_ENV.filter(key => !process.env[key]);
 if (missingEnv.length > 0) {
-  console.error(`🚨 FATAL Error: Missing required env vars: ${missingEnv.join(', ')}`);
+  console.error(`🚨 Warning: Missing required env vars: ${missingEnv.join(', ')}`);
   console.error(`👉 Ensure these are set in your .env file or hosting provider's dashboard.`);
-  process.exit(1);
+  // Don't process.exit(1) on Vercel as it crashes the whole function
+  if (!process.env.VERCEL) {
+    process.exit(1);
+  }
 }
 
 
@@ -97,7 +100,9 @@ io.on('connection', (socket) => {
 });
 
 
-initCronJobs();
+if (!process.env.VERCEL) {
+  initCronJobs();
+}
 
 
 app.use(express.json({ limit: '10mb' }));
@@ -132,16 +137,21 @@ app.use(errorHandler);
 
 
 const PORT = process.env.PORT || 5000;
-const serverInstance = server.listen(PORT, () => {
-  console.log(`🚀 UAFMS Backend running on port ${PORT}`);
-  console.log(`   Health check: http://localhost:${PORT}/api/health`);
-});
+if (!process.env.VERCEL) {
+  server.listen(PORT, () => {
+    console.log(`🚀 UAFMS Backend running on port ${PORT}`);
+    console.log(`   Health check: http://localhost:${PORT}/api/health`);
+  });
+}
 
+// Export for Vercel
+module.exports = app;
 
 process.on('unhandledRejection', (err) => {
   console.error(`❌ Unhandled Rejection: ${err.message}`);
-
-  serverInstance.close(() => process.exit(1));
+  if (!process.env.VERCEL) {
+    serverInstance?.close(() => process.exit(1));
+  }
 });
 
 
