@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Scholarship = require('./models/Scholarship');
+require('dotenv').config();
 
 const scholarships = [
   {
@@ -9,7 +10,7 @@ const scholarships = [
     amount: '₹12,000/yr + Fee Waiver',
     deadline: 'Aug 15, 2024',
     match: 95,
-    applyUrl: 'https:
+    applyUrl: 'https://example.com/apply',
     category: 'merit',
     description: 'For UG students with family income up to 4.5L/yr.'
   },
@@ -20,7 +21,7 @@ const scholarships = [
     amount: '₹1,80,000 - ₹2,88,000/yr',
     deadline: 'Oct 30, 2024',
     match: 88,
-    applyUrl: 'https:
+    applyUrl: 'https://example.com/apply',
     category: 'research',
     description: 'Monthly stipend for full-time research scholars.'
   },
@@ -31,7 +32,7 @@ const scholarships = [
     amount: '₹1,44,000/yr + Fee Waiver',
     deadline: 'Aug 15, 2024',
     match: 95,
-    applyUrl: 'https:
+    applyUrl: 'https://example.com/apply',
     category: 'merit',
     description: 'For UG students with annual parental income within set threshold.'
   },
@@ -42,7 +43,7 @@ const scholarships = [
     amount: '₹2,00,000/yr',
     deadline: 'Dec 31, 2024',
     match: 85,
-    applyUrl: 'https:
+    applyUrl: 'https://example.com/apply',
     category: 'need',
     description: 'For meritorious students from low-income families in IITs.'
   },
@@ -53,7 +54,7 @@ const scholarships = [
     amount: '₹80,000/yr',
     deadline: 'Oct 15, 2024',
     match: 92,
-    applyUrl: 'https:
+    applyUrl: 'https://example.com/apply',
     category: 'merit',
     description: 'For students in top 1% of board exams or top 10k in JEE AIR.'
   },
@@ -64,7 +65,7 @@ const scholarships = [
     amount: '₹25,000/yr',
     deadline: 'Aug 30, 2024',
     match: 90,
-    applyUrl: 'https:
+    applyUrl: 'https://example.com/apply',
     category: 'female',
     description: 'Exclusively for first-year female students with family income < 8L.'
   }
@@ -72,7 +73,7 @@ const scholarships = [
 
 async function seedScholarships() {
   try {
-    await mongoose.connect('mongodb:
+    await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB');
 
 

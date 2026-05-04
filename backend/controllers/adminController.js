@@ -130,6 +130,21 @@ const getAnalytics = async (req, res) => {
     });
     const activePartners = await University.countDocuments({});
 
+    const recentApps = await Application.find({})
+      .populate('student', 'firstName lastName')
+      .populate('university', 'name')
+      .sort({ createdAt: -1 })
+      .limit(6);
+
+    const recentActivities = recentApps.map(app => ({
+      time: 'Recent',
+      user: `${app.student?.firstName || 'Student'} ${app.student?.lastName || ''}`,
+      action: `Applied to ${app.university?.name || 'University'}`,
+      color: 'bg-primary',
+      detail: `${app.course} • ${app.intakeTerm || '2024'}`,
+      createdAt: app.createdAt
+    }));
+
     res.json({
       success: true,
       data: {
@@ -141,6 +156,7 @@ const getAnalytics = async (req, res) => {
         funnelData,
         revenueData,
         trendData,
+        recentActivities,
         activePartners,
         kpis: {
           totalRevenue: totalRevenue >= 10000000

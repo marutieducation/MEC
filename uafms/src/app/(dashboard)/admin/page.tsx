@@ -153,20 +153,19 @@ export default function ControlTower() {
     );
   }
 
-  const funnelData = [
-    { name: 'Total Leads', value: 540, fill: '#F8FAFC' },
-    { name: 'Applications', value: 320, fill: '#E2E8F0' },
-    { name: 'Offer Letters', value: 124, fill: '#3B82F6' },
-    { name: 'Enrolled', value: 85, fill: '#10B981' },
+  const funnelData = analytics?.funnelData?.map((d: any, i: number) => ({
+    name: d.name,
+    value: d.students,
+    fill: i === 0 ? '#F8FAFC' : i === 1 ? '#E2E8F0' : i === 2 ? '#3B82F6' : '#10B981'
+  })) || [
+    { name: 'Leads', value: 0, fill: '#F8FAFC' },
+    { name: 'Verified', value: 0, fill: '#E2E8F0' },
+    { name: 'Applied', value: 0, fill: '#3B82F6' },
+    { name: 'Offers', value: 0, fill: '#10B981' },
   ];
 
   const fallbackRevData = [
-    { month: 'Jan', rev: 450000, revenue: 450000 },
-    { month: 'Feb', rev: 820000, revenue: 820000 },
-    { month: 'Mar', rev: 670000, revenue: 670000 },
-    { month: 'Apr', rev: 1100000, revenue: 1100000 },
-    { month: 'May', rev: 1450000, revenue: 1450000 },
-    { month: 'Jun', rev: 1900000, revenue: 1900000 },
+    { month: 'No Data', rev: 0, revenue: 0 },
   ];
 
   const chartData = analytics?.trendData || fallbackRevData;
@@ -543,22 +542,22 @@ export default function ControlTower() {
                   </div>
 
                   <div className="flex-1 overflow-y-auto space-y-7 pr-2 custom-scrollbar">
-                     {[
-                        { time: '2m ago', user: 'Aditi S.', action: 'Applied to IIT Bombay', color: 'bg-success', detail: 'M.Tech CSE • GATE 740' },
-                        { time: '15m ago', user: 'Rajiv K.', action: 'Case Escalated', color: 'bg-danger', detail: 'OBC Certificate Mismatch' },
-                        { time: '1h ago', user: 'Vikram M.', action: 'Deposit Paid', color: 'bg-info', detail: '₹1.2L • BITS Pilani' },
-                        { time: '3h ago', user: 'Ananya P.', action: 'New Inquiry', color: 'bg-primary', detail: 'Course: MBA (IIM-A)' },
-                        { time: '5h ago', user: 'IIT Delhi', action: 'Offer Issued', color: 'bg-success', detail: 'Student: Amrit S.' },
-                        { time: '1d ago', user: 'System', action: 'Cron Jobs Sync', color: 'bg-muted', detail: 'Health Check: 100%' }
-                     ].map((p, i) => (
+                    {(!analytics?.recentActivities || analytics.recentActivities.length === 0) ? (
+                      <div className="text-center py-20 text-muted text-sm font-medium">
+                        Waiting for global student activity...
+                      </div>
+                    ) : (
+                      analytics.recentActivities.map((p: any, i: number) => (
                         <div key={i} className="flex gap-4 group cursor-default">
                            <div className="flex flex-col items-center">
-                              <div className={`w-3 h-3 rounded-full ${p.color} ring-4 ring-bg relative z-10 transition-transform group-hover:scale-125`}></div>
-                              {i !== 5 && <div className="flex-1 w-0.5 bg-border -my-1"></div>}
+                              <div className={`w-3 h-3 rounded-full ${p.color || 'bg-primary'} ring-4 ring-bg relative z-10 transition-transform group-hover:scale-125`}></div>
+                              {i !== analytics.recentActivities.length - 1 && <div className="flex-1 w-0.5 bg-border -my-1"></div>}
                            </div>
                            <div className="pb-2">
                               <div className="flex items-center gap-2 mb-1">
-                                 <p className="text-[10px] font-bold text-muted uppercase tracking-widest leading-none">{p.time}</p>
+                                 <p className="text-[10px] font-bold text-muted uppercase tracking-widest leading-none">
+                                   {p.createdAt ? new Date(p.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : p.time}
+                                 </p>
                                  <span className="w-1 h-1 rounded-full bg-border"></span>
                                  <p className="text-[11px] font-bold text-primary group-hover:underline leading-none">{p.user}</p>
                               </div>
@@ -566,7 +565,8 @@ export default function ControlTower() {
                               <p className="text-[12px] text-muted font-medium line-clamp-1">{p.detail}</p>
                            </div>
                         </div>
-                     ))}
+                      ))
+                    )}
                   </div>
 
                   <button className="mt-6 w-full py-3 bg-bg hover:bg-border text-heading text-xs font-bold rounded-xl transition-colors">

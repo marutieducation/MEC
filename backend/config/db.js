@@ -28,21 +28,10 @@ const connectDB = async (retries = 5) => {
     } catch (error) {
       console.error(`❌ DB Connection failed (Attempt ${attempt}): ${error.message}`);
       if (attempt === retries) {
-        console.warn('⚠️ All DB retry attempts to primary URI failed. Attempting fallback to local MongoDB...');
-        try {
-          const fallbackUri = 'mongodb://127.0.0.1:27017/uafms';
-          const conn = await mongoose.connect(fallbackUri, {
-            maxPoolSize: 10,
-            serverSelectionTimeoutMS: 5000,
-          });
-          console.log(`✅ Local MongoDB Fallback Connected: ${conn.connection.host}`);
-          return;
-        } catch (localErr) {
-          console.error(`🚨 Fallback to local MongoDB also failed: ${localErr.message}. Starting server in degraded mode (API will fail).`);
-          return;
-        }
+        console.error('🚨 CRITICAL ERROR: Could not connect to Cloud MongoDB after multiple attempts.');
+        console.error('👉 Please check your MONGO_URI and IP Whitelist in MongoDB Atlas.');
+        process.exit(1); // Stop the server if cloud connection fails
       }
-
       await new Promise(resolve => setTimeout(resolve, 3000));
     }
   }

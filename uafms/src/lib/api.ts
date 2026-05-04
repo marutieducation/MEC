@@ -28,14 +28,26 @@ const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     delete headers['Content-Type'];
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
   const config: RequestInit = {
     ...options,
     headers,
+    signal: controller.signal
   };
 
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
-    const data = await response.json().catch(() => null);
+    clearTimeout(timeoutId);
+    
+    let data;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json().catch(() => null);
+    } else {
+      data = { message: await response.text().catch(() => 'Response body could not be read') };
+    }
 
     if (!response.ok) {
 
@@ -53,7 +65,12 @@ const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     }
 
     return data;
-  } catch (error) {
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      console.error(`API Timeout (${endpoint}): Request took too long`);
+      throw new Error('Connection timed out. Please check if the server is running.');
+    }
     console.error(`API Error (${endpoint}):`, error);
     throw error;
   }

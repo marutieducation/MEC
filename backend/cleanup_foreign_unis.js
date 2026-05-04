@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 const University = require('./models/University');
+require('dotenv').config();
 
 async function cleanup() {
   try {
-    await mongoose.connect('mongodb:
+    await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB');
 
 

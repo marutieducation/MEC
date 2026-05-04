@@ -112,7 +112,8 @@ const login = async (req, res) => {
   console.log(`\n[AUTH] 🔑 Login attempt: ${req.body.email} (IP: ${req.ip})`);
 
   try {
-    const { email, password, role } = req.body;
+    let { email, password, role } = req.body;
+    email = email.trim().toLowerCase();
 
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
@@ -129,14 +130,14 @@ const login = async (req, res) => {
     }
 
     const isMatch = await user.matchPassword(password);
-    console.log(`[AUTH] 🛡️ Password match: ${isMatch} (Time taken: ${Date.now() - startTime}ms)`);
+    console.log(`[AUTH] 🛡️ Password match for ${email}: ${isMatch}`);
 
     if (!isMatch) {
       console.warn(`[AUTH] ❌ Password incorrect for: ${email}`);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    console.log(`[AUTH] ✅ Success: ${email} logged in. Generating token...`);
+    console.log(`[AUTH] ✅ Success: ${email} (Role: ${user.role}) logged in.`);
 
 
 

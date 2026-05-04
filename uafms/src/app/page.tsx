@@ -100,7 +100,37 @@ const universityPartners = [
 export default function LandingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStream, setActiveStream] = useState('Engineering');
+  const [colleges, setColleges] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  React.useEffect(() => {
+    const fetchColleges = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-kfba.onrender.com/api'}/universities/search?limit=8`);
+        const data = await res.json();
+        if (data.results) {
+          const mapped = data.results.map((r: any) => ({
+            id: r.courseId,
+            name: r.universityName,
+            location: r.location,
+            rank: 'Partner Institution',
+            courses: [r.courseName],
+            fee: r.fee,
+            logo: r.logo || getUniversityLogo(r.universityName),
+            tag: r.degreeLevel?.toUpperCase() || 'TOP RATED',
+            color: 'orange'
+          }));
+          setColleges(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to fetch colleges:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchColleges();
+  }, []);
 
   return (
     <div className="min-h-screen font-sans bg-bg text-body transition-colors duration-300">
@@ -273,43 +303,52 @@ export default function LandingPage() {
 
           {}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-            {featuredColleges.map(college => (
-              <div key={college.id} className="bg-surface border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all group cursor-pointer">
-                {}
-                <div className="h-28 bg-bg flex items-center justify-center p-4 relative">
-                  <img src={college.logo} alt={college.name} className="h-16 w-auto object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                  <div className={`absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold text-white ${college.color === 'blue' ? 'bg-blue-500' : college.color === 'orange' ? 'bg-orange-500' : college.color === 'green' ? 'bg-green-500' : 'bg-purple-500'}`}>
-                    {college.tag}
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-black text-[15px] text-heading group-hover:text-primary transition-colors">{college.name}</h3>
-                  <div className="flex items-center gap-1 text-muted text-[12px] mt-1 mb-2">
-                    <MapPinIcon className="w-3.5 h-3.5" />
-                    {college.location}
-                  </div>
-                  <div className="flex items-center gap-1 mb-3">
-                    {[1, 2, 3, 4, 5].map(s => <StarIcon key={s} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />)}
-                    <span className="text-[11px] text-muted ml-1">4.8</span>
-                  </div>
-                  <div className="text-[11px] text-muted font-semibold mb-2">{college.rank}</div>
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {college.courses.slice(0, 2).map(c => (
-                      <span key={c} className="bg-bg border border-border text-muted text-[10px] px-2 py-0.5 rounded-full font-medium">{c}</span>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-[10px] text-muted font-medium">Fees from</div>
-                      <div className="text-[14px] font-black text-heading">{college.fee}</div>
-                    </div>
-                    <Link href={`/signup?college=${encodeURIComponent(college.name)}`} className="px-3 py-1.5 bg-[#FF6B00] hover:bg-orange-600 text-white text-[11px] font-bold rounded-lg transition-colors">
-                      Apply Now
-                    </Link>
-                  </div>
-                </div>
+            {isLoading ? (
+              [1, 2, 4, 5, 6, 7, 8].map(i => (
+                <div key={i} className="h-64 bg-surface border border-border rounded-xl animate-pulse"></div>
+              ))
+            ) : colleges.length === 0 ? (
+              <div className="col-span-full py-20 text-center">
+                 <p className="text-muted">No universities found. The database is working, but please add some programs to see them here.</p>
               </div>
-            ))}
+            ) : (
+              colleges.map(college => (
+                <div key={college.id} className="bg-surface border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all group cursor-pointer">
+                  <div className="h-28 bg-bg flex items-center justify-center p-4 relative">
+                    <img src={college.logo} alt={college.name} className="h-16 w-auto object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <div className={`absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-orange-500`}>
+                      {college.tag}
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-black text-[15px] text-heading group-hover:text-primary transition-colors">{college.name}</h3>
+                    <div className="flex items-center gap-1 text-muted text-[12px] mt-1 mb-2">
+                      <MapPinIcon className="w-3.5 h-3.5" />
+                      {college.location}
+                    </div>
+                    <div className="flex items-center gap-1 mb-3">
+                      {[1, 2, 3, 4, 5].map(s => <StarIcon key={s} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />)}
+                      <span className="text-[11px] text-muted ml-1">4.8</span>
+                    </div>
+                    <div className="text-[11px] text-muted font-semibold mb-2">{college.rank}</div>
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {college.courses.slice(0, 2).map((c: any) => (
+                        <span key={c} className="bg-bg border border-border text-muted text-[10px] px-2 py-0.5 rounded-full font-medium">{c}</span>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-[10px] text-muted font-medium">Fees from</div>
+                        <div className="text-[14px] font-black text-heading">{college.fee}</div>
+                      </div>
+                      <Link href={`/signup?college=${encodeURIComponent(college.name)}`} className="px-3 py-1.5 bg-[#FF6B00] hover:bg-orange-600 text-white text-[11px] font-bold rounded-lg transition-colors">
+                        Apply Now
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
           <div className="text-center">
             <Link href="/signup" className="inline-flex items-center gap-2 text-[#FF6B00] font-bold hover:underline text-[14px]">
