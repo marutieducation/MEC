@@ -2,7 +2,8 @@ const getBaseUrl = () => {
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:5000/api';
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-9uu9.onrender.com/api';
+  // In production, use the relative /api path so Vercel can proxy it to Render
+  return process.env.NEXT_PUBLIC_API_URL || '/api';
 };
 
 const baseUrl = getBaseUrl();
