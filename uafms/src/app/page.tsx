@@ -108,9 +108,9 @@ export default function LandingPage() {
     const fetchColleges = async () => {
       try {
         // Wake up the server immediately
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-kfba.onrender.com/api'}/health`).catch(() => {});
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-9uu9.onrender.com/api'}/health`).catch(() => {});
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-kfba.onrender.com/api'}/universities/search?limit=8`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-9uu9.onrender.com/api'}/universities/search?limit=8`);
         const data = await res.json();
         if (data.results) {
           const mapped = data.results.map((r: any) => ({
