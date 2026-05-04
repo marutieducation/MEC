@@ -29,7 +29,7 @@ const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+  const timeoutId = setTimeout(() => controller.abort(), 120000); // 120s timeout
 
   const config: RequestInit = {
     ...options,
