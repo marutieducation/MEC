@@ -374,7 +374,7 @@ function StudentDocumentsContent() {
               </div>
               <div className="flex items-center gap-2">
                 <a
-                  href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}/${previewDoc.filePath}`}
+                  href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://mec-backend-9uu9.onrender.com'}/${previewDoc.filePath}`}
                   target="_blank"
                   download={previewDoc.originalName}
                   className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all"
@@ -390,7 +390,7 @@ function StudentDocumentsContent() {
             <div className="flex-1 overflow-auto p-4 bg-bg/50 min-h-[400px] flex items-center justify-center">
               {previewDoc.originalName?.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ? (
                 <img
-                  src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}/${previewDoc.filePath}`}
+                  src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://mec-backend-9uu9.onrender.com'}/${previewDoc.filePath}`}
                   alt={previewDoc.name}
                   className="max-w-full max-h-full rounded-lg object-contain"
                 />
@@ -401,7 +401,7 @@ function StudentDocumentsContent() {
                     <p className="font-bold text-heading">{previewDoc.originalName}</p>
                     <p className="text-sm text-muted mt-1">PDF preview not available in browser.</p>
                     <a
-                      href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}/${previewDoc.filePath}`}
+                      href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://mec-backend-9uu9.onrender.com'}/${previewDoc.filePath}`}
                       target="_blank"
                       download={previewDoc.originalName}
                       className="inline-flex items-center gap-2 mt-4 px-6 py-2 bg-primary text-white rounded-xl font-bold text-sm"

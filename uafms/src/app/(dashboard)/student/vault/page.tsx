@@ -211,7 +211,7 @@ export default function DocumentVault() {
                   )}
 
                   <div className="flex gap-2 mt-auto">
-                    <a href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}/${doc.filePath}`} target="_blank" className="flex-1 px-4 py-2 bg-bg hover:bg-surface border border-border rounded-xl text-[11px] font-bold text-center transition-colors">
+                    <a href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://mec-backend-9uu9.onrender.com'}/${doc.filePath}`} target="_blank" className="flex-1 px-4 py-2 bg-bg hover:bg-surface border border-border rounded-xl text-[11px] font-bold text-center transition-colors">
                       View Document
                     </a>
                   </div>
