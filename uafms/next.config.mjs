@@ -19,6 +19,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/register',
+        destination: '/signup',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -363,7 +363,7 @@ export default function LandingPage() {
             )}
           </div>
           <div className="text-center">
-            <Link href="/signup" className="inline-flex items-center gap-2 text-[#FF6B00] font-bold hover:underline text-[14px]">
+            <Link href="/search" className="inline-flex items-center gap-2 text-[#FF6B00] font-bold hover:underline text-[14px]">
               View All 500+ Colleges <ArrowRightIcon className="w-4 h-4" />
             </Link>
           </div>
@@ -376,7 +376,7 @@ export default function LandingPage() {
           <h2 className="text-[28px] font-black text-heading mb-8 text-center">Important Entrance Exams</h2>
           <div className="flex flex-wrap justify-center gap-3">
             {topExams.map(exam => (
-              <Link key={exam} href="/signup" className="px-5 py-2.5 bg-surface border border-border rounded-full text-[13px] font-bold text-body hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm">
+              <Link key={exam} href={`/search?exam=${encodeURIComponent(exam)}`} className="px-5 py-2.5 bg-surface border border-border rounded-full text-[13px] font-bold text-body hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm">
                 {exam}
               </Link>
             ))}
@@ -454,7 +454,7 @@ export default function LandingPage() {
               <h4 className="font-bold text-[14px] mb-4">Quick Links</h4>
               <div className="flex flex-col gap-2.5">
                 {['Find Colleges', 'Top Exams', 'Career Counselling', 'Scholarships', 'Study Abroad'].map(l => (
-                  <Link key={l} href="/signup" className="text-[13px] text-gray-400 hover:text-[#FF6B00] transition-colors">{l}</Link>
+                  <Link key={l} href="/search" className="text-[13px] text-gray-400 hover:text-[#FF6B00] transition-colors">{l}</Link>
                 ))}
               </div>
             </div>
@@ -462,7 +462,7 @@ export default function LandingPage() {
               <h4 className="font-bold text-[14px] mb-4">Top Streams</h4>
               <div className="flex flex-col gap-2.5">
                 {['Engineering', 'Medical', 'Management', 'Law', 'Arts & Humanities'].map(l => (
-                  <Link key={l} href="/signup" className="text-[13px] text-gray-400 hover:text-[#FF6B00] transition-colors">{l}</Link>
+                  <Link key={l} href="/search" className="text-[13px] text-gray-400 hover:text-[#FF6B00] transition-colors">{l}</Link>
                 ))}
               </div>
             </div>
@@ -470,7 +470,7 @@ export default function LandingPage() {
               <h4 className="font-bold text-[14px] mb-4">For Institutions</h4>
               <div className="flex flex-col gap-2.5">
                 {['Partner With Us', 'University Portal', 'Post Your Programs', 'Student Leads'].map(l => (
-                  <Link key={l} href="/login" className="text-[13px] text-gray-400 hover:text-[#FF6B00] transition-colors">{l}</Link>
+                  <Link key={l} href="/partner/register" className="text-[13px] text-gray-400 hover:text-[#FF6B00] transition-colors">{l}</Link>
                 ))}
               </div>
             </div>
