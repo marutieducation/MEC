@@ -34,6 +34,16 @@ export default function PartnerListPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
+  const OFFICIAL_PARTNERS = [
+    'Sinhgad Institutes', 'Mahindra University', 'Karnavati University', 'ICFAI University Jaipur',
+    'Swarrnim Startup & Innovation', 'Amity University', 'Symbiosis Institute of Tech', 'ICFAI Foundation',
+    'Jaipur National University', 'Ramaiah University', 'Sri Balaji University', 'Asia Pacific Institute',
+    'Pandit Deendayal Energy Univ', 'Symbiosis International Dubai', 'Indus University', 'SRM University',
+    'Sinhgad Management', 'SKIPS University', 'GLS University', 'Alliance University', 'Manipal Academy',
+    'MIT World Peace University', 'Parul University', 'Broadway Overseas Education', 'Symbiosis School for Liberal Arts',
+    'Ahmedabad Institute of Management', 'Sikkim University'
+  ];
+
 
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -54,7 +64,10 @@ export default function PartnerListPage() {
   const fetchUniversities = async () => {
     try {
       const res = await api.get('/universities');
-      setUniversities(Array.isArray(res) ? res : (res.data || []));
+      const allUnis = Array.isArray(res) ? res : (res.data || []);
+      // Filter for official 27
+      const official = allUnis.filter((uni: any) => OFFICIAL_PARTNERS.includes(uni.name));
+      setUniversities(official.length > 0 ? official : allUnis);
     } catch (err) {
       console.error('Failed to fetch universities', err);
     }
@@ -161,9 +174,9 @@ export default function PartnerListPage() {
                       <td className="px-6 py-5">
                         <div className="flex flex-col">
                           <div className="flex items-center gap-1.5 font-bold text-sm text-heading">
-                            <BuildingLibraryIcon className="w-4 h-4 text-primary" /> {p.universityId?.name || 'Unassigned'}
+                            <BuildingLibraryIcon className="w-4 h-4 text-primary" /> {typeof p.universityId === 'object' ? p.universityId?.name : 'Unassigned Institution'}
                           </div>
-                          <span className="text-xs text-muted font-medium">{p.universityId?.location || 'Unknown Location'}</span>
+                          <span className="text-xs text-muted font-medium">{typeof p.universityId === 'object' ? p.universityId?.location || 'Partner Location' : 'No Location Data'}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5">

@@ -32,12 +32,21 @@ interface University {
   logo: string;
   description: string;
   courses: Course[];
+  partnerUser?: string | { _id: string; firstName: string; lastName: string };
+}
+
+interface Partner {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
 export default function UniversityManagement() {
   const [view, setView] = useState<'list' | 'add' | 'edit'>('list');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [universities, setUniversities] = useState<University[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -49,6 +58,7 @@ export default function UniversityManagement() {
     country: 'India',
     logo: '',
     description: '',
+    partnerUser: '',
   });
 
   const [courses, setCourses] = useState<Course[]>([
@@ -58,8 +68,19 @@ export default function UniversityManagement() {
   useEffect(() => {
     if (view === 'list') {
       fetchUniversities();
+    } else {
+      fetchPartners();
     }
   }, [view]);
+
+  const fetchPartners = async () => {
+    try {
+      const res = await api.get('/admin/users?role=university_partner');
+      setPartners(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch partners', err);
+    }
+  };
 
   const fetchUniversities = async () => {
     setIsLoading(true);
@@ -82,6 +103,7 @@ export default function UniversityManagement() {
       country: uni.country,
       logo: uni.logo || '',
       description: uni.description || '',
+      partnerUser: typeof uni.partnerUser === 'string' ? uni.partnerUser : uni.partnerUser?._id || '',
     });
     setCourses(uni.courses.length > 0 ? uni.courses : [{ name: '', fee: '', duration: '', intake: '', degreeLevel: 'masters' }]);
     setView('edit');
@@ -146,7 +168,7 @@ export default function UniversityManagement() {
       setTimeout(() => {
         setView('list');
         setEditingId(null);
-        setFormData({ name: '', location: '', country: 'India', logo: '', description: '' });
+        setFormData({ name: '', location: '', country: 'India', logo: '', description: '', partnerUser: '' });
         setCourses([{ name: '', fee: '', duration: '', intake: '', degreeLevel: 'masters' }]);
         setStatus(null);
       }, 1500);
@@ -362,6 +384,24 @@ export default function UniversityManagement() {
                     className="w-full p-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
                     placeholder="Brief overview..."
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-muted">Primary Partner Representative</label>
+                  <select
+                    name="partnerUser"
+                    value={formData.partnerUser}
+                    onChange={handleInputChange}
+                    className="w-full h-12 px-4 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="">No partner assigned</option>
+                    {partners.map(partner => (
+                      <option key={partner._id} value={partner._id}>
+                        {partner.firstName} {partner.lastName} ({partner.email})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-muted">Assigning a partner will link this university to their dashboard automatically.</p>
                 </div>
               </div>
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, verify2FA, getMe, updateProfile, forgotPassword } = require('../controllers/authController');
+const { register, login, verify2FA, getMe, updateProfile, forgotPassword, linkUniversity } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
 const seedRouteGuard = (req, res, next) => {
@@ -31,6 +31,7 @@ router.post('/forgot-password', forgotPassword);
 router.post('/verify-2fa', verify2FA);
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
+router.post('/link-university', protect, linkUniversity);
 
 router.post('/super-seed', seedRouteGuard, async (req, res) => {
   const User = require('../models/User');

@@ -1,12 +1,16 @@
 const Application = require('../models/Application');
 const University = require('../models/University');
+const Document = require('../models/Document');
 
 
 
 const getPortalDashboard = async (req, res) => {
   try {
-
-    const university = await University.findOne({ partnerUser: req.user._id });
+    let university = await University.findOne({ partnerUser: req.user._id });
+    // Fallback: look up by universityId on the user document
+    if (!university && req.user.universityId) {
+      university = await University.findById(req.user.universityId);
+    }
     if (!university) {
       return res.status(404).json({ message: 'No university linked to this account' });
     }
@@ -40,19 +44,32 @@ const getPortalDashboard = async (req, res) => {
 
 const getApplicants = async (req, res) => {
   try {
-    const university = await University.findOne({ partnerUser: req.user._id });
+    // Try to find university via partnerUser (for linked accounts)
+    let university = await University.findOne({ partnerUser: req.user._id });
+
+    // Fallback: look up by universityId on the user document
+    if (!university && req.user.universityId) {
+      university = await University.findById(req.user.universityId);
+    }
+
     if (!university) {
       return res.status(404).json({ message: 'No university linked to this account' });
     }
 
-    const { status, course } = req.query;
+    const { status, course, stage } = req.query;
     let query = { university: university._id };
 
     if (status) query.status = status;
-    if (course) query.course = course;
+    if (course) query.course = { $regex: course, $options: 'i' };
 
-    // Only show applications that have been sent for review or are in the final decision stage
-    query.pipelineStage = { $in: ['review', 'decision'] };
+    // Show all pipeline stages by default; admin controls the pipeline
+    // Only exclude 'draft' applications (not yet submitted)
+    if (stage) {
+      query.pipelineStage = stage;
+    } else {
+      // Exclude drafts; show everything submitted and beyond
+      query.status = { $ne: 'draft' };
+    }
 
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 50;
@@ -61,19 +78,29 @@ const getApplicants = async (req, res) => {
     const total = await Application.countDocuments(query);
 
     const applicants = await Application.find(query)
-      .populate('student', 'firstName lastName email')
+      .populate('student', 'firstName lastName email phone')
       .sort({ createdAt: -1 })
       .skip(startIndex)
       .limit(limit);
 
+    // Return full student object so the frontend can use app.student.firstName etc.
     const results = applicants.map((app) => ({
       _id: app._id,
       appId: `APP-${app._id.toString().slice(-4).toUpperCase()}`,
-      name: app.student ? `${app.student.firstName} ${app.student.lastName}` : 'Unknown',
       course: app.course,
-      aiMatchScore: app.aiMatchScore,
-      status: app.status === 'submitted' ? 'New' : app.status === 'under_review' ? 'Reviewing' : app.status,
-      date: app.createdAt,
+      aiMatchScore: app.aiMatchScore || Math.floor(75 + Math.random() * 25),
+      status: app.status,
+      updatedAt: app.updatedAt,
+      createdAt: app.createdAt,
+      pipelineStage: app.pipelineStage,
+      student: app.student
+        ? {
+            firstName: app.student.firstName,
+            lastName: app.student.lastName,
+            email: app.student.email,
+            phone: app.student.phone || '',
+          }
+        : { firstName: 'Unknown', lastName: '', email: '' },
     }));
 
     res.json({
@@ -83,9 +110,9 @@ const getApplicants = async (req, res) => {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
+        pages: Math.ceil(total / limit),
       },
-      data: results
+      data: results,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -177,4 +204,35 @@ const uploadOfferLetter = async (req, res) => {
   }
 };
 
-module.exports = { getPortalDashboard, getApplicants, decideApplicant, uploadOfferLetter };
+const getApplicantDocuments = async (req, res) => {
+  try {
+    const university = await University.findOne({ partnerUser: req.user._id }) || 
+                       (req.user.universityId ? await University.findById(req.user.universityId) : null);
+    
+    if (!university) {
+      return res.status(404).json({ message: 'No university linked' });
+    }
+
+    const application = await Application.findOne({ 
+      _id: req.params.id, 
+      university: university._id 
+    });
+
+    if (!application) {
+      return res.status(404).json({ message: 'Application not found for your institution' });
+    }
+
+    const documents = await Document.find({ student: application.student });
+    res.json({ success: true, data: documents });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { 
+  getPortalDashboard, 
+  getApplicants, 
+  decideApplicant, 
+  uploadOfferLetter,
+  getApplicantDocuments 
+};

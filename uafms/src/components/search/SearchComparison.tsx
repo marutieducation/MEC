@@ -122,10 +122,11 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
   };
 
   const clearAll = () => {
-    const stillSelected = results
-      .filter(r => selectedIds.includes(r.id) && appliedIds.includes(r.universityId))
-      .map(r => r.id);
-    setSelectedIds(stillSelected);
+    setSelectedIds([]);
+    setSearchTerm('');
+    setFilterState('Any State');
+    setFilterDegree('All Levels');
+    router.push('/search'); // Clear URL params too
   };
 
   const compareSelected = () => {

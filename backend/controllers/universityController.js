@@ -159,7 +159,14 @@ const getRecommendations = async (req, res) => {
 
 const createUniversity = async (req, res) => {
   try {
-    const university = await University.create(req.body);
+    const { partnerUser, ...uniData } = req.body;
+    const university = await University.create({ ...uniData, partnerUser });
+
+    if (partnerUser) {
+      const User = require('../models/User');
+      await User.findByIdAndUpdate(partnerUser, { universityId: university._id });
+    }
+
     res.status(201).json({
       success: true,
       data: university,
@@ -189,6 +196,8 @@ const getUniversities = async (req, res) => {
 
 const updateUniversity = async (req, res) => {
   try {
+    const { partnerUser } = req.body;
+    
     const university = await University.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -196,6 +205,11 @@ const updateUniversity = async (req, res) => {
 
     if (!university) {
       return res.status(404).json({ message: 'University not found' });
+    }
+
+    if (partnerUser) {
+      const User = require('../models/User');
+      await User.findByIdAndUpdate(partnerUser, { universityId: university._id });
     }
 
     res.json({

@@ -71,6 +71,13 @@ const register = async (req, res) => {
       await vCode.save();
     }
 
+    // Link University if provided
+    if (role === 'university_partner' && universityId) {
+      const University = require('../models/University');
+      await University.findByIdAndUpdate(universityId, { partnerUser: user._id });
+    }
+
+    const populatedUser = await User.findById(user._id).populate('universityId');
 
 
     sendEmail({
@@ -84,13 +91,14 @@ const register = async (req, res) => {
     }).catch(() => {});
 
     res.status(201).json({
-      _id: user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      role: user.role,
-      profileCompleted: user.profileCompleted,
-      token: generateToken(user._id),
+      _id: populatedUser._id,
+      firstName: populatedUser.firstName,
+      lastName: populatedUser.lastName,
+      email: populatedUser.email,
+      role: populatedUser.role,
+      profileCompleted: populatedUser.profileCompleted,
+      universityId: populatedUser.universityId,
+      token: generateToken(populatedUser._id),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -188,20 +196,21 @@ const login = async (req, res) => {
       });
     }
 
+    const populatedUser = await user.populate('universityId');
     res.json({
-      _id: user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      role: user.role,
-      profileCompleted: user.profileCompleted,
-      token: generateToken(user._id),
+      _id: populatedUser._id,
+      firstName: populatedUser.firstName,
+      lastName: populatedUser.lastName,
+      email: populatedUser.email,
+      role: populatedUser.role,
+      profileCompleted: populatedUser.profileCompleted,
+      universityId: populatedUser.universityId,
+      token: generateToken(populatedUser._id),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 
 const verify2FA = async (req, res) => {
@@ -243,14 +252,16 @@ const verify2FA = async (req, res) => {
       twoFactorExpiry: null
     });
 
+    const populatedUser = await user.populate('universityId');
     res.json({
-      _id: user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      role: user.role,
-      profileCompleted: user.profileCompleted,
-      token: generateToken(user._id),
+      _id: populatedUser._id,
+      firstName: populatedUser.firstName,
+      lastName: populatedUser.lastName,
+      email: populatedUser.email,
+      role: populatedUser.role,
+      profileCompleted: populatedUser.profileCompleted,
+      universityId: populatedUser.universityId,
+      token: generateToken(populatedUser._id),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -296,4 +307,32 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { register, login, verify2FA, getMe, updateProfile, forgotPassword };
+const linkUniversity = async (req, res) => {
+  try {
+    const { universityId } = req.body;
+
+    if (req.user.role !== 'university_partner') {
+      return res.status(403).json({ message: 'Only university partners can link a university' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { universityId },
+      { new: true, runValidators: true }
+    ).populate('universityId');
+
+    // Also update the University model's partnerUser field
+    const University = require('../models/University');
+    await University.findByIdAndUpdate(universityId, { partnerUser: req.user._id });
+
+    res.json({
+      success: true,
+      message: 'University linked successfully',
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { register, login, verify2FA, getMe, updateProfile, forgotPassword, linkUniversity };

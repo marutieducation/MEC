@@ -307,7 +307,7 @@ const getUsers = async (req, res) => {
   try {
     const { role } = req.query;
     const query = role ? { role } : {};
-    const users = await User.find(query).sort({ createdAt: -1 });
+    const users = await User.find(query).populate('universityId', 'name logo').sort({ createdAt: -1 });
     res.json({ success: true, data: users });
   } catch (error) {
     res.status(500).json({ message: error.message });
