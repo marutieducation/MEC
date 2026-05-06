@@ -51,6 +51,9 @@ const getApplicants = async (req, res) => {
     if (status) query.status = status;
     if (course) query.course = course;
 
+    // Only show applications that have been sent for review or are in the final decision stage
+    query.pipelineStage = { $in: ['review', 'decision'] };
+
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 50;
     const startIndex = (page - 1) * limit;

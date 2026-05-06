@@ -12,7 +12,16 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async ({ to, subject, html }) => {
   try {
-    if (process.env.EMAIL_USER === 'your_email@gmail.com' || !process.env.EMAIL_USER) {
+    const emailConfigured = process.env.EMAIL_USER
+      && process.env.EMAIL_USER !== 'your_email@gmail.com'
+      && process.env.EMAIL_PASS;
+
+    if (!emailConfigured) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('Email service is not configured.');
+        return null;
+      }
+
       console.log(`\n================= MOCK EMAIL =================`);
       console.log(`To: ${to}`);
       console.log(`Subject: ${subject}`);

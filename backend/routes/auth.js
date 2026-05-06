@@ -3,6 +3,28 @@ const router = express.Router();
 const { register, login, verify2FA, getMe, updateProfile, forgotPassword } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
+const seedRouteGuard = (req, res, next) => {
+  if (process.env.ENABLE_DEMO_SEEDING !== 'true') {
+    return res.status(404).json({ message: 'Route not found' });
+  }
+
+  const seedSecret = process.env.SEED_ROUTE_SECRET;
+  if (process.env.NODE_ENV === 'production' && !seedSecret) {
+    return res.status(403).json({ message: 'Seed route secret is required in production' });
+  }
+
+  if (seedSecret && req.get('x-seed-secret') !== seedSecret) {
+    return res.status(403).json({ message: 'Invalid seed route secret' });
+  }
+
+  next();
+};
+
+const getDemoPassword = () => {
+  if (process.env.DEMO_PASSWORD) return process.env.DEMO_PASSWORD;
+  return process.env.NODE_ENV === 'production' ? null : 'M3c@2024!Secure';
+};
+
 router.post('/register', register);
 router.post('/login', login);
 router.post('/forgot-password', forgotPassword);
@@ -10,13 +32,16 @@ router.post('/verify-2fa', verify2FA);
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 
-router.get('/super-seed', async (req, res) => {
+router.post('/super-seed', seedRouteGuard, async (req, res) => {
   const User = require('../models/User');
   const University = require('../models/University');
   const bcrypt = require('bcryptjs');
   try {
     const email = 'marutieducation64@gmail.com';
-    const password = 'marutieducation64@gmail.com';
+    const password = process.env.ADMIN_SEED_PASSWORD || getDemoPassword();
+    if (!password) {
+      return res.status(500).json({ message: 'ADMIN_SEED_PASSWORD or DEMO_PASSWORD is required' });
+    }
 
     await User.deleteMany({ email: /marutieducation64@gmail.com/i });
     
@@ -45,21 +70,26 @@ router.get('/super-seed', async (req, res) => {
   }
 });
 
-router.get('/seed-demo', async (req, res) => {
+router.post('/seed-demo', seedRouteGuard, async (req, res) => {
   const User = require('../models/User');
   try {
+    const demoPassword = getDemoPassword();
+    if (!demoPassword) {
+      return res.status(500).json({ message: 'DEMO_PASSWORD is required' });
+    }
+
     let admin = await User.findOne({ email: 'admin@mec.com' });
     if (!admin) {
         admin = await User.create({
           firstName: 'System',
           lastName: 'Admin',
           email: 'admin@mec.com',
-          password: process.env.DEMO_PASSWORD || 'M3c@2024!Secure',
+          password: demoPassword,
           role: 'admin',
           profileCompleted: true
         });
       } else {
-        admin.password = process.env.DEMO_PASSWORD || 'M3c@2024!Secure';
+        admin.password = demoPassword;
       await admin.save();
     }
     
@@ -69,20 +99,20 @@ router.get('/seed-demo', async (req, res) => {
          firstName: 'University',
          lastName: 'Partner',
          email: 'partner@university.com',
-         password: process.env.DEMO_PASSWORD || 'M3c@2024!Secure',
+         password: demoPassword,
          role: 'university_partner',
          profileCompleted: true
        });
      } else {
-       partner.password = process.env.DEMO_PASSWORD || 'M3c@2024!Secure';
+       partner.password = demoPassword;
        await partner.save();
      }
     
     res.json({ 
       message: 'Demo accounts generated successfully!', 
       credentials: {
-        admin: { email: 'admin@mec.com', password: process.env.DEMO_PASSWORD || 'M3c@2024!Secure' },
-        partner: { email: 'partner@university.com', password: process.env.DEMO_PASSWORD || 'M3c@2024!Secure' }
+        admin: { email: 'admin@mec.com' },
+        partner: { email: 'partner@university.com' }
       }
     });
   } catch(e) {

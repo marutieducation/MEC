@@ -3,6 +3,8 @@ const Application = require('../models/Application');
 const Document = require('../models/Document');
 const Counsellor = require('../models/Counsellor');
 const University = require('../models/University');
+const Escalation = require('../models/Escalation');
+const Notification = require('../models/Notification');
 
 
 
@@ -125,9 +127,7 @@ const bookConsultation = async (req, res) => {
     if (!admin) return res.status(500).json({ message: 'No admin available to assign consultation.' });
     const assigneeId = admin._id;
 
-    const Escalation = require('../models/Escalation');
-
-
+    // Check if student already has an open consultation
     const existingConsultation = await Escalation.findOne({
       student: studentId,
       status: { $in: ['open', 'in_progress'] },
@@ -156,7 +156,6 @@ const bookConsultation = async (req, res) => {
     });
 
 
-    const Notification = require('../models/Notification');
     const newNotif = await Notification.create({
        user: assigneeId,
        title: 'New Consultation Request',
@@ -179,4 +178,51 @@ const bookConsultation = async (req, res) => {
   }
 };
 
-module.exports = { getDashboard, completeProfile, bookConsultation };
+
+
+const getConsultations = async (req, res) => {
+  try {
+    const studentId = req.user._id;
+    const consultations = await Escalation.find({
+      student: studentId,
+      type: 'Counseling'
+    }).populate('assignedTo', 'firstName lastName').sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: consultations
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const cancelConsultation = async (req, res) => {
+  try {
+    const studentId = req.user._id;
+    const { id } = req.params;
+
+    const consultation = await Escalation.findOne({
+      _id: id,
+      student: studentId,
+      type: 'Counseling'
+    });
+
+    if (!consultation) {
+      return res.status(404).json({ message: 'Consultation not found.' });
+    }
+
+    if (consultation.status === 'closed' || consultation.status === 'resolved') {
+      return res.status(400).json({ message: 'Cannot cancel a closed or resolved consultation.' });
+    }
+
+    consultation.status = 'closed';
+    await consultation.save();
+
+    res.json({ success: true, message: 'Consultation cancelled successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { getDashboard, completeProfile, bookConsultation, getConsultations, cancelConsultation };

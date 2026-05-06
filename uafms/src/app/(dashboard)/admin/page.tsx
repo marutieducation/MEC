@@ -6,7 +6,8 @@ import {
   EllipsisHorizontalIcon, FireIcon, PlusIcon,
   ArrowRightIcon, ExclamationTriangleIcon,
   PresentationChartLineIcon, ViewColumnsIcon,
-  BellAlertIcon, MagnifyingGlassIcon
+  BellAlertIcon, MagnifyingGlassIcon, CheckCircleIcon,
+  ClipboardDocumentCheckIcon, ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -52,6 +53,21 @@ interface PipelineState {
     revenue: number;
   };
 }
+
+const PIPELINE_STAGE_LABELS: Record<string, string> = {
+  leads: 'New Leads',
+  verified: 'Verified',
+  shortlist: 'Shortlisted',
+  review: 'University Review',
+  decision: 'Final Decision',
+};
+
+const NEXT_STAGE_BY_STAGE: Record<string, { stage: string; label: string; icon: React.ElementType }> = {
+  leads: { stage: 'verified', label: 'Verify', icon: CheckCircleIcon },
+  verified: { stage: 'shortlist', label: 'Shortlist', icon: ClipboardDocumentCheckIcon },
+  shortlist: { stage: 'review', label: 'Send Review', icon: ArrowPathIcon },
+  review: { stage: 'decision', label: 'Final Decision', icon: ArrowRightIcon },
+};
 
 interface CounsellorStats {
   _id: string;
@@ -101,6 +117,20 @@ export default function ControlTower() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [movingCardId, setMovingCardId] = useState<string | null>(null);
+  
+  const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
+  const [universities, setUniversities] = useState<any[]>([]);
+  const [leadForm, setLeadForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    universityId: '',
+    course: '',
+    source: 'Walk-in'
+  });
 
   useEffect(() => {
     const fetchAdminData = async () => {
@@ -129,8 +159,75 @@ export default function ControlTower() {
 
     if (user?.role === 'admin') {
       fetchAdminData();
+      fetchUniversities();
     }
   }, [user]);
+
+  const fetchUniversities = async () => {
+    try {
+      const res = await api.get('/universities');
+      setUniversities(Array.isArray(res) ? res : (res.data || []));
+    } catch (err) {
+      console.error('Failed to fetch universities', err);
+    }
+  };
+
+  const handleAddLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingLead(true);
+    try {
+      const res = await api.post('/admin/leads', leadForm);
+      if (res.success) {
+        setPipelineState(prev => ({
+          ...prev,
+          cards: [res.data, ...prev.cards]
+        }));
+        setIsLeadModalOpen(false);
+        setLeadForm({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          universityId: '',
+          course: '',
+          source: 'Walk-in'
+        });
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to add lead');
+    } finally {
+      setIsSubmittingLead(false);
+    }
+  };
+
+  const handleMovePipelineCard = async (card: ApplicationCard, stage: string) => {
+    if (card.pipelineStage === stage || movingCardId) return;
+
+    setMovingCardId(card._id);
+    const previousCards = pipelineState.cards;
+
+    setPipelineState(prev => ({
+      ...prev,
+      cards: prev.cards.map(item =>
+        item._id === card._id ? { ...item, pipelineStage: stage } : item
+      ),
+    }));
+
+    try {
+      const movedCard = await api.put(`/admin/pipeline/${card._id}/move`, { stage });
+      setPipelineState(prev => ({
+        ...prev,
+        cards: prev.cards.map(item =>
+          item._id === card._id ? { ...item, ...movedCard, pipelineStage: stage } : item
+        ),
+      }));
+    } catch (err: any) {
+      setPipelineState(prev => ({ ...prev, cards: previousCards }));
+      alert(err.message || `Failed to move lead to ${PIPELINE_STAGE_LABELS[stage] || stage}`);
+    } finally {
+      setMovingCardId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -175,6 +272,9 @@ export default function ControlTower() {
     if (val >= 100000) return `₹${(val / 100000).toFixed(2)} L`;
     return `₹${val.toLocaleString()}`;
   };
+
+  const getStageCount = (stageId: string) =>
+    pipelineState.cards?.filter((card: ApplicationCard) => card.pipelineStage === stageId).length || 0;
 
   return (
     <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-6 fade-in h-[calc(100vh-64px)] flex flex-col">
@@ -281,7 +381,10 @@ export default function ControlTower() {
                      <option>Gandhinagar</option>
                   </select>
                 </div>
-                <button className="h-9 px-4 bg-primary text-white hover:bg-primary-dark rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95">
+                <button 
+                  onClick={() => setIsLeadModalOpen(true)}
+                  className="h-9 px-4 bg-primary text-white hover:bg-primary-dark rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95"
+                >
                   <PlusIcon className="w-4 h-4" /> Add Lead
                 </button>
               </div>
@@ -293,7 +396,7 @@ export default function ControlTower() {
                       {}
                       <div className={`mb-3 py-1.5 px-3 rounded-lg flex justify-between items-center border ${col.bg || 'bg-surface/50'} border-border`}>
                         <span className="text-[13px] font-bold text-heading">{col.name}</span>
-                        <span className="bg-white text-muted text-[11px] font-bold px-1.5 py-0.5 rounded shadow-sm border border-border/50">{col.count}</span>
+                        <span className="bg-white text-muted text-[11px] font-bold px-1.5 py-0.5 rounded shadow-sm border border-border/50">{getStageCount(col.id)}</span>
                       </div>
 
                       {}
@@ -305,22 +408,50 @@ export default function ControlTower() {
                               c.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
                               c.university?.name.toLowerCase().includes(searchQuery.toLowerCase());
                             return stageMatch && searchMatch;
-                         }).map((card: ApplicationCard) => (
-                            <div key={card._id} className="bg-white border text-left border-border rounded-lg shadow-sm p-3 hover:shadow-md hover:border-primary/50 cursor-grab transform transition-all active:scale-95 group">
+                         }).map((card: ApplicationCard) => {
+                            const nextAction = NEXT_STAGE_BY_STAGE[card.pipelineStage];
+                            const NextActionIcon = nextAction?.icon;
+                            const isMoving = movingCardId === card._id;
+
+                            return (
+                            <div key={card._id} className={`bg-white border text-left border-border rounded-lg shadow-sm p-3 hover:shadow-md hover:border-primary/50 transform transition-all group ${isMoving ? 'opacity-60 pointer-events-none' : ''}`}>
                                <div className="flex justify-between items-start mb-2">
                                  <div>
                                    <h4 className="text-[13px] font-bold text-heading group-hover:text-primary transition-colors">{card.student?.firstName} {card.student?.lastName}</h4>
                                    <p className="text-[11px] text-muted font-medium truncate max-w-[200px]">{card.course}</p>
                                  </div>
-                                 <button className="text-muted hover:text-heading"><EllipsisHorizontalIcon className="w-5 h-5"/></button>
                                </div>
 
-                               <div className="flex items-center gap-1.5 mb-3">
-                                  <div className="w-4 h-4 rounded bg-bg text-muted flex items-center justify-center text-[8px] font-bold">U</div>
-                                  <span className="text-[11px] font-semibold text-heading truncate max-w-[180px]">{card.university?.name}</span>
-                               </div>
+                                <div className="flex items-center gap-1.5 mb-3">
+                                   <div className="w-4 h-4 rounded bg-bg text-muted flex items-center justify-center text-[8px] font-bold">U</div>
+                                   <span className="text-[11px] font-semibold text-heading truncate max-w-[180px]">{card.university?.name}</span>
+                                   {card.pipelineStage === 'review' && (
+                                     <span className="ml-auto text-[9px] font-black text-primary bg-primary/5 px-1.5 py-0.5 rounded-md border border-primary/10 animate-pulse">
+                                       LIVE IN PORTAL
+                                     </span>
+                                   )}
+                                </div>
 
-                               <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
+                                <div className="mb-3">
+                                  {nextAction && NextActionIcon ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMovePipelineCard(card, nextAction.stage)}
+                                      disabled={isMoving}
+                                      className="w-full h-8 px-2.5 rounded-lg bg-primary text-white hover:bg-primary-dark disabled:opacity-60 transition-colors text-[11px] font-bold flex items-center justify-center gap-1.5"
+                                      title={`Move to ${PIPELINE_STAGE_LABELS[nextAction.stage] || nextAction.stage}`}
+                                    >
+                                      {isMoving ? <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" /> : <NextActionIcon className="w-3.5 h-3.5" />}
+                                      <span className="truncate">{isMoving ? 'Moving' : nextAction.label}</span>
+                                    </button>
+                                  ) : (
+                                    <div className="h-8 px-2.5 rounded-lg bg-success/10 text-success text-[11px] font-bold flex items-center justify-center">
+                                      Decision Stage
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
                                   <div className="flex items-center gap-1.5">
                                     <div className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-[9px] font-bold">
                                       {card.counsellor?.user?.firstName?.charAt(0) || 'C'}
@@ -332,10 +463,14 @@ export default function ControlTower() {
                                   </span>
                                </div>
                             </div>
-                         ))}
+                            );
+                         })}
 
                          {}
-                         <div className="h-10 border-2 border-dashed border-border rounded-lg flex items-center justify-center text-muted hover:text-primary hover:border-primary/30 transition-colors cursor-pointer text-xs font-semibold">
+                         <div 
+                           onClick={() => setIsLeadModalOpen(true)}
+                           className="h-10 border-2 border-dashed border-border rounded-lg flex items-center justify-center text-muted hover:text-primary hover:border-primary/30 transition-colors cursor-pointer text-xs font-semibold"
+                         >
                             + Add Card
                          </div>
                       </div>
@@ -575,6 +710,149 @@ export default function ControlTower() {
                </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isLeadModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-bg/80 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-surface w-full max-w-lg rounded-3xl shadow-2xl border border-border overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-border bg-bg/20">
+                <div>
+                  <h2 className="text-xl font-black text-heading">Manual Lead Entry</h2>
+                  <p className="text-xs text-muted font-medium mt-0.5">Add a new student lead to the pipeline.</p>
+                </div>
+                <button
+                  onClick={() => setIsLeadModalOpen(false)}
+                  className="p-2 text-muted hover:bg-bg rounded-full transition-colors"
+                >
+                  <EllipsisHorizontalIcon className="w-5 h-5 rotate-90" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddLead} className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-muted uppercase tracking-widest">First Name</label>
+                    <input 
+                      required 
+                      type="text" 
+                      value={leadForm.firstName} 
+                      onChange={e => setLeadForm({...leadForm, firstName: e.target.value})} 
+                      className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" 
+                      placeholder="e.g. Rahul"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-muted uppercase tracking-widest">Last Name</label>
+                    <input 
+                      required 
+                      type="text" 
+                      value={leadForm.lastName} 
+                      onChange={e => setLeadForm({...leadForm, lastName: e.target.value})} 
+                      className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" 
+                      placeholder="e.g. Sharma"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-muted uppercase tracking-widest">Email Address</label>
+                  <input 
+                    required 
+                    type="email" 
+                    value={leadForm.email} 
+                    onChange={e => setLeadForm({...leadForm, email: e.target.value})} 
+                    className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" 
+                    placeholder="student@example.com"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-muted uppercase tracking-widest">Phone Number</label>
+                    <input 
+                      type="tel" 
+                      value={leadForm.phone} 
+                      onChange={e => setLeadForm({...leadForm, phone: e.target.value})} 
+                      className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" 
+                      placeholder="+91 98765 43210"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-muted uppercase tracking-widest">Lead Source</label>
+                    <select 
+                      value={leadForm.source} 
+                      onChange={e => setLeadForm({...leadForm, source: e.target.value})} 
+                      className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    >
+                      <option>Walk-in</option>
+                      <option>Referral</option>
+                      <option>Web</option>
+                      <option>Campaign</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-muted uppercase tracking-widest">Assigned University</label>
+                  <select
+                    required
+                    value={leadForm.universityId}
+                    onChange={e => {
+                      const uni = universities.find(u => u._id === e.target.value);
+                      setLeadForm({...leadForm, universityId: e.target.value, course: uni?.courses?.[0]?.name || ''});
+                    }}
+                    className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  >
+                    <option value="">Select University...</option>
+                    {universities.map(uni => (
+                      <option key={uni._id} value={uni._id}>{uni.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {leadForm.universityId && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-muted uppercase tracking-widest">Target Course</label>
+                    <select
+                      required
+                      value={leadForm.course}
+                      onChange={e => setLeadForm({...leadForm, course: e.target.value})}
+                      className="w-full h-11 px-4 bg-bg border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    >
+                      <option value="">Select Course...</option>
+                      {universities.find(u => u._id === leadForm.universityId)?.courses?.map((course: any, idx: number) => (
+                        <option key={idx} value={course.name}>{course.name} ({course.degreeLevel})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="pt-4 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsLeadModalOpen(false)}
+                    className="px-6 py-2.5 text-sm font-bold text-heading hover:bg-bg rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingLead}
+                    className="px-8 py-2.5 bg-primary text-white text-sm font-black rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isSubmittingLead ? 'Processing...' : 'Create Lead'} <ArrowRightIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

@@ -15,7 +15,11 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: ALLOWED_ORIGINS
-        value: "*"
+        sync: false
+      - key: ENABLE_DEMO_SEEDING
+        value: "false"
+      - key: SEED_ROUTE_SECRET
+        sync: false
       - key: EMAIL_USER
         sync: false
       - key: EMAIL_PASS

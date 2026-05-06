@@ -1,23 +1,21 @@
 /** @type {import('next').NextConfig} */
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-9uu9.onrender.com/api';
+const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || apiUrl.replace(/\/api\/?$/, '');
+const backendOrigin = apiUrl.replace(/\/api\/?$/, '');
+
 const nextConfig = {
   images: {
     unoptimized: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-9uu9.onrender.com/api',
-    NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL || 'https://mec-backend-9uu9.onrender.com',
+    NEXT_PUBLIC_API_URL: apiUrl,
+    NEXT_PUBLIC_SOCKET_URL: socketUrl,
   },
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://mec-backend-9uu9.onrender.com/api/:path*',
+        destination: `${backendOrigin}/api/:path*`,
       },
     ];
   },

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   DocumentArrowDownIcon, ShieldCheckIcon,
   DocumentIcon, CreditCardIcon, XMarkIcon
@@ -53,25 +53,25 @@ export default function Financials() {
   });
   const [isCreating, setIsCreating] = useState(false);
 
-  useEffect(() => {
-    fetchInvoices();
-  }, []);
-
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get('/finance/invoices');
       setInvoices(res.invoices || []);
       setSummary(res.summary || { totalPaid: '₹0', totalPending: '₹0', count: 0 });
-      if (res.invoices?.length > 0 && !selectedInvoice) {
-        setSelectedInvoice(res.invoices[0]);
+      if (res.invoices?.length > 0) {
+        setSelectedInvoice(prev => prev || res.invoices[0]);
       }
     } catch (err) {
       console.error('Failed to fetch invoices', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [fetchInvoices]);
 
   const handlePay = async () => {
     if (!selectedInvoice || selectedInvoice.status === 'paid') return;

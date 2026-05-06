@@ -153,7 +153,7 @@ export default function UniversityManagement() {
     } catch (err: any) {
       setStatus({
         type: 'error',
-        message: err.response?.data?.message || `Failed to ${view === 'edit' ? 'update' : 'add'} university`
+        message: err.message || `Failed to ${view === 'edit' ? 'update' : 'add'} university`
       });
       setIsLoading(false);
     }

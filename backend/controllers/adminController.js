@@ -67,6 +67,13 @@ const movePipelineCard = async (req, res) => {
   try {
     const { stage } = req.body;
     const validStages = ['leads', 'verified', 'review', 'shortlist', 'decision'];
+    const stageUpdates = {
+      leads: { pipelineStage: 'leads', status: 'submitted', currentStep: 1 },
+      verified: { pipelineStage: 'verified', status: 'submitted', currentStep: 1 },
+      shortlist: { pipelineStage: 'shortlist', status: 'submitted', currentStep: 2 },
+      review: { pipelineStage: 'review', status: 'under_review', currentStep: 3 },
+      decision: { pipelineStage: 'decision', currentStep: 4 },
+    };
 
     if (!validStages.includes(stage)) {
       return res.status(400).json({ message: 'Invalid pipeline stage' });
@@ -74,7 +81,7 @@ const movePipelineCard = async (req, res) => {
 
     const application = await Application.findByIdAndUpdate(
       req.params.id,
-      { pipelineStage: stage },
+      stageUpdates[stage],
       { new: true }
     ).populate('student', 'firstName lastName')
      .populate('university', 'name');
@@ -389,6 +396,20 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
+    if (req.body.password) {
+      const user = await User.findById(req.params.id).select('+password');
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      Object.assign(user, req.body);
+      await user.save();
+
+      const sanitizedUser = user.toObject();
+      delete sanitizedUser.password;
+      return res.json({ success: true, data: sanitizedUser });
+    }
+
     const user = await User.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -447,10 +468,47 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const createLead = async (req, res) => {
+  try {
+    const { firstName, lastName, email, phone, universityId, course, source } = req.body;
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = await User.create({
+        firstName,
+        lastName,
+        email,
+        phone: phone || '',
+        password: crypto.randomBytes(18).toString('base64url'),
+        role: 'student'
+      });
+    }
+
+    const application = await Application.create({
+      student: user._id,
+      university: universityId,
+      course,
+      source: source || 'Web',
+      pipelineStage: 'leads',
+      status: 'submitted',
+      submittedAt: new Date()
+    });
+
+    const populatedApp = await Application.findById(application._id)
+      .populate('student', 'firstName lastName')
+      .populate('university', 'name logo');
+
+    res.status(201).json({ success: true, data: populatedApp });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getPipeline, movePipelineCard, getAnalytics, getPreferences,
   getEscalations, updateEscalation,
   getInviteCodes, generateInviteCode,
   getUsers, createUser, updateUser, deleteUser,
-  getCounselingRequests, updateCounselingRequest
+  getCounselingRequests, updateCounselingRequest,
+  createLead
 };

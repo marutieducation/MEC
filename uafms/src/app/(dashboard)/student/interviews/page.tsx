@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   CalendarDaysIcon, VideoCameraIcon,
   MapPinIcon, ClockIcon,
@@ -9,9 +9,70 @@ import {
 import { SparklesIcon } from '@heroicons/react/24/solid';
 import { api } from '@/lib/api';
 
-const interviews: any[] = [];
-
 export default function InterviewsPage() {
+  const [interviews, setInterviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isRequestingConsultation, setIsRequestingConsultation] = useState(false);
+
+  const fetchConsultations = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/students/consultations');
+      const data = res.data || [];
+      const formatted = data.map((item: any) => {
+        const assignedName = item.assignedTo ? `${item.assignedTo.firstName} ${item.assignedTo.lastName}` : 'Admin Team';
+        const isScheduled = item.status === 'in_progress' || item.status === 'resolved';
+        return {
+          id: item._id,
+          uni: 'MEC',
+          type: item.type,
+          interviewer: assignedName,
+          status: item.status.replace('_', ' '),
+          date: item.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'Pending',
+          time: isScheduled ? 'Scheduled' : 'TBD',
+        };
+      });
+      setInterviews(formatted);
+    } catch (err) {
+      console.error('Failed to fetch consultations:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchConsultations();
+  }, []);
+
+  const handleCancel = async (id: string) => {
+    try {
+      await api.put(`/students/consultations/${id}/cancel`, {});
+      fetchConsultations();
+    } catch (err: any) {
+      alert(err.message || 'Failed to cancel consultation');
+    }
+  };
+
+  const handleJoin = (item: any) => {
+    if (item.status === 'in progress' || item.status === 'resolved') {
+      alert('Meeting link will be provided by your admin shortly.');
+    } else {
+      alert('Meeting is not ready yet.');
+    }
+  };
+
+  const handleRequestConsultation = async () => {
+    setIsRequestingConsultation(true);
+    try {
+      await api.post('/students/book-consultation', {});
+      await fetchConsultations();
+      setTimeout(() => setIsRequestingConsultation(false), 3000);
+    } catch (err: any) {
+      alert(err.message || 'Failed to send request');
+      setIsRequestingConsultation(false);
+    }
+  };
+
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8 fade-in">
       <div>
@@ -24,7 +85,11 @@ export default function InterviewsPage() {
         {}
         <div className="lg:col-span-2 space-y-4">
           <h2 className="text-h3 mb-4">Upcoming sessions</h2>
-          {interviews.length === 0 ? (
+          {loading ? (
+             <div className="p-8 border border-dashed border-border rounded-2xl text-center text-muted bg-surface">
+              <p>Loading sessions...</p>
+             </div>
+          ) : interviews.length === 0 ? (
             <div className="p-8 border border-dashed border-border rounded-2xl text-center text-muted bg-surface">
               <CalendarDaysIcon className="w-12 h-12 mx-auto mb-3 opacity-50 text-muted" />
               <p className="font-bold text-heading">No upcoming sessions</p>
@@ -38,7 +103,7 @@ export default function InterviewsPage() {
                     <VideoCameraIcon className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-heading">{item.uni} - Admission Interview</h3>
+                    <h3 className="text-lg font-bold text-heading">{item.uni} - {item.type}</h3>
                     <p className="text-sm text-muted font-medium">With {item.interviewer}</p>
                   </div>
                 </div>
@@ -55,13 +120,24 @@ export default function InterviewsPage() {
                   <ClockIcon className="w-4 h-4" /> {item.time}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted overflow-hidden">
-                  <MapPinIcon className="w-4 h-4 shrink-0" /> <span className="truncate">{item.type}</span>
+                  <MapPinIcon className="w-4 h-4 shrink-0" /> <span className="truncate">Online</span>
                 </div>
               </div>
 
               <div className="mt-6 flex gap-3">
-                <button className="flex-1 py-2.5 bg-primary text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:opacity-90">Join Meeting</button>
-                <button className="flex-1 py-2.5 bg-surface border border-border text-heading text-sm font-bold rounded-xl hover:bg-bg">Reschedule</button>
+                <button 
+                  onClick={() => handleJoin(item)}
+                  disabled={item.status === 'closed'}
+                  className="flex-1 py-2.5 bg-primary disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+                  Join Meeting
+                </button>
+                {item.status !== 'closed' && (
+                  <button 
+                    onClick={() => handleCancel(item.id)}
+                    className="flex-1 py-2.5 bg-surface border border-border text-heading text-sm font-bold rounded-xl hover:bg-bg transition-all">
+                    Cancel Request
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -91,29 +167,11 @@ export default function InterviewsPage() {
                 </p>
 
                 <button
-                  onClick={async (e) => {
-                    const btn = e.currentTarget;
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = 'Sending...';
-                    btn.disabled = true;
-                    try {
-                      await api.post('/students/book-consultation', {});
-                      btn.innerHTML = 'Request Sent!';
-                      btn.classList.replace('bg-primary', 'bg-success');
-                      setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        btn.classList.replace('bg-success', 'bg-primary');
-                      }, 3000);
-                    } catch (err: any) {
-                      alert(err.response?.data?.message || 'Failed to send request');
-                      btn.innerHTML = originalText;
-                      btn.disabled = false;
-                    }
-                  }}
-                  className="w-full py-4 bg-primary hover:bg-primary-dark text-white text-sm font-black rounded-2xl transition-all shadow-[0_10px_20px_rgba(255,107,0,0.2)] hover:shadow-[0_15px_30px_rgba(255,107,0,0.3)] hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-2"
+                  onClick={handleRequestConsultation}
+                  disabled={isRequestingConsultation}
+                  className={`w-full py-4 text-white text-sm font-black rounded-2xl transition-all shadow-[0_10px_20px_rgba(255,107,0,0.2)] hover:shadow-[0_15px_30px_rgba(255,107,0,0.3)] hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:translate-y-0 ${isRequestingConsultation ? 'bg-success' : 'bg-primary hover:bg-primary-dark'}`}
                 >
-                  Request Admin Consultation <ChevronRightIcon className="w-4 h-4" />
+                  {isRequestingConsultation ? 'Request Sent!' : <>Request Admin Consultation <ChevronRightIcon className="w-4 h-4" /></>}
                 </button>
               </div>
            </div>

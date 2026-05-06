@@ -2,20 +2,24 @@ const University = require('../models/University');
 const Application = require('../models/Application');
 const { fetchLogo } = require('../utils/logoFetcher');
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 
 const searchUniversities = async (req, res) => {
   try {
     const { q, country, degreeLevel, page = 1, limit = 20 } = req.query;
+    const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNumber = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
 
     let query = {};
 
 
     if (q) {
+      const safeQuery = escapeRegex(String(q).trim());
       query.$or = [
-        { name: { $regex: q, $options: 'i' } },
-        { 'courses.name': { $regex: q, $options: 'i' } },
-        { location: { $regex: q, $options: 'i' } },
+        { name: { $regex: safeQuery, $options: 'i' } },
+        { 'courses.name': { $regex: safeQuery, $options: 'i' } },
+        { location: { $regex: safeQuery, $options: 'i' } },
       ];
     }
 
@@ -31,8 +35,8 @@ const searchUniversities = async (req, res) => {
 
     const total = await University.countDocuments(query);
     const universities = await University.find(query)
-      .skip((page - 1) * limit)
-      .limit(Number(limit))
+      .skip((pageNumber - 1) * limitNumber)
+      .limit(limitNumber)
       .sort({ name: 1 });
 
 
@@ -93,8 +97,8 @@ const searchUniversities = async (req, res) => {
 
     res.json({
       total,
-      page: Number(page),
-      pages: Math.ceil(total / limit),
+      page: pageNumber,
+      pages: Math.ceil(total / limitNumber),
       count: results.length,
       results,
     });

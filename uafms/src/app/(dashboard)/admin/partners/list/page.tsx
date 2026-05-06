@@ -54,7 +54,7 @@ export default function PartnerListPage() {
   const fetchUniversities = async () => {
     try {
       const res = await api.get('/universities');
-      setUniversities(res.data || []);
+      setUniversities(Array.isArray(res) ? res : (res.data || []));
     } catch (err) {
       console.error('Failed to fetch universities', err);
     }

@@ -5,7 +5,8 @@ const {
   getEscalations, updateEscalation,
   getInviteCodes, generateInviteCode,
   getUsers, createUser, updateUser, deleteUser,
-  getCounselingRequests, updateCounselingRequest
+  getCounselingRequests, updateCounselingRequest,
+  createLead
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -24,5 +25,6 @@ router.put('/users/:id', protect, authorize('admin'), updateUser);
 router.delete('/users/:id', protect, authorize('admin'), deleteUser);
 router.get('/counseling-requests', protect, authorize('admin'), getCounselingRequests);
 router.put('/counseling-requests/:id', protect, authorize('admin'), updateCounselingRequest);
+router.post('/leads', protect, authorize('admin'), createLead);
 
 module.exports = router;

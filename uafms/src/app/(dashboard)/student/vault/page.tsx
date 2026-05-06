@@ -49,7 +49,7 @@ export default function DocumentVault() {
     const fetchDocs = async () => {
       try {
         const res = await api.get('/documents');
-        setDocuments(res.data || []);
+        setDocuments(Array.isArray(res) ? res : res.data || []);
       } catch (err) {
         console.error('Failed to fetch documents', err);
       } finally {
@@ -70,7 +70,7 @@ export default function DocumentVault() {
     if (!uploadFile) return;
     setIsUploading(true);
     const formData = new FormData();
-    formData.append('document', uploadFile);
+    formData.append('file', uploadFile);
     formData.append('name', uploadName || uploadFile.name);
     formData.append('category', uploadCategory);
 
@@ -79,7 +79,7 @@ export default function DocumentVault() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       const res = await api.get('/documents');
-      setDocuments(res.data || []);
+      setDocuments(Array.isArray(res) ? res : res.data || []);
       setIsUploadModalOpen(false);
       setUploadFile(null);
       setUploadName('');
@@ -106,6 +106,31 @@ export default function DocumentVault() {
     const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const downloadDocument = async (doc: any) => {
+    try {
+      const token = localStorage.getItem('uafms_token');
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-9uu9.onrender.com/api';
+      const response = await fetch(`${apiBase}/documents/${doc._id}/download`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (!response.ok) throw new Error('Download failed');
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = doc.originalName || doc.name;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download document', err);
+      alert('Failed to download document.');
+    }
+  };
 
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8 fade-in pb-20">
@@ -211,9 +236,9 @@ export default function DocumentVault() {
                   )}
 
                   <div className="flex gap-2 mt-auto">
-                    <a href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://mec-backend-9uu9.onrender.com'}/${doc.filePath}`} target="_blank" className="flex-1 px-4 py-2 bg-bg hover:bg-surface border border-border rounded-xl text-[11px] font-bold text-center transition-colors">
+                    <button onClick={() => downloadDocument(doc)} className="flex-1 px-4 py-2 bg-bg hover:bg-surface border border-border rounded-xl text-[11px] font-bold text-center transition-colors">
                       View Document
-                    </a>
+                    </button>
                   </div>
                 </div>
               ))}

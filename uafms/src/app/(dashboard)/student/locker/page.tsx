@@ -30,7 +30,7 @@ export default function DigitalLocker() {
   const fetchDocuments = async () => {
     try {
       const res = await api.get('/documents');
-      setDocuments(res.data);
+      setDocuments(Array.isArray(res) ? res : res.data || []);
     } catch (error) {
       console.error('Error fetching documents:', error);
     } finally {
@@ -86,9 +86,7 @@ export default function DigitalLocker() {
       const token = localStorage.getItem('uafms_token');
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-9uu9.onrender.com/api';
       const response = await fetch(`${apiBase}/documents/${id}/download`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!response.ok) throw new Error('Download failed');
       const blob = await response.blob();
@@ -99,6 +97,7 @@ export default function DigitalLocker() {
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading document:', error);
       alert('Failed to download document.');
@@ -262,7 +261,7 @@ export default function DigitalLocker() {
               </div>
               <div>
                 <p className="text-[13px] font-medium text-heading">New Version Uploaded</p>
-                <p className="text-[11px] text-muted mb-1">IELTS Scorecard 2024</p>
+                <p className="text-[11px] text-muted mb-1">JEE or NEET Scorecard 2024</p>
                 <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted">
                   <span>Uploaded by You</span>
                   <span>•</span>

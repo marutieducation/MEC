@@ -401,11 +401,13 @@ export default function UnifiedApplicationForm() {
                               <div className="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center text-info">
                                  <ChartBarIcon className="w-6 h-6" />
                               </div>
-                              <h4 className="font-bold text-heading">IELTS / TOEFL</h4>
+                              <h4 className="font-bold text-heading">JEE or NEET</h4>
                            </div>
                            <input
                              type="text"
-                             placeholder="Overall Score (e.g. 7.5)"
+                             value={formData.testScores.ielts}
+                             onChange={(e) => setFormData({...formData, testScores: {...formData.testScores, ielts: e.target.value}})}
+                             placeholder="Percentile or Rank (e.g. 98.5)"
                              className="w-full h-11 px-3 bg-surface border border-border rounded-lg text-body focus:border-primary"
                            />
                         </div>
@@ -414,11 +416,13 @@ export default function UnifiedApplicationForm() {
                               <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
                                  <TicketIcon className="w-6 h-6" />
                               </div>
-                              <h4 className="font-bold text-heading">GRE / GMAT</h4>
+                              <h4 className="font-bold text-heading">GUJCET</h4>
                            </div>
                            <input
                              type="text"
-                             placeholder="Score (if applicable)"
+                             value={formData.testScores.gre}
+                             onChange={(e) => setFormData({...formData, testScores: {...formData.testScores, gre: e.target.value}})}
+                             placeholder="Score or Percentile"
                              className="w-full h-11 px-3 bg-surface border border-border rounded-lg text-body focus:border-primary"
                            />
                         </div>

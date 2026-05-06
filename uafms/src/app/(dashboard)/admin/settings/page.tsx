@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   BuildingOfficeIcon,
   ShieldCheckIcon,
@@ -34,25 +34,27 @@ export default function AdminSettingsPage() {
 
   const [pendingChanges, setPendingChanges] = useState<Record<string, string | boolean | number>>({});
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await api.get('/settings/platform');
       if (res.success && res.data) {
         setSettingsGroups(res.data);
         const groups = Object.keys(res.data);
-        if (groups.length > 0 && !activeGroup) setActiveGroup(groups[0]);
+        if (groups.length > 0) {
+          setActiveGroup(prev => prev || groups[0]);
+        }
       }
     } catch (err) {
       console.error('Failed to load settings from MongoDB', err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   const handleToggle = (key: string, currentValue: boolean) => {
     const newValue = !currentValue;

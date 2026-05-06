@@ -1,6 +1,12 @@
 const Document = require('../models/Document');
+const Application = require('../models/Application');
+
 const path = require('path');
 const fs = require('fs');
+
+const canAccessDocument = (document, user) => (
+  user.role === 'admin' || document.student.toString() === user._id.toString()
+);
 
 
 
@@ -70,6 +76,10 @@ const downloadDocument = async (req, res) => {
   try {
     const document = await Document.findById(req.params.id);
     if (!document) return res.status(404).json({ message: 'Document not found' });
+    if (!canAccessDocument(document, req.user)) {
+      return res.status(403).json({ message: 'Not authorized to access this document' });
+    }
+
     if (!document.filePath || !fs.existsSync(document.filePath)) {
       return res.status(404).json({ message: 'File not found on server' });
     }
@@ -93,6 +103,20 @@ const approveDocument = async (req, res) => {
     await document.save();
 
     const populated = await document.populate('verifiedBy', 'firstName lastName');
+
+    // AUTO-MOVE PIPELINE LOGIC
+    // Check if ALL documents for this student are now verified
+    const allDocs = await Document.find({ student: document.student });
+    const allVerified = allDocs.every(d => d.status === 'verified');
+
+    if (allVerified && allDocs.length > 0) {
+      // Move all 'leads' stage applications to 'verified'
+      await Application.updateMany(
+        { student: document.student, pipelineStage: 'leads' },
+        { pipelineStage: 'verified', status: 'submitted', currentStep: 1 }
+      );
+    }
+
     res.json(populated);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -150,6 +174,9 @@ const getDocumentHistory = async (req, res) => {
       .populate('versions.uploadedBy', 'firstName lastName');
 
     if (!document) return res.status(404).json({ message: 'Document not found' });
+    if (!canAccessDocument(document, req.user)) {
+      return res.status(403).json({ message: 'Not authorized to access this document' });
+    }
 
     res.json({
       document: { _id: document._id, name: document.name, status: document.status, verifiedBy: document.verifiedBy, verifiedAt: document.verifiedAt },

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { EnvelopeIcon, LockClosedIcon, UserIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
-import { ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { ShieldCheckIcon, BuildingLibraryIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
@@ -23,6 +23,8 @@ function PartnerRegisterContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [adminCode, setAdminCode] = useState('');
+  const [universityId, setUniversityId] = useState('');
+  const [universities, setUniversities] = useState<any[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,6 +37,30 @@ function PartnerRegisterContent() {
     if (codeFromUrl) {
       setAdminCode(codeFromUrl);
     }
+    
+    // Fetch all universities
+    const fetchUniversities = async () => {
+      try {
+        const res = await api.get('/universities/search?limit=100');
+        if (res.data && res.data.results) {
+          // Sort alphabetically
+          const sorted = res.data.results.sort((a: any, b: any) => 
+            a.universityName.localeCompare(b.universityName)
+          );
+          
+          // Deduplicate by university name since the search endpoint returns courses
+          const uniqueUnis = Array.from(new Map(sorted.map((item: any) => 
+            [item.universityName, item]
+          )).values());
+          
+          setUniversities(uniqueUnis);
+        }
+      } catch (err) {
+        console.error('Failed to fetch universities', err);
+      }
+    };
+    
+    fetchUniversities();
   }, [searchParams]);
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -49,7 +75,8 @@ function PartnerRegisterContent() {
         email,
         password,
         role: 'university_partner',
-        adminCode
+        adminCode,
+        universityId
       });
 
       login(response, response.token);
@@ -142,6 +169,26 @@ function PartnerRegisterContent() {
                     required
                     className="w-full h-10 pl-10 pr-4 bg-bg border border-border rounded-lg text-[14px] text-heading placeholder:text-muted focus:outline-none focus:border-primary transition-all"
                   />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-h4">Select Your University</label>
+                <div className="relative">
+                  <BuildingLibraryIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                  <select
+                    value={universityId}
+                    onChange={(e) => setUniversityId(e.target.value)}
+                    required
+                    className="w-full h-10 pl-10 pr-4 bg-bg border border-border rounded-lg text-[14px] text-heading focus:outline-none focus:border-primary transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="" disabled>Choose an institution...</option>
+                    {universities.map((uni: any) => (
+                      <option key={uni.universityId} value={uni.universityId}>
+                        {uni.universityName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

@@ -318,7 +318,16 @@ export default function LandingPage() {
               colleges.map(college => (
                 <div key={college.id} className="bg-surface border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all group cursor-pointer">
                   <div className="h-28 bg-bg flex items-center justify-center p-4 relative">
-                    <img src={college.logo} alt={college.name} className="h-16 w-auto object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <img 
+                      src={college.logo} 
+                      alt={college.name} 
+                      className="h-16 w-auto object-contain" 
+                      onError={(e) => { 
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = getUniversityLogo(college.name); 
+                      }} 
+                    />
                     <div className={`absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-orange-500`}>
                       {college.tag}
                     </div>
@@ -469,9 +478,7 @@ export default function LandingPage() {
           <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
               <p className="text-[12px] text-gray-500">© 2026 Maruti Education &amp; Consultancy. All rights reserved.</p>
-              <div className="text-[12px] text-gray-500 bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                Made by <a href="https://github.com/rajkhare" target="_blank" className="font-bold hover:text-primary transition-colors">Raj Khare</a>
-              </div>
+
             </div>
             <div className="flex gap-4">
               <Link href="/privacy" className="text-[12px] text-gray-500 hover:text-white transition-colors">Privacy Policy</Link>

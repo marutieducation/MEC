@@ -3,6 +3,8 @@ const VerificationCode = require('../models/VerificationCode');
 const generateToken = require('../utils/generateToken');
 const { sendEmail } = require('../utils/emailService');
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 
 
 const register = async (req, res) => {
@@ -10,7 +12,7 @@ const register = async (req, res) => {
     const {
       firstName, lastName, email, password, role, adminCode,
       phone, city, selectedDestinations, selectedDegrees,
-      specialization, intakeTerm, budget
+      specialization, intakeTerm, budget, universityId
     } = req.body;
 
 
@@ -30,8 +32,9 @@ const register = async (req, res) => {
       const codeType = role === 'admin' ? 'admin_registration' : 'university_partner';
 
       vCode = await VerificationCode.findOne({
-        code: { $regex: new RegExp(`^${normalizedCode}$`, 'i') },
+        code: { $regex: new RegExp(`^${escapeRegex(normalizedCode)}$`, 'i') },
         type: codeType,
+        used: false,
         expiresAt: { $gt: new Date() }
       });
 
@@ -42,7 +45,7 @@ const register = async (req, res) => {
 
 
 
-    const twoFactorEnabled = role === 'university_partner';
+    const twoFactorEnabled = role === 'admin' || role === 'university_partner';
 
     const user = await User.create({
       firstName,
@@ -51,7 +54,7 @@ const register = async (req, res) => {
       password,
       role: role || 'student',
       twoFactorEnabled,
-
+      universityId: role === 'university_partner' ? universityId : null,
       phone,
       city,
       selectedDestinations,
@@ -61,6 +64,12 @@ const register = async (req, res) => {
       budget,
       profileCompleted: true
     });
+
+    if (vCode) {
+      vCode.used = true;
+      vCode.usedBy = user._id;
+      await vCode.save();
+    }
 
 
 
@@ -108,12 +117,14 @@ const forgotPassword = async (req, res) => {
 
 
 const login = async (req, res) => {
-  const startTime = Date.now();
   console.log(`\n[AUTH] 🔑 Login attempt: ${req.body.email} (IP: ${req.ip})`);
 
   try {
     let { email, password, role } = req.body;
-    email = email.trim().toLowerCase();
+    email = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
 
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
@@ -130,7 +141,6 @@ const login = async (req, res) => {
     }
 
     const isMatch = await user.matchPassword(password);
-    console.log(`[AUTH] 🛡️ Password match for ${email}: ${isMatch}`);
 
     if (!isMatch) {
       console.warn(`[AUTH] ❌ Password incorrect for: ${email}`);
@@ -141,7 +151,7 @@ const login = async (req, res) => {
 
 
 
-    if (user.twoFactorEnabled && user.role !== 'admin') {
+    if (user.twoFactorEnabled) {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       await User.findByIdAndUpdate(user._id, {
         twoFactorCode: otp,
@@ -150,12 +160,14 @@ const login = async (req, res) => {
 
 
 
-      console.log(`\n${'='.repeat(40)}`);
-      console.log(`🔐 SECURITY CODE [${user.role.toUpperCase()}]: ${user.email}`);
-      console.log(`👉 CODE: ${otp}`);
-      console.log(`${'='.repeat(40)}\n`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`\n${'='.repeat(40)}`);
+        console.log(`🔐 SECURITY CODE [${user.role.toUpperCase()}]: ${user.email}`);
+        console.log(`👉 CODE: ${otp}`);
+        console.log(`${'='.repeat(40)}\n`);
+      }
 
-      sendEmail({
+      const emailInfo = await sendEmail({
         to: user.email,
         subject: 'MEC UAFMS - Security Verification Code',
         html: `
@@ -163,7 +175,11 @@ const login = async (req, res) => {
           <p>Your one-time verification code is: <strong style="font-size: 24px; letter-spacing: 4px;">${otp}</strong></p>
           <p>This code expires in 10 minutes.</p>
         `,
-      }).catch(() => {});
+      });
+
+      if (!emailInfo && process.env.NODE_ENV === 'production') {
+        return res.status(500).json({ message: 'Unable to send verification code. Please contact support.' });
+      }
 
       return res.json({
         requires2FA: true,
@@ -198,16 +214,25 @@ const verify2FA = async (req, res) => {
     }
 
 
-    if (otp === '123456') {
+    const normalizedOtp = typeof otp === 'string' ? otp.trim() : '';
+    const allowDevBypass = process.env.NODE_ENV !== 'production' && process.env.ALLOW_DEV_2FA_BYPASS === 'true';
+    if (allowDevBypass && normalizedOtp === '123456') {
        console.log('--- 2FA DEV BYPASS ACTIVATED ---');
     } else {
+      if (!user.twoFactorCode || !user.twoFactorExpiry) {
+        return res.status(400).json({ message: 'No active verification code' });
+      }
+
+      if (!/^\d{6}$/.test(normalizedOtp)) {
+        return res.status(400).json({ message: 'Invalid verification code' });
+      }
 
       if (user.twoFactorExpiry && user.twoFactorExpiry < new Date()) {
         return res.status(400).json({ message: 'Verification code has expired' });
       }
 
 
-      if (user.twoFactorCode !== otp) {
+      if (user.twoFactorCode !== normalizedOtp) {
         return res.status(400).json({ message: 'Invalid verification code' });
       }
     }

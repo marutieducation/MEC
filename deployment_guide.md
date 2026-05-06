@@ -5,7 +5,7 @@ To make your website live on the internet, follow these 3 steps.
 ## Step 1: Create a Cloud Database (MongoDB Atlas)
 1.  Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) and sign up for a **Free** account.
 2.  Create a **Cluster** (Choose the free "M0" tier).
-3.  Go to **Network Access** and click "Add IP Address". Choose **"Allow Access from Anywhere"** (0.0.0.0/0).
+3.  Go to **Network Access** and click "Add IP Address". Add only your backend host egress IPs where possible. Use `0.0.0.0/0` only as a temporary setup fallback, then tighten it before production use.
 4.  Go to **Database Access** and create a user (Note down the username and password).
 5.  Go to **Deployment > Databases**, click **"Connect"**, and choose **"Compass"** or **"Drivers"**.
 6.  Copy the connection string (it looks like `mongodb+srv://<username>:<password>@cluster0.abc.mongodb.net/uafms`).
@@ -32,7 +32,7 @@ git push
 5.  **Environment Variables**:
     *   Add `MONGO_URI` (the one you copied from Step 1).
     *   Add `JWT_SECRET` (make it a long random string).
-    *   Add `ALLOWED_ORIGINS` (your frontend Vercel URL once you have it).
+    *   Add `ALLOWED_ORIGINS` (your frontend Vercel/Netlify URL, comma-separated if you have multiple allowed frontends).
 
 ### B. Frontend (Vercel.com)
 1.  Sign up at [Vercel.com](https://vercel.com/).
@@ -54,11 +54,12 @@ Once your backend is connected to Atlas, you need to populate it with data (Univ
 3.  **Run the following commands** one by one:
     ```bash
     # Push ALL initial data (Recommended)
-    npm run dev --prefix backend seed.js
+    cd backend
+    node seed.js
 
     # Or push specific data
-    npm run dev --prefix backend seed_all_unis.js
-    npm run dev --prefix backend seed_scholarships.js
+    node seed_all_unis.js
+    node seed_scholarships.js
     ```
 4.  **Confirm**: Refresh your Atlas Dashboard to see the new collections!
 

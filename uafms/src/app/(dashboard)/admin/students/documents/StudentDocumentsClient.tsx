@@ -86,6 +86,66 @@ function StudentDocumentsContent() {
 
 
   const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+
+  const fetchDocumentBlob = async (docId: string) => {
+    const token = localStorage.getItem('uafms_token');
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-9uu9.onrender.com/api';
+    const response = await fetch(`${apiBase}/documents/${docId}/download`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to load document');
+    }
+
+    return response.blob();
+  };
+
+  const openPreview = async (doc: Document) => {
+    setPreviewDoc(doc);
+    setIsPreviewLoading(true);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+
+    try {
+      const blob = await fetchDocumentBlob(doc._id);
+      setPreviewUrl(URL.createObjectURL(blob));
+    } catch (err) {
+      console.error('Failed to preview document', err);
+      setActionMsg({ type: 'error', text: 'Failed to preview document' });
+    } finally {
+      setIsPreviewLoading(false);
+    }
+  };
+
+  const closePreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+    setPreviewDoc(null);
+  };
+
+  const downloadDocument = async (doc: Document) => {
+    try {
+      const blob = await fetchDocumentBlob(doc._id);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = doc.originalName || doc.name;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download document', err);
+      setActionMsg({ type: 'error', text: 'Failed to download document' });
+    }
+  };
 
   const fetchData = useCallback(async () => {
     if (!id) return;
@@ -107,6 +167,14 @@ function StudentDocumentsContent() {
   }, [id]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleApprove = async (doc: Document) => {
     setIsActioning(true);
@@ -266,7 +334,7 @@ function StudentDocumentsContent() {
                             <div className="flex items-center justify-end gap-2">
                               {doc.filePath && (
                                 <button
-                                  onClick={() => setPreviewDoc(doc)}
+                                  onClick={() => openPreview(doc)}
                                   className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all"
                                   title="Preview"
                                 >
@@ -373,24 +441,24 @@ function StudentDocumentsContent() {
                 <p className="text-xs text-muted">{previewDoc.originalName}</p>
               </div>
               <div className="flex items-center gap-2">
-                <a
-                  href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://mec-backend-9uu9.onrender.com'}/${previewDoc.filePath}`}
-                  target="_blank"
-                  download={previewDoc.originalName}
+                <button
+                  onClick={() => downloadDocument(previewDoc)}
                   className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all"
                   title="Download"
                 >
                   <ArrowDownTrayIcon className="w-4 h-4" />
-                </a>
-                <button onClick={() => setPreviewDoc(null)} className="p-2 rounded-lg hover:bg-bg transition-colors">
+                </button>
+                <button onClick={closePreview} className="p-2 rounded-lg hover:bg-bg transition-colors">
                   <XMarkIcon className="w-5 h-5 text-muted" />
                 </button>
               </div>
             </div>
             <div className="flex-1 overflow-auto p-4 bg-bg/50 min-h-[400px] flex items-center justify-center">
-              {previewDoc.originalName?.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ? (
+              {isPreviewLoading ? (
+                <div className="text-center text-muted font-bold animate-pulse">Loading secure preview...</div>
+              ) : previewDoc.originalName?.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) && previewUrl ? (
                 <img
-                  src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://mec-backend-9uu9.onrender.com'}/${previewDoc.filePath}`}
+                  src={previewUrl}
                   alt={previewDoc.name}
                   className="max-w-full max-h-full rounded-lg object-contain"
                 />
@@ -400,14 +468,12 @@ function StudentDocumentsContent() {
                   <div>
                     <p className="font-bold text-heading">{previewDoc.originalName}</p>
                     <p className="text-sm text-muted mt-1">PDF preview not available in browser.</p>
-                    <a
-                      href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://mec-backend-9uu9.onrender.com'}/${previewDoc.filePath}`}
-                      target="_blank"
-                      download={previewDoc.originalName}
+                    <button
+                      onClick={() => downloadDocument(previewDoc)}
                       className="inline-flex items-center gap-2 mt-4 px-6 py-2 bg-primary text-white rounded-xl font-bold text-sm"
                     >
                       <ArrowDownTrayIcon className="w-4 h-4" /> Download to View
-                    </a>
+                    </button>
                   </div>
                 </div>
               )}

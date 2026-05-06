@@ -17,10 +17,10 @@ export default function FinancePlanner() {
   const [livingMonth, setLivingMonth] = useState(60000);
   const [insurance, setInsurance] = useState(50000);
   const [duration, setDuration] = useState(2);
-  const [currency, setCurrency] = useState('INR');
+  const currency = 'INR';
+
   const [savings, setSavings] = useState(800000);
   const [showModal, setShowModal] = useState(false);
-  const [downloading, setDownloading] = useState(false);
 
 
   const totalLiving = livingMonth * 12 * duration;
@@ -31,18 +31,11 @@ export default function FinancePlanner() {
   const format = (val: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: currency,
+      currency: 'INR',
       maximumFractionDigits: 0
-    }).format(currency === 'INR' ? val : val / 83);
+    }).format(val);
   };
 
-  const handleDownload = () => {
-    setDownloading(true);
-    setTimeout(() => {
-      setDownloading(false);
-      alert('Your Budget Report (PDF) is being generated and will download shortly.');
-    }, 2000);
-  };
 
 
   const BreakdownItem = ({ label, amount, icon: Icon, color }: any) => (
@@ -111,20 +104,6 @@ export default function FinancePlanner() {
         <div className="space-y-1">
           <h1 className="text-4xl md:text-5xl font-black text-heading tracking-tight">Finance <span className="text-primary italic">Planner.</span></h1>
           <p className="text-lg text-body">Calculate the total cost of your education and check eligibility.</p>
-        </div>
-        <div className="flex bg-surface border border-border rounded-2xl p-1.5 shadow-sm self-start">
-          <button
-            onClick={() => setCurrency('INR')}
-            className={`px-6 py-2 text-xs font-bold rounded-xl transition-all ${currency === 'INR' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-muted hover:text-body'}`}
-          >
-            INR
-          </button>
-          <button
-            onClick={() => setCurrency('USD')}
-            className={`px-6 py-2 text-xs font-bold rounded-xl transition-all ${currency === 'USD' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-muted hover:text-body'}`}
-          >
-            USD
-          </button>
         </div>
       </div>
 
@@ -259,18 +238,6 @@ export default function FinancePlanner() {
                 </div>
               </div>
 
-              <button
-                onClick={handleDownload}
-                disabled={downloading}
-                className={`w-full py-5 ${downloading ? 'bg-bg' : 'bg-heading hover:opacity-90'} text-white text-[11px] font-black uppercase tracking-[3px] rounded-2xl transition-all flex items-center justify-center gap-4 shadow-xl active:scale-[0.98]`}
-              >
-                {downloading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
-                ) : (
-                  <BanknotesIcon className="w-6 h-6" />
-                )}
-                {downloading ? 'GENERATING REPORT...' : 'Download Budget Report (PDF)'}
-              </button>
             </div>
           </div>
         </div>

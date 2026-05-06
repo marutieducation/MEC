@@ -49,7 +49,7 @@ export default function ChatBox({ isOpen, onClose, recipientId, recipientName }:
     fetchMessages();
 
 
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'https://mec-backend-kfba.onrender.com';
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || 'https://mec-backend-9uu9.onrender.com';
     socketRef.current = io(socketUrl);
 
     socketRef.current.on('connect', () => {
