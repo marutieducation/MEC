@@ -256,13 +256,8 @@ export default function CounsellorManagement() {
             </table>
           </div>
         </div>
-
-        {}
-        </div>
-
       </div>
 
-      {}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-surface w-full max-w-md rounded-2xl shadow-2xl border border-border p-6 space-y-6 fade-in">

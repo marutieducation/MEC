@@ -47,9 +47,6 @@ export default function IntelligenceHub() {
           <p className="text-body text-muted mt-1">Management Business Intelligence (BI) Dashboard</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="h-10 px-4 bg-surface border border-border text-heading hover:bg-bg rounded-lg font-medium text-[13px] transition-colors flex items-center gap-2 shadow-sm">
-            <CalendarDaysIcon className="w-4 h-4" /> Last 6 Months (Q1-Q2)
-          </button>
           <button className="h-10 px-4 bg-primary text-white hover:bg-primary-dark rounded-lg font-medium text-[13px] transition-colors flex items-center gap-2 shadow-sm">
             <CloudArrowDownIcon className="w-4 h-4" /> Export Report (PDF)
           </button>
@@ -172,34 +169,7 @@ export default function IntelligenceHub() {
         <div className="lg:col-span-1 flex flex-col gap-6">
 
            {}
-           <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-[350px]">
-              <div className="p-5 border-b border-border bg-bg/50">
-                 <h3 className="text-[15px] font-bold text-heading flex items-center gap-2">
-                   <LightBulbIcon className="w-5 h-5 text-warning" /> AI Insights
-                 </h3>
-              </div>
-              <div className="p-5 flex-1 overflow-y-auto space-y-4">
-
-                 <div className="bg-warning/5 border border-warning/20 p-4 rounded-lg">
-                    <p className="text-[13px] font-bold text-heading mb-1">Bottleneck Detected</p>
-                    <p className="text-[12px] text-muted">Education loan processing for East India region is taking 24% longer than average. Consider partner bank tie-ups.</p>
-                 </div>
-
-                 <div className="bg-success/5 border border-success/20 p-4 rounded-lg">
-                    <p className="text-[13px] font-bold text-heading mb-1">Opportunity Spot</p>
-                    <p className="text-[12px] text-muted">Data Science programs at IIT Madras have an 82% offer rate. Target more marketing towards CS undergraduates.</p>
-                 </div>
-
-                 <div className="bg-info/5 border border-info/20 p-4 rounded-lg">
-                    <p className="text-[13px] font-bold text-heading mb-1">Conversion Uptick</p>
-                    <p className="text-[12px] text-muted">Applications verified within 24 hours have a 3x higher probability of enrollment.</p>
-                 </div>
-
-              </div>
-           </div>
-
-           {}
-           <div className="bg-surface border border-border rounded-xl p-5 shadow-sm flex flex-col h-[300px]">
+           <div className="bg-surface border border-border rounded-xl p-5 shadow-sm flex flex-col h-[674px]">
               <h3 className="text-[15px] font-bold text-heading mb-4 pb-3 border-b border-border flex items-center gap-2">
                  <GlobeAltIcon className="w-5 h-5 text-muted" /> Market Share
               </h3>
@@ -210,8 +180,8 @@ export default function IntelligenceHub() {
                        data={revenueData}
                        cx="50%"
                        cy="50%"
-                       innerRadius={60}
-                       outerRadius={80}
+                       innerRadius={80}
+                       outerRadius={110}
                        paddingAngle={5}
                        dataKey="value"
                      >
@@ -220,13 +190,12 @@ export default function IntelligenceHub() {
                        ))}
                      </Pie>
                      <Tooltip />
-                     <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }}/>
+                     <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '20px' }}/>
                    </PieChart>
                  </ResponsiveContainer>
-                 {}
                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[-18px] text-center pointer-events-none">
                     <span className="text-[10px] uppercase font-bold text-muted block">Total leads</span>
-                    <span className="text-xl font-extrabold text-heading">12k+</span>
+                    <span className="text-2xl font-extrabold text-heading">12k+</span>
                  </div>
               </div>
            </div>

@@ -7,7 +7,7 @@ import {
   DocumentTextIcon, ExclamationCircleIcon,
   ClockIcon, CheckCircleIcon, ChatBubbleLeftIcon,
   ChevronRightIcon, ShieldCheckIcon, AcademicCapIcon,
-  VideoCameraIcon, ArrowUpRightIcon
+  VideoCameraIcon, ArrowUpRightIcon, UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { SparklesIcon, HeartIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '@/context/AuthContext';
@@ -401,12 +401,11 @@ export default function StudentDashboard() {
                   Schedule Now
                 </button>
               </div>
-
+            )}
+          </div>
         </div>
-
       </div>
 
-      {}
       {isBookingModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-surface w-full max-w-md rounded-3xl border border-border shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">

@@ -59,9 +59,8 @@ export default function PartnerListPage() {
   React.useEffect(() => {
     fetchPartners();
     fetchUniversities();
-  }, []);
-
-  const fetchUniversities = async () => {
+  }, [fetchPartners, fetchUniversities]);
+  const fetchUniversities = React.useCallback(async () => {
     try {
       const res = await api.get('/universities');
       const allUnis = Array.isArray(res) ? res : (res.data || []);
@@ -71,7 +70,7 @@ export default function PartnerListPage() {
     } catch (err) {
       console.error('Failed to fetch universities', err);
     }
-  };
+  }, []);
 
   const handleAddPartner = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +87,7 @@ export default function PartnerListPage() {
     }
   };
 
-  const fetchPartners = async () => {
+  const fetchPartners = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await api.get('/admin/users?role=university_partner');
@@ -98,7 +97,7 @@ export default function PartnerListPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const filteredPartners = (partners || []).filter(p =>
     `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -14,7 +14,8 @@ import {
   ArrowRightIcon,
   ChevronLeftIcon,
   XMarkIcon,
-  TicketIcon
+  TicketIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 

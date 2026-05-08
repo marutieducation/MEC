@@ -66,7 +66,6 @@ const adminNav = [
       { name: 'Student List', href: '/admin/students', icon: UsersIcon },
       { name: 'Counsellors', href: '/admin/counsellors', icon: IdentificationIcon },
       { name: 'Partner Directory', href: '/admin/partners/list', icon: AcademicCapIcon },
-      { name: 'Partner Replies', href: '/admin/partners', icon: ChatBubbleLeftRightIcon },
       { name: 'Student Prefs', href: '/admin/preferences', icon: BriefcaseIcon },
       { name: 'Escalations', href: '/admin/escalations', icon: DocumentTextIcon },
       { name: 'Finance', href: '/admin/finance', icon: BanknotesIcon },
