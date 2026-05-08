@@ -275,20 +275,7 @@ export default function StudentDashboard() {
             </div>
 
             {}
-            <div className="mx-6 mt-4 p-4 bg-gradient-to-r from-primary/10 to-transparent border border-primary/20 rounded-xl flex items-center justify-between group cursor-pointer">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                  <AcademicCapIcon className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-heading">New Scholarship Match!</p>
-                  <p className="text-[11px] text-muted">You qualify for the 'Global Excellence Award' (₹5,00,000).</p>
-                </div>
-              </div>
-              <a href="/student/scholarships" className="text-[11px] font-black uppercase tracking-wider text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
-                View Details <ChevronRightIcon className="w-3 h-3" />
-              </a>
-            </div>
+
 
             <div className="divide-y divide-border">
               {applications.length === 0 ? (
@@ -399,62 +386,21 @@ export default function StudentDashboard() {
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center text-center p-5 bg-surface border border-dashed border-border rounded-xl mt-2 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative w-12 h-12 mb-3">
-                  <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping opacity-50"></div>
-                  <div className="relative w-full h-full bg-surface border-2 border-primary/20 rounded-full flex items-center justify-center text-primary shadow-sm">
-                    <SparklesIcon className="w-6 h-6" />
-                  </div>
+              <div className="flex flex-col items-center text-center p-8 bg-surface border border-dashed border-border rounded-xl mt-2 relative overflow-hidden group">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-3">
+                  <UserGroupIcon className="w-6 h-6" />
                 </div>
-                <h4 className="text-sm font-bold text-heading mb-1">AI Counsellor Match</h4>
+                <h4 className="text-sm font-bold text-heading mb-1">Expert Consultation</h4>
                 <p className="text-[11px] text-muted mb-4 leading-relaxed">
-                  Complete your profile to get intelligently matched with an expert admissions guide.
+                  Book a 1-on-1 session with our certified education experts for personalized guidance.
                 </p>
-                <button className="relative z-10 w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-primary to-primary-dark text-white text-[13px] font-bold rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-0.5">
-                  Request Match
+                <button 
+                  onClick={() => setIsBookingModalOpen(true)}
+                  className="w-full py-2.5 bg-heading text-white text-[13px] font-bold rounded-lg hover:opacity-90 transition-all"
+                >
+                  Schedule Now
                 </button>
               </div>
-            )}
-          </div>
-
-          {}
-          <div className="bg-surface rounded-xl border border-border shadow-sm p-6 bg-gradient-to-b from-surface to-info/5">
-            <div className="flex items-center gap-2 mb-4">
-              <SparklesIcon className="w-5 h-5 text-primary" />
-              <h3 className="text-h4">AI Match Recommendations</h3>
-            </div>
-            <p className="text-xs text-muted mb-4">Based on your profile, you have a 85%+ chance of admission for these programs.</p>
-
-            <div className="space-y-4">
-              {recommendations.length === 0 ? (
-                <div className="text-center py-4 text-muted text-sm border border-dashed border-border rounded-lg bg-surface">
-                  Not enough data for accurate recommendations. Please complete your academic profile.
-                </div>
-              ) : (
-                recommendations.map((rec: DashboardData['recommendations'][0], i: number) => (
-                  <div key={i} className="flex justify-between items-center group cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded bg-white border border-border flex items-center justify-center p-1 shadow-sm">
-                         <img src={getUniversityLogo(rec.name)} alt={rec.name} className="max-w-full max-h-full object-contain opacity-80" />
-                      </div>
-                      <div>
-                        <h5 className="text-[13px] font-semibold text-heading group-hover:text-primary transition-colors">{rec.topCourse}</h5>
-                        <p className="text-[11px] text-muted">{rec.name}</p>
-                      </div>
-                    </div>
-                    <div className="text-[12px] font-bold text-success bg-success/10 px-2 py-0.5 rounded">High Match</div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {recommendations.length > 0 && (
-              <button className="w-full mt-5 text-[13px] font-medium text-primary hover:text-primary-dark transition-colors text-center border-t border-border pt-4">
-                View more matches
-              </button>
-            )}
-          </div>
 
         </div>
 

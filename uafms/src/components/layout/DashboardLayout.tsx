@@ -28,7 +28,6 @@ import {
   MoonIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
-import NotificationBell from './NotificationBell';
 import { ThemeToggle } from './ThemeToggle';
 
 const studentNav = [
@@ -44,7 +43,7 @@ const studentNav = [
     category: 'DISCOVERY',
     items: [
       { name: 'Course Search', href: '/student/search', icon: MagnifyingGlassIcon },
-      { name: 'Scholarships', href: '/student/scholarships', icon: AcademicCapIcon },
+
       { name: 'Saved Programs', href: '/student/saved', icon: HeartIcon },
     ]
   },
@@ -171,7 +170,7 @@ export function Sidebar() {
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/40 transition-colors duration-500" />
             <div className="relative z-10">
               <p className="text-[13px] font-black text-heading mb-1">Need help?</p>
-              <p className="text-[11px] text-muted mb-3 font-medium">Chat with our AI guide or a real counsellor.</p>
+              <p className="text-[11px] text-muted mb-3 font-medium">Get assistance from our dedicated support team.</p>
               <div className="flex items-center text-[11px] font-black text-primary group-hover:gap-2 transition-all">
                 Contact Support <CommandLineIcon className="w-4 h-4 ml-1" />
               </div>
@@ -234,7 +233,6 @@ export function Header() {
         <div className="ml-4 flex items-center md:ml-6 gap-5">
           <div className="flex items-center gap-2 bg-surface/50 backdrop-blur-sm p-1.5 rounded-full border border-border/50 shadow-sm">
             <ThemeToggle />
-            <NotificationBell />
           </div>
 
           <div className="h-6 w-px bg-border/50 mx-2"></div>

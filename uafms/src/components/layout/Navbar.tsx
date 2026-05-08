@@ -51,7 +51,7 @@ export const Navbar = () => {
           <Link href="/#exams" className="hover:text-[#FF6B00] transition-colors py-5">Exams</Link>
           <Link href="/#courses" className="hover:text-[#FF6B00] transition-colors py-5">Courses</Link>
           <Link href="/#counselling" className="hover:text-[#FF6B00] transition-colors py-5">Counselling</Link>
-          <Link href="/#scholarships" className="hover:text-[#FF6B00] transition-colors py-5">Scholarships</Link>
+
         </div>
 
         {}
@@ -74,7 +74,7 @@ export const Navbar = () => {
       {}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-surface border-t border-border px-4 py-4 flex flex-col gap-3">
-          {['Colleges', 'Exams', 'Courses', 'Counselling', 'Scholarships'].map(item => (
+          {['Colleges', 'Exams', 'Courses', 'Counselling'].map(item => (
             <Link key={item} href={`/#${item.toLowerCase()}`} className="text-[14px] font-medium text-body py-2">{item}</Link>
           ))}
           <div className="flex gap-2 pt-2">

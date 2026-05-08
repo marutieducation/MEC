@@ -72,7 +72,7 @@ const features = [
   { icon: ChatBubbleLeftRightIcon, title: 'Talk to Experts', desc: 'Free personalised guidance from certified counsellors', color: 'bg-purple-50 text-purple-600' },
   { icon: ShieldCheckIcon, title: 'Secure Document Locker', desc: 'Encrypted storage for all your academic documents', color: 'bg-green-50 text-green-600' },
   { icon: RocketLaunchIcon, title: 'Easy Apply in 5 Mins', desc: 'Fill and submit college applications in minutes', color: 'bg-pink-50 text-pink-600' },
-  { icon: CurrencyRupeeIcon, title: 'Scholarship Finder', desc: 'Discover lakhs in scholarships matching your profile', color: 'bg-yellow-50 text-yellow-600' },
+
 ];
 
 const steps = [
@@ -411,7 +411,7 @@ export default function LandingPage() {
             {[
               { name: 'Aarav Sharma', college: 'IIT Delhi, B.Tech CSE', text: 'MEC UAFMS made my IIT application process incredibly smooth. The counsellors were available 24/7 and guided me through each step!', avatar: 'AS' },
               { name: 'Priya Patel', college: 'IIM Ahmedabad, PGP', text: 'From CAT preparation to PGP admission — the platform tracked every document and deadline for me. Couldn\'t have done it without MEC!', avatar: 'PP' },
-              { name: 'Rohan Singh', college: 'AIIMS Delhi, MBBS', text: 'The scholarship finder alone saved me over ₹5 lakhs. The team is fantastic and genuinely cares about student success.', avatar: 'RS' },
+              { name: 'Rohan Singh', college: 'AIIMS Delhi, MBBS', text: 'The expert guidance made my application process incredibly smooth. The team is fantastic and genuinely cares about student success.', avatar: 'RS' },
             ].map(t => (
               <div key={t.name} className="bg-bg border border-border rounded-2xl p-6">
                 <div className="flex mb-3">
@@ -453,7 +453,7 @@ export default function LandingPage() {
             <div>
               <h4 className="font-bold text-[14px] mb-4">Quick Links</h4>
               <div className="flex flex-col gap-2.5">
-                {['Find Colleges', 'Top Exams', 'Career Counselling', 'Scholarships', 'Study Abroad'].map(l => (
+                {['Find Colleges', 'Top Exams', 'Career Counselling', 'Study Abroad'].map(l => (
                   <Link key={l} href="/search" className="text-[13px] text-gray-400 hover:text-[#FF6B00] transition-colors">{l}</Link>
                 ))}
               </div>

@@ -12,7 +12,6 @@ import { api } from '@/lib/api';
 export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isRequestingConsultation, setIsRequestingConsultation] = useState(false);
 
   const fetchConsultations = async () => {
     try {
@@ -61,17 +60,6 @@ export default function InterviewsPage() {
     }
   };
 
-  const handleRequestConsultation = async () => {
-    setIsRequestingConsultation(true);
-    try {
-      await api.post('/students/book-consultation', {});
-      await fetchConsultations();
-      setTimeout(() => setIsRequestingConsultation(false), 3000);
-    } catch (err: any) {
-      alert(err.message || 'Failed to send request');
-      setIsRequestingConsultation(false);
-    }
-  };
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8 fade-in">
@@ -145,36 +133,6 @@ export default function InterviewsPage() {
 
         {}
         <div className="space-y-6">
-           <div className="p-8 bg-[#0B0F19] rounded-[24px] border border-white/5 text-white relative overflow-hidden group">
-              {}
-              <div className="absolute -right-16 -top-16 w-48 h-48 bg-primary/20 rounded-full blur-[60px] group-hover:bg-primary/30 transition-all duration-700"></div>
-
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_#FF6B00]"></div>
-                    <span className="text-[10px] font-black uppercase tracking-[3px] text-primary">Live Support</span>
-                  </div>
-                  <SparklesIcon className="w-5 h-5 text-primary opacity-60" />
-                </div>
-
-                <h3 className="text-2xl font-bold mb-3 tracking-tight">
-                  <span className="text-primary italic">Expert</span> Consultation
-                </h3>
-
-                <p className="text-[13px] text-gray-400 mb-8 leading-relaxed font-medium">
-                  Need help with your application or interview strategy? Book a direct session with our senior administration team to get personalized guidance.
-                </p>
-
-                <button
-                  onClick={handleRequestConsultation}
-                  disabled={isRequestingConsultation}
-                  className={`w-full py-4 text-white text-sm font-black rounded-2xl transition-all shadow-[0_10px_20px_rgba(255,107,0,0.2)] hover:shadow-[0_15px_30px_rgba(255,107,0,0.3)] hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:translate-y-0 ${isRequestingConsultation ? 'bg-success' : 'bg-primary hover:bg-primary-dark'}`}
-                >
-                  {isRequestingConsultation ? 'Request Sent!' : <>Request Admin Consultation <ChevronRightIcon className="w-4 h-4" /></>}
-                </button>
-              </div>
-           </div>
 
            <div className="p-6 bg-surface border border-border rounded-2xl shadow-sm">
               <h3 className="text-[14px] font-bold text-heading mb-4">Prep Checklist</h3>

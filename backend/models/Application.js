@@ -66,5 +66,6 @@ const applicationSchema = new mongoose.Schema(
 
 applicationSchema.index({ student: 1, status: 1 });
 applicationSchema.index({ pipelineStage: 1 });
+applicationSchema.index({ university: 1, pipelineStage: 1 });
 
 module.exports = mongoose.model('Application', applicationSchema);

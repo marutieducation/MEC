@@ -67,18 +67,6 @@ export default function MeetingsPage() {
           <p className="text-muted font-medium">Manage your consultation schedule and live sessions.</p>
         </div>
         <div className="flex gap-4">
-          <button
-            onClick={async () => {
-              await api.post('/students/book-consultation', { preferredDate: '2024-11-20', preferredTime: '10:00 AM' });
-              fetchRequests();
-            }}
-            className="px-6 py-3 border border-primary text-primary rounded-2xl font-bold hover:bg-primary/5 transition-all"
-          >
-            Create Demo Request
-          </button>
-          <button className="px-6 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
-            Book New Session
-          </button>
         </div>
       </div>
 

@@ -156,9 +156,6 @@ export default function Financials() {
           <p className="text-body text-muted mt-1">Manage billing, view payment history, and complete pending transactions. All data synced with MongoDB.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="h-10 px-4 bg-surface border border-border text-heading hover:bg-bg rounded-lg font-medium text-[13px] transition-colors flex items-center gap-2 shadow-sm">
-            <DocumentArrowDownIcon className="w-4 h-4" /> Download Statement
-          </button>
           <button
             onClick={openCreateModal}
             className="h-11 px-6 bg-heading hover:bg-black text-white rounded-lg font-bold text-[14px] flex items-center justify-center gap-2 transition-all w-full sm:w-auto shadow-sm"
@@ -281,7 +278,7 @@ export default function Financials() {
               {}
               <div className="bg-[#1A1A2E] text-white p-6 relative overflow-hidden shrink-0">
                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary opacity-20 -mr-10 -mt-10 rounded-full blur-2xl"></div>
-                 <p className="text-[12px] font-bold tracking-wider text-gray-400 mb-1 uppercase">Payment Overview</p>
+
                  <h3 className="text-3xl font-extrabold mb-1">{selectedInvoice.amount} <span className="text-sm font-medium text-gray-400">INR</span></h3>
                  <p className="text-[13px] text-gray-300">{selectedInvoice.description} ({selectedInvoice.invoiceId})</p>
               </div>

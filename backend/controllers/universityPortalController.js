@@ -62,12 +62,12 @@ const getApplicants = async (req, res) => {
     if (status) query.status = status;
     if (course) query.course = { $regex: course, $options: 'i' };
 
-    // Show all pipeline stages by default; admin controls the pipeline
-    // Only exclude 'draft' applications (not yet submitted)
+    // Only show applications that have been verified by admin (past 'leads' stage).
+    // This ensures: student applies → admin verifies → then university portal sees it.
     if (stage) {
       query.pipelineStage = stage;
     } else {
-      // Exclude drafts; show everything submitted and beyond
+      query.pipelineStage = { $ne: 'leads' };
       query.status = { $ne: 'draft' };
     }
 
@@ -155,7 +155,6 @@ const decideApplicant = async (req, res) => {
 const uploadOfferLetter = async (req, res) => {
   try {
     const Document = require('../models/Document');
-    const Notification = require('../models/Notification');
     const university = await University.findOne({ partnerUser: req.user._id });
     if (!university) return res.status(404).json({ message: 'No university linked' });
 
@@ -185,18 +184,6 @@ const uploadOfferLetter = async (req, res) => {
     application.decisionDate = new Date();
     await application.save();
 
-
-    const newNotif = await Notification.create({
-       user: application.student,
-       title: 'Offer Letter Received! 🎉',
-       message: `Congratulations! ${university.name} has accepted your application and uploaded an official offer letter.`,
-       type: 'success',
-       link: '/student/locker'
-    });
-
-    if (req.io) {
-       req.io.to(application.student.toString()).emit('notification', newNotif);
-    }
 
     res.status(201).json({ message: 'Offer uploaded successfully', document: offerDoc, application });
   } catch (error) {

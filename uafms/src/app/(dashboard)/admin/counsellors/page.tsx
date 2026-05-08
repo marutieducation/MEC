@@ -150,9 +150,6 @@ export default function CounsellorManagement() {
           <p className="text-body text-muted mt-1">Manage staff allocation, regional utilization, and auto-assignment.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="h-10 px-4 bg-surface border border-border text-heading hover:bg-bg rounded-lg font-medium text-[13px] transition-colors flex items-center gap-2 shadow-sm">
-            <FunnelIcon className="w-4 h-4" /> Filter
-          </button>
           <button
             onClick={handleOpenAdd}
             className="h-10 px-4 bg-primary text-white hover:bg-primary-dark rounded-lg font-medium text-[13px] transition-colors flex items-center gap-2 shadow-sm"
@@ -162,10 +159,10 @@ export default function CounsellorManagement() {
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 xl:grid-cols-4 gap-6 min-h-0">
+      <div className="flex-1 flex flex-col min-h-0">
 
         {}
-        <div className="xl:col-span-3 flex flex-col bg-surface border border-border rounded-xl shadow-sm overflow-hidden min-h-0">
+        <div className="flex flex-col bg-surface border border-border rounded-xl shadow-sm overflow-hidden min-h-0">
 
           <div className="p-4 border-b border-border flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-bg/50 shrink-0">
             <div className="relative w-full max-w-sm">
@@ -261,44 +258,6 @@ export default function CounsellorManagement() {
         </div>
 
         {}
-        <div className="xl:col-span-1 flex flex-col gap-6 min-h-0">
-
-          <div className="bg-gradient-to-br from-[#1A1A2E] to-[#2A2A4A] rounded-xl border border-gray-800 shadow-md p-6 relative overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary blur-3xl opacity-20 rounded-full"></div>
-
-            <div className="relative z-10 flex flex-col h-full text-white">
-               <h3 className="text-[16px] font-bold mb-1 flex items-center gap-2">
-                 <SparklesIcon className="w-5 h-5 text-primary" /> Smart Assigner
-               </h3>
-               <p className="text-[12px] text-gray-400 mb-6">MEC algorithm distributes leads based on regional expertise, language matching, and utilization KPI.</p>
-
-               <div className="bg-black/20 rounded-lg border border-white/10 p-4 mb-6">
-                 <div className="flex justify-between items-center mb-2">
-                    <span className="text-[13px] font-semibold text-gray-200">Unassigned Leads</span>
-                    <span className="text-[18px] font-extrabold text-white bg-primary/20 px-2 py-0.5 rounded border border-primary/30">{stats?.unassignedLeads || 0}</span>
-                 </div>
-                 <div className="text-[11px] text-gray-400">
-                    <span className="text-success font-bold">{stats?.highIntentLeads || 0}</span> High Intent • <span className="text-warning font-bold">{stats?.standardLeads || 0}</span> Standard
-                 </div>
-               </div>
-
-               <button
-                onClick={handleAutoAssign}
-                className="w-full mt-auto py-3 bg-primary hover:bg-primary-dark rounded-lg text-white font-bold text-[13px] flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_20px_rgba(255,107,0,0.5)]"
-               >
-                  <ArrowPathIcon className="w-4 h-4" /> Auto-Assign All Leads
-               </button>
-            </div>
-          </div>
-
-          <div className="bg-surface rounded-xl border border-border shadow-sm p-5 flex-1 overflow-y-auto">
-             <h3 className="text-[13px] font-bold text-heading uppercase tracking-wide mb-4">Recent Assignments</h3>
-
-             <div className="space-y-4 text-center py-10 text-muted italic text-xs">
-                 Coming soon...
-             </div>
-          </div>
-
         </div>
 
       </div>

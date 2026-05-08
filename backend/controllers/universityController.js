@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const University = require('../models/University');
 const Application = require('../models/Application');
 const { fetchLogo } = require('../utils/logoFetcher');
@@ -159,7 +160,18 @@ const getRecommendations = async (req, res) => {
 
 const createUniversity = async (req, res) => {
   try {
-    const { partnerUser, ...uniData } = req.body;
+    let { partnerUser, ...uniData } = req.body;
+
+    // Normalize partnerUser: empty string or 'null' string becomes null
+    if (partnerUser === "" || partnerUser === "null") {
+      partnerUser = null;
+    }
+
+    // Validate partnerUser is either null or a valid ObjectId
+    if (partnerUser !== null && !mongoose.Types.ObjectId.isValid(partnerUser)) {
+      return res.status(400).json({ message: 'Invalid partnerUser ID' });
+    }
+
     const university = await University.create({ ...uniData, partnerUser });
 
     if (partnerUser) {
@@ -196,7 +208,18 @@ const getUniversities = async (req, res) => {
 
 const updateUniversity = async (req, res) => {
   try {
-    const { partnerUser } = req.body;
+    let { partnerUser } = req.body;
+
+    // Normalize partnerUser: empty string or 'null' string becomes null
+    if (partnerUser === "" || partnerUser === "null") {
+      req.body.partnerUser = null;
+      partnerUser = null;
+    }
+
+    // Validate partnerUser is either null or a valid ObjectId
+    if (partnerUser !== null && !mongoose.Types.ObjectId.isValid(partnerUser)) {
+      return res.status(400).json({ message: 'Invalid partnerUser ID' });
+    }
     
     const university = await University.findByIdAndUpdate(req.params.id, req.body, {
       new: true,

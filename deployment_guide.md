@@ -47,7 +47,7 @@ git push
 ---
 
 ## 🏗️ How to Seed your Cloud Database
-Once your backend is connected to Atlas, you need to populate it with data (Universities, Scholarships, etc.).
+Once your backend is connected to Atlas, you need to populate it with data (Universities, etc.).
 
 1.  **Open your Terminal** in the project root.
 2.  **Temporarily update your `backend/.env`** with the Atlas URI (ensure the `<password>` is filled).
@@ -59,7 +59,6 @@ Once your backend is connected to Atlas, you need to populate it with data (Univ
 
     # Or push specific data
     node seed_all_unis.js
-    node seed_scholarships.js
     ```
 4.  **Confirm**: Refresh your Atlas Dashboard to see the new collections!
 

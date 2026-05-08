@@ -541,8 +541,8 @@ export default function UnifiedApplicationForm() {
 
             <div className="mt-8 pt-6 border-t border-border">
               <div className="bg-bg/50 p-4 rounded-lg flex items-start gap-3 border border-border/50">
-                <div className="text-primary mt-0.5"><SparklesIcon className="w-4 h-4" /></div>
-                <p className="text-[12px] text-muted leading-relaxed"><strong>AI Tip:</strong> {currentStep === 2 ? 'Upload high-quality PDFs. Blurred transcripts often lead to immediate rejections.' : 'Ensure your phone number has the correct country code for counsellor reachouts.'}</p>
+                <div className="text-primary mt-0.5"><InformationCircleIcon className="w-4 h-4" /></div>
+                 <p className="text-[12px] text-muted leading-relaxed"><strong>Pro Tip:</strong> {currentStep === 2 ? 'Upload high-quality PDFs. Blurred transcripts often lead to immediate rejections.' : 'Ensure your phone number has the correct country code for counsellor reachouts.'}</p>
               </div>
             </div>
           </div>

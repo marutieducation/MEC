@@ -133,9 +133,8 @@ app.use('/api/counsellors', require('./routes/counsellors'));
 app.use('/api/finance', require('./routes/finance'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/university-portal', require('./routes/universityPortal'));
-app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/chat', require('./routes/chat'));
-app.use('/api/scholarships', require('./routes/scholarships'));
+
 
 
 app.get('/api/health', (req, res) => {

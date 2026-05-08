@@ -136,8 +136,8 @@ export default function DocumentVault() {
     <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8 fade-in pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-h1">AI Document Vault</h1>
-          <p className="text-body mt-1">Manage and verify your documents with AI-powered readiness scans.</p>
+          <h1 className="text-h1">Secure Document Vault</h1>
+          <p className="text-body mt-1">Manage and verify your documents with official readiness scans.</p>
         </div>
         <button onClick={() => setIsUploadModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
           <ArrowUpTrayIcon className="w-5 h-5" /> Upload Document
@@ -230,7 +230,7 @@ export default function DocumentVault() {
                   {(doc.aiFlag || doc.status === 'rejected') && (
                     <div className={`p-3 rounded-xl border mb-4 mt-auto ${doc.status === 'rejected' ? 'bg-danger/5 border-danger/20' : 'bg-warning/5 border-warning/10'}`}>
                       <p className={`text-[11px] font-medium ${doc.status === 'rejected' ? 'text-danger' : 'text-warning'}`}>
-                        {doc.status === 'rejected' ? `Rejected: ${doc.remark}` : `AI Note: ${doc.aiFlagReason || 'Issue detected'}`}
+                        {doc.status === 'rejected' ? `Rejected: ${doc.remark}` : `Note: ${doc.aiFlagReason || 'Issue detected'}`}
                       </p>
                     </div>
                   )}

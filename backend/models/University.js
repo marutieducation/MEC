@@ -28,7 +28,17 @@ const universitySchema = new mongoose.Schema(
     courses: [courseSchema],
 
 
-    partnerUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    partnerUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      validate: {
+        validator: function(v) {
+          return v === null || mongoose.Types.ObjectId.isValid(v);
+        },
+        message: props => `${props.value} is not a valid ObjectId or null!`
+      }
+    },
 
 
     ytdEnrolled: { type: Number, default: 0 },

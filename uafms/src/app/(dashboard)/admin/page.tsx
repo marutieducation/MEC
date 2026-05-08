@@ -29,7 +29,7 @@ interface ApplicationCard {
   _id: string;
   pipelineStage: string;
   course: string;
-  aiMatchScore?: number;
+  // aiMatchScore removed
   student?: {
     firstName: string;
     lastName: string;
@@ -459,7 +459,7 @@ export default function ControlTower() {
                                     <span className="text-[10px] text-muted font-medium">{card.counsellor?.user?.firstName || 'Pending'}</span>
                                   </div>
                                   <span className="text-[10px] font-bold text-success bg-success/10 px-1.5 py-0.5 rounded tracking-wider">
-                                    MATCH: {card.aiMatchScore || 0}%
+                                    ID: MEC-{card._id.slice(-4).toUpperCase()}
                                   </span>
                                </div>
                             </div>

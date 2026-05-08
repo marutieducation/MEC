@@ -75,68 +75,7 @@ const updateCounsellor = async (req, res) => {
 
 
 
-const autoAssignLeads = async (req, res) => {
-  try {
 
-    const counsellors = await Counsellor.find({ acceptingLeads: true })
-      .sort({ utilizationRate: 1 });
-
-    if (counsellors.length === 0) {
-      return res.status(400).json({ message: 'No counsellors available for assignment' });
-    }
-
-
-    const unassigned = await Application.find({
-      counsellor: null,
-      pipelineStage: 'leads',
-    });
-
-    if (unassigned.length === 0) {
-      return res.json({ message: 'No unassigned leads to process', assigned: 0 });
-    }
-
-    let assignedCount = 0;
-    let counsellorIdx = 0;
-
-    for (const app of unassigned) {
-      const counsellor = counsellors[counsellorIdx % counsellors.length];
-
-
-      if (counsellor.activeStudents < counsellor.capacity) {
-        app.counsellor = counsellor._id;
-        await app.save();
-
-        counsellor.activeStudents += 1;
-        counsellor.utilizationRate = Math.round((counsellor.activeStudents / counsellor.capacity) * 100);
-
-
-        if (counsellor.activeStudents >= counsellor.capacity) {
-          counsellor.acceptingLeads = false;
-        }
-
-        counsellor.recentAssignments.unshift({
-          studentName: `Student ${app._id.toString().slice(-4)}`,
-          type: 'auto',
-          timestamp: new Date(),
-          note: `Auto-assigned via Smart Assigner`,
-        });
-
-        await counsellor.save();
-        assignedCount++;
-      }
-
-      counsellorIdx++;
-    }
-
-    res.json({
-      message: `Successfully assigned ${assignedCount} leads`,
-      assigned: assignedCount,
-      total: unassigned.length,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
 
 
@@ -162,6 +101,5 @@ module.exports = {
   getCounsellors,
   addCounsellor,
   updateCounsellor,
-  autoAssignLeads,
   deleteCounsellor
 };

@@ -109,12 +109,21 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const toggleSelection = (id: string) => {
+  const onCourseSelect = (id: string) => {
+    const course = results.find(r => r.id === id);
+    if (!course) return;
+
     if (selectedIds.includes(id)) {
       setSelectedIds(selectedIds.filter(i => i !== id));
     } else {
-      if (selectedIds.length < 4) {
-        setSelectedIds([...selectedIds, id]);
+      // Filter out any other programs from the same university
+      const filteredIds = selectedIds.filter(selectedId => {
+        const selectedCourse = results.find(r => r.id === selectedId);
+        return selectedCourse?.universityId !== course.universityId;
+      });
+
+      if (filteredIds.length < 4) {
+        setSelectedIds([...filteredIds, id]);
       } else {
         alert('You can select up to 4 programs for comparison.');
       }
@@ -431,7 +440,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
                   key={course.id}
-                  onClick={() => toggleSelection(course.id)}
+                  onClick={() => onCourseSelect(course.id)}
                   className={`bg-surface border rounded-xl p-5 transition-all flex flex-col sm:flex-row gap-5 cursor-pointer ${
                     isSelected ? 'border-primary shadow-[0_0_0_1px_#FF6B00] shadow-primary/10' : 'border-border hover:border-muted hover:shadow-sm'
                   }`}
@@ -538,7 +547,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                         <p className="text-[11px] text-muted line-clamp-1">{res.name}</p>
                       </div>
                       <button
-                        onClick={() => toggleSelection(res.id)}
+                        onClick={() => onCourseSelect(res.id)}
                         className={`p-1.5 rounded-md transition-colors ${
                           isApplied ? 'text-success cursor-default' : 'text-muted hover:text-error hover:bg-error/10'
                         }`}

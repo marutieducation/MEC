@@ -126,9 +126,6 @@ export default function StudentListPage() {
           <p className="text-muted font-medium">Full repository of all students using the MEC platform.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="h-10 px-4 bg-bg border border-border rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-border transition-colors">
-            <ArrowDownTrayIcon className="w-4 h-4" /> Export CSV
-          </button>
         </div>
       </div>
 

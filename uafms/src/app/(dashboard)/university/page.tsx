@@ -16,7 +16,7 @@ interface Applicant {
   _id: string;
   course: string;
   status: string;
-  aiMatchScore: number;
+  // aiMatchScore removed
   updatedAt: string;
   createdAt: string;
   pipelineStage: string;
@@ -405,11 +405,8 @@ export default function UniversityPortal() {
                           </span>
                         </td>
                         <td className="px-6 py-5 text-center">
-                          <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border/50 shadow-sm">
-                              <SparklesIcon className={`w-4 h-4 ${app.aiMatchScore >= 90 ? 'text-success' : app.aiMatchScore >= 80 ? 'text-info' : 'text-warning'}`} />
-                              <span className={`font-black ${app.aiMatchScore >= 90 ? 'text-success' : app.aiMatchScore >= 80 ? 'text-info' : 'text-warning'}`}>
-                                {app.aiMatchScore}%
-                              </span>
+                          <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border/50 shadow-sm text-[10px] font-black text-muted">
+                              VERIFIED
                           </div>
                         </td>
                         <td className="px-6 py-5">
@@ -616,12 +613,11 @@ export default function UniversityPortal() {
                 {/* AI Match */}
                 <div className="flex items-center justify-between p-4 bg-bg/60 rounded-2xl border border-border/50">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted mb-1">AI Match Score</p>
-                    <p className={`text-3xl font-black ${selectedDossier.aiMatchScore >= 90 ? 'text-success' : selectedDossier.aiMatchScore >= 80 ? 'text-info' : 'text-warning'}`}>
-                      {selectedDossier.aiMatchScore}%
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted mb-1">Application ID</p>
+                    <p className="text-xl font-black text-heading">
+                      MEC-{selectedDossier._id.slice(-6).toUpperCase()}
                     </p>
                   </div>
-                  <SparklesIcon className={`w-10 h-10 ${selectedDossier.aiMatchScore >= 90 ? 'text-success/30' : selectedDossier.aiMatchScore >= 80 ? 'text-info/30' : 'text-warning/30'}`} />
                 </div>
 
                 {/* Details Grid */}
