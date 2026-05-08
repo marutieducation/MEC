@@ -41,7 +41,7 @@ export default function UniversityPortal() {
   const [dossierDocs, setDossierDocs] = useState<any[]>([]);
   const [isDocsLoading, setIsDocsLoading] = useState(false);
 
-  const fetchApplicants = async () => {
+  const fetchApplicants = React.useCallback(async () => {
     if (!user?.universityId) return;
     try {
       setIsLoading(true);
@@ -54,7 +54,7 @@ export default function UniversityPortal() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.universityId]);
 
   useEffect(() => {
     // Initial fetch when user becomes available
@@ -64,9 +64,9 @@ export default function UniversityPortal() {
       // If loading is done and no uniId, stop loading
       setIsLoading(false);
     }
-  }, [user, user?.universityId]);
+  }, [user, user?.universityId, fetchApplicants, isLoading]);
 
-  const fetchDossierDocs = async (appId: string) => {
+  const fetchDossierDocs = React.useCallback(async (appId: string) => {
     try {
       setIsDocsLoading(true);
       const res = await api.get(`/university-portal/applicants/${appId}/documents`);
@@ -76,7 +76,7 @@ export default function UniversityPortal() {
     } finally {
       setIsDocsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (selectedDossier) {
@@ -84,7 +84,7 @@ export default function UniversityPortal() {
     } else {
       setDossierDocs([]);
     }
-  }, [selectedDossier]);
+  }, [selectedDossier, fetchDossierDocs]);
 
   const searchUniversities = async (query: string) => {
     setUniSearchQuery(query);

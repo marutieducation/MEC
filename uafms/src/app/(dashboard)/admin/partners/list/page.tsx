@@ -55,11 +55,6 @@ export default function PartnerListPage() {
     phone: '',
     universityId: ''
   });
-
-  React.useEffect(() => {
-    fetchPartners();
-    fetchUniversities();
-  }, [fetchPartners, fetchUniversities]);
   const fetchUniversities = React.useCallback(async () => {
     try {
       const res = await api.get('/universities');
@@ -69,6 +64,18 @@ export default function PartnerListPage() {
       setUniversities(official.length > 0 ? official : allUnis);
     } catch (err) {
       console.error('Failed to fetch universities', err);
+    }
+  }, []);
+
+  const fetchPartners = React.useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.get('/admin/users?role=university_partner');
+      setPartners(res.data || []);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch partners');
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -87,17 +94,10 @@ export default function PartnerListPage() {
     }
   };
 
-  const fetchPartners = React.useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const res = await api.get('/admin/users?role=university_partner');
-      setPartners(res.data || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch partners');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  React.useEffect(() => {
+    fetchPartners();
+    fetchUniversities();
+  }, [fetchPartners, fetchUniversities]);
 
   const filteredPartners = (partners || []).filter(p =>
     `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||

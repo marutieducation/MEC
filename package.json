@@ -6,6 +6,8 @@
     "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix uafms\"",
     "dev-backend": "npm run dev --prefix backend",
     "dev-frontend": "npm run dev --prefix uafms",
+    "build": "npm run build --prefix uafms",
+    "start": "npm run start --prefix backend",
     "build:all": "npm run build --prefix uafms",
     "start:prod": "concurrently \"npm run start --prefix backend\" \"npm run start --prefix uafms\"",
     "test": "echo \"Error: no test specified\" && exit 1"

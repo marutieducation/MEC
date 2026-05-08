@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-9uu9.onrender.com/api';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? 'https://mec-backend.onrender.com/api' : 'http://localhost:10000/api');
 const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || apiUrl.replace(/\/api\/?$/, '');
 const backendOrigin = apiUrl.replace(/\/api\/?$/, '');
 
