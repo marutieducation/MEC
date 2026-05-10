@@ -134,6 +134,7 @@ app.use('/api/finance', require('./routes/finance'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/university-portal', require('./routes/universityPortal'));
 app.use('/api/chat', require('./routes/chat'));
+app.use('/api/leads', require('./routes/leads'));
 
 
 
