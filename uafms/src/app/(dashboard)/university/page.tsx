@@ -12,7 +12,8 @@ import {
   ShieldCheckIcon,
   SparklesIcon,
   EnvelopeIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  BuildingLibraryIcon
 } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
