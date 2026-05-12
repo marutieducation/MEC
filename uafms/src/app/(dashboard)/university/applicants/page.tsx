@@ -40,7 +40,7 @@ export default function ApplicantsPage() {
   };
 
   useEffect(() => {
-    if (user?.universityId) fetchApplicants();
+    fetchApplicants();
   }, [user, filterStatus]);
 
   const handleDecision = async (id: string, decision: 'accepted' | 'rejected') => {

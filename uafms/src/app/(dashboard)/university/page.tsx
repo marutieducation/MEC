@@ -30,10 +30,6 @@ export default function UniversityDashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user?.universityId) {
-        setIsLoading(false);
-        return;
-      }
       try {
         setIsLoading(true);
         const [dashboardRes, applicantsRes] = await Promise.all([
@@ -43,7 +39,7 @@ export default function UniversityDashboard() {
         
         setStats(dashboardRes.stats);
         setUniversityData(dashboardRes.university);
-        setRecentApplicants(applicantsRes.data.data || []);
+        setRecentApplicants(applicantsRes.data?.data || []);
       } catch (err) {
         console.error('Failed to fetch dashboard data', err);
       } finally {

@@ -62,12 +62,13 @@ const getApplicants = async (req, res) => {
     if (status) query.status = status;
     if (course) query.course = { $regex: course, $options: 'i' };
 
-    // Only show applications that have been verified by admin (past 'leads' stage).
-    // This ensures: student applies → admin verifies → then university portal sees it.
+    // Show all applications for this university regardless of stage
+    // Partners can see applications at any stage so they can take action early
     if (stage) {
       query.pipelineStage = stage;
-    } else {
-      query.pipelineStage = { $ne: 'leads' };
+    }
+    // Only exclude draft applications
+    if (!status) {
       query.status = { $ne: 'draft' };
     }
 
