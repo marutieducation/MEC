@@ -9,7 +9,9 @@ import {
   PhoneIcon,
   ShieldCheckIcon,
   PlusIcon,
-  XMarkIcon
+  XMarkIcon,
+  TrashIcon,
+  IdentificationIcon
 } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 
@@ -55,6 +57,9 @@ export default function PartnerListPage() {
     phone: '',
     universityId: ''
   });
+  const [selectedPartner, setSelectedPartner] = React.useState<Partner | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
   const fetchUniversities = React.useCallback(async () => {
     try {
       const res = await api.get('/universities');
@@ -78,6 +83,24 @@ export default function PartnerListPage() {
       setIsLoading(false);
     }
   }, []);
+
+  const handleDeletePartner = async (id: string) => {
+    if (!window.confirm('Are you sure you want to remove this partner? This action cannot be undone.')) return;
+    setIsDeleting(id);
+    try {
+      await api.delete(`/admin/users/${id}`);
+      fetchPartners();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete partner');
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
+  const handleShowDetails = (partner: Partner) => {
+    setSelectedPartner(partner);
+    setIsDetailsModalOpen(true);
+  };
 
   const handleAddPartner = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,8 +187,11 @@ export default function PartnerListPage() {
                           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary group-hover:scale-110 transition-transform text-xs">
                             {p.firstName[0]}{p.lastName[0]}
                           </div>
-                          <div className="flex flex-col">
-                            <span className="font-bold text-heading">{p.firstName} {p.lastName}</span>
+                          <div 
+                            className="flex flex-col cursor-pointer hover:opacity-70 transition-opacity"
+                            onClick={() => handleShowDetails(p)}
+                          >
+                            <span className="font-bold text-heading group-hover:text-primary transition-colors">{p.firstName} {p.lastName}</span>
                             <span className="text-[10px] text-muted font-black uppercase tracking-tight italic">Partner ID: {p._id.slice(-6).toUpperCase()}</span>
                           </div>
                         </div>
@@ -196,9 +222,26 @@ export default function PartnerListPage() {
                         </div>
                       </td>
                       <td className="px-6 py-5 text-right">
-                        <button className="text-[11px] font-black text-primary hover:underline uppercase tracking-widest flex items-center gap-1 justify-end">
-                           Verified <ShieldCheckIcon className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-3">
+                          <button 
+                            onClick={() => handleShowDetails(p)}
+                            className="text-[11px] font-black text-primary hover:underline uppercase tracking-widest"
+                          >
+                             Details
+                          </button>
+                          <button 
+                            onClick={() => handleDeletePartner(p._id)}
+                            disabled={isDeleting === p._id}
+                            className="p-2 text-muted hover:text-danger hover:bg-danger/10 rounded-lg transition-all disabled:opacity-50"
+                            title="Remove Partner"
+                          >
+                             {isDeleting === p._id ? (
+                               <div className="w-4 h-4 border-2 border-danger border-t-transparent rounded-full animate-spin" />
+                             ) : (
+                               <TrashIcon className="w-4 h-4" />
+                             )}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -283,6 +326,110 @@ export default function PartnerListPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {isDetailsModalOpen && selectedPartner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bg/80 backdrop-blur-md">
+          <div className="bg-surface w-full max-w-2xl rounded-[40px] shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="relative h-32 bg-gradient-to-r from-primary/20 to-primary-light/10">
+              <button
+                onClick={() => setIsDetailsModalOpen(false)}
+                className="absolute top-6 right-6 p-2 bg-white/20 backdrop-blur-md text-heading hover:bg-white/40 rounded-full transition-colors z-10"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="px-10 pb-10 -mt-12 relative">
+              <div className="flex items-end justify-between mb-8">
+                <div className="w-24 h-24 rounded-[32px] bg-white p-1 shadow-xl border-4 border-surface">
+                  <div className="w-full h-full rounded-[28px] bg-primary/10 flex items-center justify-center text-primary font-black text-3xl">
+                    {selectedPartner.firstName[0]}{selectedPartner.lastName[0]}
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                   <span className="px-4 py-1.5 bg-success/10 text-success text-[10px] font-black uppercase tracking-widest rounded-full border border-success/20 flex items-center gap-1.5">
+                      <ShieldCheckIcon className="w-3.5 h-3.5" /> Verified Status
+                   </span>
+                </div>
+              </div>
+
+              <div className="space-y-8">
+                <div>
+                  <h2 className="text-3xl font-black text-heading tracking-tight">{selectedPartner.firstName} {selectedPartner.lastName}</h2>
+                  <p className="text-sm text-muted font-bold mt-1 uppercase tracking-widest">Global University Partner Representative</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="p-6 bg-bg/50 rounded-3xl border border-border/50">
+                    <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                      <BuildingLibraryIcon className="w-3.5 h-3.5 text-primary" /> Affiliated Institution
+                    </p>
+                    <p className="text-[15px] font-black text-heading leading-tight">
+                      {typeof selectedPartner.universityId === 'object' ? selectedPartner.universityId?.name : 'Unassigned'}
+                    </p>
+                    <p className="text-xs text-muted font-bold mt-1">
+                      {typeof selectedPartner.universityId === 'object' ? selectedPartner.universityId?.location : 'N/A'}
+                    </p>
+                  </div>
+
+                  <div className="p-6 bg-bg/50 rounded-3xl border border-border/50">
+                    <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                      <IdentificationIcon className="w-3.5 h-3.5 text-primary" /> Network Status
+                    </p>
+                    <p className="text-[15px] font-black text-heading">Active Member</p>
+                    <p className="text-xs text-muted font-bold mt-1">
+                      Joined {new Date(selectedPartner.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-8 bg-surface border border-border rounded-[32px] shadow-sm">
+                   <h4 className="text-[11px] font-black text-muted uppercase tracking-[0.2em] mb-6">Contact Information</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-primary/5 rounded-2xl text-primary">
+                          <EnvelopeIcon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-muted uppercase mb-1">Official Email</p>
+                          <p className="text-sm font-bold text-heading break-all">{selectedPartner.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-primary/5 rounded-2xl text-primary">
+                          <PhoneIcon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-muted uppercase mb-1">Direct Line</p>
+                          <p className="text-sm font-bold text-heading">{selectedPartner.phone || 'Not available'}</p>
+                        </div>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <button 
+                    onClick={() => {
+                      setIsDetailsModalOpen(false);
+                      handleDeletePartner(selectedPartner._id);
+                    }}
+                    className="flex-1 h-14 border-2 border-danger/20 text-danger font-black rounded-2xl hover:bg-danger/10 transition-all flex items-center justify-center gap-2"
+                  >
+                    <TrashIcon className="w-5 h-5" /> Terminate Access
+                  </button>
+                  <button 
+                    onClick={() => setIsDetailsModalOpen(false)}
+                    className="flex-1 h-14 bg-primary text-primary-content font-black rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all"
+                  >
+                    Close Directory View
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
