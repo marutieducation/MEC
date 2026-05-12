@@ -52,13 +52,13 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
       setIsLoading(true);
       try {
 
-        let ids: string[] = [];
+        let programs: any[] = [];
         try {
           const [apps] = await Promise.all([
             api.get('/applications'),
             api.get('/auth/me')
           ]);
-          const programs = apps.map((a: any) => ({
+          programs = apps.map((a: any) => ({
             universityId: a.university?._id || a.university,
             course: a.course
           })).filter((p: any) => p.universityId);
@@ -251,6 +251,8 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
     if (sortBy === 'duration') return a.duration.localeCompare(b.duration);
     return 0;
   });
+
+  const appliedIds = (appliedPrograms || []).map((p: any) => p.universityId);
 
   const lifestyleCosts: Record<string, string> = {
     'Frugal': '20,000',
