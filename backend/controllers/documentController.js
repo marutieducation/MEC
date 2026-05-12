@@ -80,9 +80,17 @@ const downloadDocument = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to access this document' });
     }
 
-    if (!document.filePath || !fs.existsSync(document.filePath)) {
+    if (!document.filePath) {
       return res.status(404).json({ message: 'File not found on server' });
     }
+
+    // Check file existence asynchronously
+    try {
+      await fs.promises.access(document.filePath);
+    } catch (err) {
+      return res.status(404).json({ message: 'File not found on server' });
+    }
+
     res.download(document.filePath, document.originalName || path.basename(document.filePath));
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -199,15 +207,26 @@ const deleteDocument = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to delete this document' });
     }
 
-    if (document.filePath && fs.existsSync(document.filePath)) {
-      try { fs.unlinkSync(document.filePath); } catch (e) { console.error(e); }
+    // Async file deletion using promises
+    if (document.filePath) {
+      try {
+        await fs.promises.access(document.filePath);
+        await fs.promises.unlink(document.filePath);
+      } catch (err) {
+        if (err.code !== 'ENOENT') console.error('File delete error:', err);
+      }
     }
     if (document.versions?.length > 0) {
-      document.versions.forEach(v => {
-        if (v.filePath && fs.existsSync(v.filePath)) {
-          try { fs.unlinkSync(v.filePath); } catch (e) { console.error(e); }
+      for (const v of document.versions) {
+        if (v.filePath) {
+          try {
+            await fs.promises.access(v.filePath);
+            await fs.promises.unlink(v.filePath);
+          } catch (err) {
+            if (err.code !== 'ENOENT') console.error('Version file delete error:', err);
+          }
         }
-      });
+      }
     }
 
     await document.deleteOne();

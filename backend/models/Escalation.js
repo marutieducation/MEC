@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const escalationSchema = new mongoose.Schema(
+const EscalationSchema = new mongoose.Schema(
   {
     title: { type: String, required: [true, 'Escalation title is required'] },
     description: { type: String, default: '' },
@@ -29,4 +29,8 @@ const escalationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Escalation', escalationSchema);
+EscalationSchema.index({ assignedTo: 1, status: 1 });
+EscalationSchema.index({ priority: -1 });
+EscalationSchema.index({ severity: -1 });
+
+module.exports = mongoose.model('Escalation', EscalationSchema);

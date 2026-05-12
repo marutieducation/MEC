@@ -38,8 +38,23 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('uafms_user');
+      try {
+        return savedUser ? JSON.parse(savedUser) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
+  const [token, setToken] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('uafms_token');
+    }
+    return null;
+  });
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 

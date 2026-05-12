@@ -40,7 +40,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
   const [filterDegree, setFilterDegree] = useState('All Levels');
   const [isComparing, setIsComparing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [appliedIds, setAppliedIds] = useState<string[]>([]);
+  const [appliedPrograms, setAppliedPrograms] = useState<any[]>([]);
   const [isApplying, setIsApplying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isDegreeDropdownOpen, setIsDegreeDropdownOpen] = useState(false);
@@ -58,8 +58,11 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
             api.get('/applications'),
             api.get('/auth/me')
           ]);
-          ids = apps.map((a: any) => a.university?._id || a.university).filter(Boolean);
-          setAppliedIds(ids);
+          const programs = apps.map((a: any) => ({
+            universityId: a.university?._id || a.university,
+            course: a.course
+          })).filter((p: any) => p.universityId);
+          setAppliedPrograms(programs);
         } catch (authErr) {
           console.log('Guest user or auth failed, skipping profile pre-sets');
         }
@@ -81,7 +84,9 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
         setResults(mapped);
 
 
-        const appliedCourseIds = mapped.filter((m: any) => ids.includes(m.universityId)).map((m: any) => m.id);
+        const appliedCourseIds = mapped.filter((m: any) => 
+          programs.some((p: any) => p.universityId === m.universityId && p.course === m.course)
+        ).map((m: any) => m.id);
         setSelectedIds(prev => Array.from(new Set([...prev, ...appliedCourseIds])));
 
       } catch (err) {
@@ -154,7 +159,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
       return;
     }
 
-    if (appliedIds.includes(univId)) return;
+    if (appliedPrograms.some(p => p.universityId === univId && p.course === courseName)) return;
 
     setIsApplying(true);
     try {
@@ -163,7 +168,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
         course: courseName,
         source: 'Web'
       });
-      setAppliedIds([...appliedIds, univId]);
+      setAppliedPrograms([...appliedPrograms, { universityId: univId, course: courseName }]);
       if (!selectedIds.includes(courseId)) {
         setSelectedIds(prev => [...prev, courseId]);
       }
@@ -187,7 +192,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
     setIsApplying(true);
     try {
       const apps = selectedResults
-        .filter(r => !appliedIds.includes(r.universityId))
+        .filter(r => !appliedPrograms.some(p => p.universityId === r.universityId && p.course === r.course))
         .map(r => ({
           universityId: r.universityId,
           course: r.course,
@@ -200,8 +205,8 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
       }
 
       await api.post('/applications/bulk', { applications: apps });
-      const newAppliedIds = apps.map(a => a.universityId);
-      setAppliedIds([...appliedIds, ...newAppliedIds]);
+      const newApps = apps.map(a => ({ universityId: a.universityId, course: a.course }));
+      setAppliedPrograms([...appliedPrograms, ...newApps]);
       alert(`Successfully applied to ${apps.length} programs!`);
     } catch (err: any) {
       alert(err.message || 'Failed to submit bulk applications');
@@ -431,7 +436,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
               </motion.div>
             ) : sortedResults.map((course) => {
               const isSelected = selectedIds.includes(course.id);
-              const isApplied = appliedIds.includes(course.universityId);
+              const isApplied = appliedPrograms.some(p => p.universityId === course.universityId && p.course === course.course);
               return (
                 <motion.div
                   layout
@@ -536,7 +541,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
             ) : (
               <div className="space-y-3 mb-6">
                 {selectedResults.map(res => {
-                  const isApplied = appliedIds.includes(res.universityId);
+                  const isApplied = appliedPrograms.some(p => p.universityId === res.universityId && p.course === res.course);
                   return (
                     <div key={res.id} className="flex items-center gap-3 p-2 rounded-lg bg-bg/50 border border-border/50">
                       <div className="w-10 h-10 rounded bg-white border border-border flex items-center justify-center p-1 shrink-0">

@@ -35,5 +35,7 @@ yarn-error.log*
 # Project Specific
 backend/uploads/*
 !backend/uploads/.gitkeep
+backend/logs/*
+backend/scratch/*
 uafms/tsconfig.tsbuildinfo
 uafms/next-env.d.ts

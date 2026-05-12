@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const invoiceSchema = new mongoose.Schema(
+const InvoiceSchema = new mongoose.Schema(
   {
     invoiceId: { type: String, required: true, unique: true },
     student: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -25,4 +25,7 @@ const invoiceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Invoice', invoiceSchema);
+InvoiceSchema.index({ student: 1 });
+InvoiceSchema.index({ status: 1 });
+
+module.exports = mongoose.model('Invoice', InvoiceSchema);

@@ -2,6 +2,8 @@ const User = require('../models/User');
 const VerificationCode = require('../models/VerificationCode');
 const generateToken = require('../utils/generateToken');
 const { sendEmail } = require('../utils/emailService');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -45,7 +47,7 @@ const register = async (req, res) => {
 
 
 
-    const twoFactorEnabled = role === 'admin' || role === 'university_partner';
+    const twoFactorEnabled = false; // Disabled as per request
 
     const user = await User.create({
       firstName,
@@ -159,10 +161,14 @@ const login = async (req, res) => {
 
 
 
-    if (user.twoFactorEnabled) {
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // 2FA disabled as per request
+    if (false && user.twoFactorEnabled) {
+      const otp = crypto.randomInt(100000, 999999).toString();
+      const salt = await bcrypt.genSalt(10);
+      const hashedOtp = await bcrypt.hash(otp, salt);
+
       await User.findByIdAndUpdate(user._id, {
-        twoFactorCode: otp,
+        twoFactorCode: hashedOtp, // Store hashed OTP
         twoFactorExpiry: new Date(Date.now() + 10 * 60 * 1000)
       });
 
@@ -233,15 +239,15 @@ const verify2FA = async (req, res) => {
       }
 
       if (!/^\d{6}$/.test(normalizedOtp)) {
-        return res.status(400).json({ message: 'Invalid verification code' });
+        return res.status(400).json({ message: 'Invalid verification code format' });
       }
 
-      if (user.twoFactorExpiry && user.twoFactorExpiry < new Date()) {
+      if (user.twoFactorExpiry < new Date()) {
         return res.status(400).json({ message: 'Verification code has expired' });
       }
 
-
-      if (user.twoFactorCode !== normalizedOtp) {
+      const isOtpMatch = await bcrypt.compare(normalizedOtp, user.twoFactorCode);
+      if (!isOtpMatch) {
         return res.status(400).json({ message: 'Invalid verification code' });
       }
     }

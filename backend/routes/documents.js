@@ -6,10 +6,10 @@ const {
   getStudentDocuments, approveDocument, rejectDocument,
 } = require('../controllers/documentController');
 const { protect, authorize } = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const { upload, ensureUploadDir, validateFileType } = require('../middleware/upload');
 
 
-router.post('/upload', protect, upload.single('file'), uploadDocument);
+router.post('/upload', protect, ensureUploadDir, upload.single('file'), validateFileType, uploadDocument);
 router.get('/', protect, getDocuments);
 router.get('/:id/download', protect, downloadDocument);
 router.delete('/:id', protect, deleteDocument);

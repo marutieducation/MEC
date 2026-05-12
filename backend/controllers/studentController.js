@@ -114,4 +114,13 @@ const completeProfile = async (req, res) => {
 
 
 
-module.exports = { getDashboard, completeProfile };
+const getSavedPrograms = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate('savedPrograms.universityId', 'name logo location');
+    res.json(user.savedPrograms || []);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { getDashboard, completeProfile, getSavedPrograms };

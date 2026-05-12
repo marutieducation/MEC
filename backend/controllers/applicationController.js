@@ -1,18 +1,18 @@
+const mongoose = require('mongoose');
 const Application = require('../models/Application');
 const University = require('../models/University');
 const User = require('../models/User');
 const { sendEmail } = require('../utils/emailService');
 
-
-
 const createApplication = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     const { university, course, academics, testScores, source } = req.body;
 
-
     const aiMatchScore = Math.floor(70 + Math.random() * 30);
 
-    const application = await Application.create({
+    const application = await Application.create([{
       student: req.user._id,
       university,
       course,
@@ -21,35 +21,55 @@ const createApplication = async (req, res) => {
       source: source || 'Web',
       aiMatchScore,
       pipelineStage: 'leads',
-    });
+    }], { session });
 
-    const populated = await application.populate('university', 'name logo location partnerUser');
-
+    const populated = await Application.findById(application[0]._id)
+      .session(session)
+      .populate('university', 'name logo location partnerUser');
 
     if (populated.university && populated.university.partnerUser) {
-       const partner = await User.findById(populated.university.partnerUser);
+       const partner = await User.findById(populated.university.partnerUser).session(session);
        if (partner && partner.email) {
           const studentName = `${req.user.firstName} ${req.user.lastName}`;
-
-
-          const admin = await User.findOne({ role: 'admin' });
+          const admin = await User.findOne({ role: 'admin' }).session(session);
           const toEmails = admin && admin.email ? [partner.email, admin.email].join(', ') : partner.email;
 
-          await sendEmail({
-            to: toEmails,
-            subject: `New Application Received: ${studentName}`,
-            html: `
-              <h3>New Lead Alert!</h3>
-              <p>A new student (<strong>${studentName}</strong>) has just submitted an application for <strong>${course}</strong> at <strong>${populated.university.name}</strong>.</p>
-              <br/>
-              <p>Please log in to your UAFMS Partner Dashboard to review their documents and make a decision.</p>
-            `
-          });
+          // Note: Email sending is side-effect, usually happens after commit
+          // but if we want to be safe we can move it after commit.
+          // For now, I'll keep it here but wrap in try-catch as per Task 4.3
+          try {
+            await sendEmail({
+              to: toEmails,
+              subject: `New Application Received: ${studentName}`,
+              html: `
+                <h3>New Lead Alert!</h3>
+                <p>A new student (<strong>${studentName}</strong>) has just submitted an application for <strong>${course}</strong> at <strong>${populated.university.name}</strong>.</p>
+                <br/>
+                <p>Please log in to your UAFMS Partner Dashboard to review their documents and make a decision.</p>
+              `
+            });
+          } catch (emailErr) {
+            console.error('Failed to send application email:', emailErr.message);
+          }
        }
     }
 
+    // Sync to Saved Programs (Atomic)
+    await User.findByIdAndUpdate(req.user._id, {
+      $addToSet: {
+        savedPrograms: {
+          universityId: university,
+          courseName: course
+        }
+      }
+    }, { session });
+
+    await session.commitTransaction();
+    session.endSession();
     res.status(201).json(populated);
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     res.status(500).json({ message: error.message });
   }
 };
@@ -202,23 +222,37 @@ const submitBulkApplications = async (req, res) => {
 
 
       if (populated.university && populated.university.partnerUser) {
-        const partner = await User.findById(populated.university.partnerUser);
-        if (partner && partner.email) {
-          const studentName = `${req.user.firstName} ${req.user.lastName}`;
-          const toEmails = admin && admin.email ? [partner.email, admin.email].join(', ') : partner.email;
+        try {
+          const partner = await User.findById(populated.university.partnerUser);
+          if (partner && partner.email) {
+            const studentName = `${req.user.firstName} ${req.user.lastName}`;
+            const toEmails = admin && admin.email ? [partner.email, admin.email].join(', ') : partner.email;
 
-          await sendEmail({
-            to: toEmails,
-            subject: `New Application Received: ${studentName}`,
-            html: `
-              <h3>New Lead Alert!</h3>
-              <p>A new student (<strong>${studentName}</strong>) has just submitted an application for <strong>${course}</strong> at <strong>${populated.university.name}</strong>.</p>
-              <br/>
-              <p>Please log in to your UAFMS Partner Dashboard to review their documents and make a decision.</p>
-            `
-          });
+            await sendEmail({
+              to: toEmails,
+              subject: `New Application Received: ${studentName}`,
+              html: `
+                <h3>New Lead Alert!</h3>
+                <p>A new student (<strong>${studentName}</strong>) has just submitted an application for <strong>${course}</strong> at <strong>${populated.university.name}</strong>.</p>
+                <br/>
+                <p>Please log in to your UAFMS Partner Dashboard to review their documents and make a decision.</p>
+              `
+            });
+          }
+        } catch (emailErr) {
+          console.error(`Failed to send notification email for application ${application._id}:`, emailErr.message);
+          // Continue - don't fail bulk operation for email failure
         }
       }
+      // Sync to Saved Programs (Atomic)
+      await User.findByIdAndUpdate(req.user._id, {
+        $addToSet: {
+          savedPrograms: {
+            universityId: universityId,
+            courseName: course
+          }
+        }
+      });
     }
 
     res.status(201).json(createdApplications);

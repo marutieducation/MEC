@@ -11,6 +11,17 @@ const crypto = require('crypto');
 
 const getPipeline = async (req, res) => {
   try {
+    // 1. Get counts for each stage using aggregation (high performance)
+    const stageCounts = await Application.aggregate([
+      { $group: { _id: '$pipelineStage', count: { $sum: 1 } } }
+    ]);
+
+    // Format stage counts into a map for easy lookup
+    const countsMap = stageCounts.reduce((acc, curr) => {
+      acc[curr._id] = curr.count;
+      return acc;
+    }, {});
+
     const stageInfo = [
       { id: 'leads', name: 'New Leads', bg: 'bg-info/5' },
       { id: 'verified', name: 'Verified', bg: 'bg-warning/5' },
@@ -19,28 +30,27 @@ const getPipeline = async (req, res) => {
       { id: 'decision', name: 'Final Decision', bg: 'bg-danger/5' },
     ];
 
-    const allCards = await Application.find({})
+    const columns = stageInfo.map(stage => ({
+      ...stage,
+      count: countsMap[stage.id] || 0
+    }));
+
+    // 2. Get recent activity instead of ALL cards (prevents OOM)
+    // In a real app, we would paginate this or fetch by stage on demand
+    const recentCards = await Application.find({})
       .populate('student', 'firstName lastName')
       .populate('university', 'name logo')
       .populate({
         path: 'counsellor',
         populate: { path: 'user', select: 'firstName lastName' }
       })
-      .sort({ updatedAt: -1 });
+      .sort({ updatedAt: -1 })
+      .limit(50); // Hard limit to avoid OOM
 
-    const columns = await Promise.all(stageInfo.map(async (stage) => ({
-      ...stage,
-      count: await Application.countDocuments({ pipelineStage: stage.id })
-    })));
-
-
-    const totalActive = await Application.countDocuments({
-      status: { $nin: ['accepted', 'rejected'] },
-    });
-    const totalOffers = await Application.countDocuments({ status: 'accepted' });
+    // Metrics
     const totalApps = await Application.countDocuments({});
+    const totalOffers = await Application.countDocuments({ status: 'accepted' });
     const offerRate = totalApps > 0 ? Math.round((totalOffers / totalApps) * 100) : 0;
-
     const paidInvoices = await Invoice.find({ status: 'paid' });
     const totalRevenue = paidInvoices.reduce((sum, inv) => sum + (inv.amountNumeric || 0), 0);
 
@@ -48,9 +58,9 @@ const getPipeline = async (req, res) => {
       success: true,
       data: {
         columns,
-        cards: allCards,
+        cards: recentCards,
         funnelMetrics: {
-          activeApps: totalActive,
+          activeApps: await Application.countDocuments({ status: { $nin: ['accepted', 'rejected'] } }),
           offerRate,
           revenue: totalRevenue,
         }
@@ -320,7 +330,7 @@ const getCounselingRequests = async (req, res) => {
   try {
     const Escalation = require('../models/Escalation');
     const requests = await Escalation.find({ type: 'Counseling' })
-      .populate('student', 'firstName lastName phone email')
+      .populate('student', 'firstName lastName phone email city state country highestQualification dreamUniversity dreamCourse')
       .sort({ createdAt: -1 });
 
     res.json({ success: true, data: requests });

@@ -1,7 +1,38 @@
 const express = require('express');
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
 const { register, login, verify2FA, getMe, updateProfile, forgotPassword, linkUniversity } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { registerSchema, loginSchema } = require('../validation/authValidation');
+
+// Rate limiter for sensitive auth operations (prevents brute force & spam)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10, // 10 attempts per 15 minutes per IP for sensitive endpoints
+  message: { message: 'Too many attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiter for registration (prevent mass account creation)
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // 3 registration attempts per hour per IP
+  message: { message: 'Too many account creations. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiter for password reset (prevent email enumeration)
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // 3 password reset requests per hour per IP/email combo
+  message: { message: 'Too many password reset attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.body.email || req.ip, // Rate limit by email + IP
+});
 
 const seedRouteGuard = (req, res, next) => {
   if (process.env.ENABLE_DEMO_SEEDING !== 'true') {
@@ -22,13 +53,13 @@ const seedRouteGuard = (req, res, next) => {
 
 const getDemoPassword = () => {
   if (process.env.DEMO_PASSWORD) return process.env.DEMO_PASSWORD;
-  return process.env.NODE_ENV === 'production' ? null : 'M3c@2024!Secure';
+    return process.env.NODE_ENV === 'production' ? null : 'mec_v2_p4ssw0rd_9872!#';
 };
 
-router.post('/register', register);
-router.post('/login', login);
-router.post('/forgot-password', forgotPassword);
-router.post('/verify-2fa', verify2FA);
+router.post('/register', registerLimiter, validate(registerSchema), register);
+router.post('/login', authLimiter, validate(loginSchema), login);
+router.post('/forgot-password', forgotPasswordLimiter, forgotPassword);
+router.post('/verify-2fa', authLimiter, verify2FA);
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 router.post('/link-university', protect, linkUniversity);

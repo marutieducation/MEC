@@ -91,9 +91,15 @@ const partnerNav = [
 export function Sidebar() {
   const { user } = useAuth();
   const pathname = usePathname();
+  const [mounted, setMounted] = React.useState(false);
 
-  const navCategories = user?.role === 'admin' ? adminNav : 
-                    user?.role === 'university_partner' ? partnerNav : 
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const navCategories = (!mounted || !user) ? studentNav : 
+                    user.role === 'admin' ? adminNav : 
+                    user.role === 'university_partner' ? partnerNav : 
                     studentNav;
 
   return (
@@ -185,12 +191,14 @@ export function Sidebar() {
             className="flex items-center px-3 py-3 rounded-2xl bg-surface/40 backdrop-blur-md border border-border/50 hover:bg-surface/80 hover:border-primary/30 transition-all cursor-pointer group shadow-sm"
           >
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center mr-3 text-white text-sm font-black shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform">
-              {user?.firstName?.charAt(0) || 'U'}{user?.lastName?.charAt(0) || ''}
+              {mounted && user ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}` : 'U'}
             </div>
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-heading font-black text-sm truncate">{user?.firstName} {user?.lastName}</span>
+              <span className="text-heading font-black text-sm truncate">
+                {mounted && user ? `${user.firstName} ${user.lastName}` : 'Loading...'}
+              </span>
               <span className="text-primary text-[10px] font-black uppercase tracking-wider">
-                {user?.role?.replace('_', ' ') || 'Guest'}
+                {mounted && user ? user.role?.replace('_', ' ') : 'Guest'}
               </span>
             </div>
             <Cog6ToothIcon className="w-5 h-5 text-muted group-hover:text-primary transition-colors" />

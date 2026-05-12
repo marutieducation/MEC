@@ -12,7 +12,19 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
     },
-    password: { type: String, required: [true, 'Password is required'], minlength: 6, select: false },
+    password: { 
+      type: String, 
+      required: [true, 'Password is required'], 
+      minlength: 8,
+      validate: {
+        validator: function(v) {
+          // At least 8 characters, one uppercase, one lowercase, one number and one special character
+          return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(v);
+        },
+        message: 'Password must be 8+ characters and include uppercase, lowercase, number, and special character'
+      },
+      select: false 
+    },
     role: {
       type: String,
       enum: ['student', 'admin', 'university_partner'],
@@ -47,6 +59,10 @@ const userSchema = new mongoose.Schema(
     universityId: { type: mongoose.Schema.Types.ObjectId, ref: 'University', default: null },
 
     avatar: { type: String, default: '' },
+    savedPrograms: [{
+      universityId: { type: mongoose.Schema.Types.ObjectId, ref: 'University' },
+      courseName: { type: String }
+    }],
   },
   { timestamps: true }
 );

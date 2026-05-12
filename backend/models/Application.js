@@ -64,6 +64,7 @@ const applicationSchema = new mongoose.Schema(
 );
 
 
+applicationSchema.index({ student: 1, university: 1, course: 1 }, { unique: true });
 applicationSchema.index({ student: 1, status: 1 });
 applicationSchema.index({ pipelineStage: 1 });
 applicationSchema.index({ university: 1, pipelineStage: 1 });

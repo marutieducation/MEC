@@ -7,23 +7,32 @@ const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const http = require('http');
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
 const { initCronJobs } = require('./utils/cronJobs');
+const logger = require('./utils/logger');
 
 
 dotenv.config();
 
-
+// Security validation on startup
 const REQUIRED_ENV = ['MONGO_URI', 'JWT_SECRET'];
 const missingEnv = REQUIRED_ENV.filter(key => !process.env[key]);
 if (missingEnv.length > 0) {
   console.error(`🚨 Warning: Missing required env vars: ${missingEnv.join(', ')}`);
   console.error(`👉 Ensure these are set in your .env file or hosting provider's dashboard.`);
-  // Don't process.exit(1) on Vercel as it crashes the whole function
   if (!process.env.VERCEL) {
     process.exit(1);
   }
 }
 
+// CRITICAL: Prevent 2FA bypass in production
+if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEV_2FA_BYPASS === 'true') {
+  console.error('🚨 SECURITY ERROR: ALLOW_DEV_2FA_BYPASS is enabled in production!');
+  console.error('👉 Set ALLOW_DEV_2FA_BYPASS=false or remove from environment.');
+  if (!process.env.VERCEL) {
+    process.exit(1);
+  }
+}
 
 connectDB();
 
@@ -59,17 +68,29 @@ const authLimiter = rateLimit({
 
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-  : ['*'];
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
+  : [];
 const allowAnyOrigin = allowedOrigins.includes('*');
 const normalizeOrigin = (origin) => origin.replace(/\/$/, '');
 const normalizedAllowedOrigins = allowedOrigins.map(normalizeOrigin);
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || process.env.NODE_ENV !== 'production' || allowAnyOrigin) {
+    // Allow requests with no origin (like mobile apps, Postman)
+    if (!origin) {
       return callback(null, true);
     }
 
+    // In development, allow all origins
+    if (process.env.NODE_ENV !== 'production' && !process.env.ALLOWED_ORIGINS) {
+      return callback(null, true);
+    }
+
+    // If wildcard explicitly set, allow all
+    if (allowAnyOrigin) {
+      return callback(null, true);
+    }
+
+    // Check whitelist
     if (normalizedAllowedOrigins.includes(normalizeOrigin(origin))) {
       return callback(null, true);
     }
@@ -79,6 +100,7 @@ const corsOptions = {
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  maxAge: 86400,
 };
 
 app.use(cors(corsOptions));
@@ -88,13 +110,39 @@ app.options('*', cors(corsOptions));
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' && !allowAnyOrigin ? allowedOrigins : true,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (process.env.NODE_ENV !== 'production' && !process.env.ALLOWED_ORIGINS) {
+        return callback(null, true);
+      }
+      if (allowAnyOrigin) {
+        return callback(null, true);
+      }
+      if (normalizedAllowedOrigins.includes(normalizeOrigin(origin))) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Socket.IO origin ${origin} not allowed`));
+    },
     credentials: true,
+  }
+});
+
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
+  if (!token) return next(new Error('Authentication required'));
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.userId = decoded.id;
+    next();
+  } catch (err) {
+    next(new Error('Invalid token'));
   }
 });
 
 
 app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.url} - ${req.ip}`);
   req.io = io;
   next();
 });
@@ -104,6 +152,10 @@ io.on('connection', (socket) => {
 
 
   socket.on('joinRoom', (userId) => {
+    if (socket.userId !== userId) {
+      console.warn(`[SOCKET] ⚠️ User ${socket.userId} attempted to join room for ${userId}`);
+      return;
+    }
     socket.join(userId);
     console.log(`👤 User ${userId} joined personal socket room.`);
   });
