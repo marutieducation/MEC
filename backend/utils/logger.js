@@ -33,12 +33,6 @@ const logger = winston.createLogger({
   ),
   defaultMeta: { service: 'uafms-backend' },
   transports: [
-    dailyRotateFileTransport,
-    new transports.File({ 
-      filename: `${logDir}/error.log`, 
-      level: 'error',
-      format: format.combine(format.timestamp(), format.json())
-    }),
     new transports.Console({
       format: format.combine(
         format.colorize(),
@@ -47,5 +41,16 @@ const logger = winston.createLogger({
     })
   ]
 });
+
+// Add file transport only in development or explicitly requested
+// In production, use ONLY Console transport to avoid filesystem permission issues on Render
+if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_FILE_LOGGING === 'true') {
+  logger.add(dailyRotateFileTransport);
+  logger.add(new transports.File({ 
+    filename: `${logDir}/error.log`, 
+    level: 'error',
+    format: format.combine(format.timestamp(), format.json())
+  }));
+}
 
 module.exports = logger;

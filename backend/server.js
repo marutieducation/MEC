@@ -34,19 +34,15 @@ const missingEnv = REQUIRED_ENV.filter(key => !process.env[key]);
 if (missingEnv.length > 0) {
   const msg = `🚨 Missing required env vars: ${missingEnv.join(', ')}`;
   console.error(msg);
-  console.error('👉 Ensure these are set in your .env file or Render/Netlify environment.');
-  if (!process.env.VERCEL) {
-    process.exit(1);
-  }
+  console.error('👉 Ensure these are set in your Render dashboard environment variables.');
+  process.exit(1);
 }
 
 // CRITICAL: Prevent 2FA bypass in production
 if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEV_2FA_BYPASS === 'true') {
   console.error('🚨 SECURITY ERROR: ALLOW_DEV_2FA_BYPASS is enabled in production!');
   console.error('👉 Set ALLOW_DEV_2FA_BYPASS=false or remove from environment.');
-  if (!process.env.VERCEL) {
-    process.exit(1);
-  }
+  process.exit(1);
 }
 
 // Configure allowed origins for CORS and CSP
@@ -197,13 +193,11 @@ io.on('connection', (socket) => {
 });
 
 
-if (!process.env.VERCEL) {
-  try {
-    initCronJobs();
-  } catch (cronErr) {
-    logger.error(`❌ Failed to initialize cron jobs: ${cronErr.message}\n${cronErr.stack}`);
-    // Do NOT exit — cron failure must not kill the server
-  }
+// Cron Jobs
+try {
+  initCronJobs();
+} catch (cronErr) {
+  logger.error(`❌ Failed to initialize cron jobs: ${cronErr.message}\n${cronErr.stack}`);
 }
 
 
@@ -270,46 +264,35 @@ app.use(errorHandler);
 
 
 const PORT = process.env.PORT || 5000;
-if (!process.env.VERCEL) {
-  serverInstance = server.listen(PORT, () => {
-    console.log(`🚀 UAFMS Backend running on port ${PORT}`);
-    console.log(`   Environment : ${process.env.NODE_ENV || 'development'}`);
-    console.log(`   Health check: http://localhost:${PORT}/api/health`);
-    
-    // Tell PM2 that we're ready for traffic
-    if (process.send) {
-      process.send('ready');
-    }
-  });
 
-  serverInstance.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.error(`❌ Port ${PORT} is already in use. Is another server instance running?`);
-      logger.error(`Port ${PORT} already in use (EADDRINUSE)`);
-      process.exit(1);
-    } else {
-      console.error('❌ Server error:', err.message);
-      logger.error(`Server error: ${err.message}\n${err.stack}`);
-    }
-  });
+// Start server unconditionally (no Vercel checks)
+serverInstance = server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📡 Environment: ${process.env.NODE_ENV}`);
+  logger.info(`Server started on port ${PORT}`);
+});
 
-  // Keep-alive mechanism for Render free tier (pings itself every 14 minutes)
-  if (process.env.NODE_ENV === 'production') {
-    setInterval(async () => {
-      try {
-        // Fallback for environments without global fetch
-        const fetchMethod = typeof fetch !== 'undefined' ? fetch : null;
-        if (fetchMethod) {
-          const response = await fetchMethod(`http://localhost:${PORT}/api/health`);
-          if (response.ok) {
-            console.log('💓 Keep-alive ping successful');
-          }
+serverInstance.on('error', (err) => {
+  console.error('❌ Server error:', err.message);
+  logger.error(`Server error: ${err.message}\n${err.stack}`);
+});
+
+// Keep-alive mechanism for Render free tier (pings itself every 14 minutes)
+if (process.env.NODE_ENV === 'production') {
+  setInterval(async () => {
+    try {
+      // Fallback for environments without global fetch
+      const fetchMethod = typeof fetch !== 'undefined' ? fetch : null;
+      if (fetchMethod) {
+        const response = await fetchMethod(`http://localhost:${PORT}/api/health`);
+        if (response.ok) {
+          console.log('💓 Keep-alive ping successful');
         }
-      } catch (error) {
-        console.error('❌ Keep-alive ping failed:', error.message);
       }
-    }, 14 * 60 * 1000); // 14 minutes
-  }
+    } catch (error) {
+      console.error('❌ Keep-alive ping failed:', error.message);
+    }
+  }, 14 * 60 * 1000); // 14 minutes
 }
 
 // Export for Vercel
@@ -323,12 +306,10 @@ process.on('unhandledRejection', (reason, promise) => {
   if (stack) console.error(stack);
   // In production, log and continue — do NOT crash the server for a single rejected promise
   if (process.env.NODE_ENV !== 'production') {
-    if (!process.env.VERCEL) {
-      if (serverInstance) {
-        serverInstance.close(() => process.exit(1));
-      } else {
-        process.exit(1);
-      }
+    if (serverInstance) {
+      serverInstance.close(() => process.exit(1));
+    } else {
+      process.exit(1);
     }
   }
 });
