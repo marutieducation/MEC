@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:crl="urn:corel:namespaces:zcf:xmlns:container">
+    <rootfiles>
+        <rootfile crl:file-kind="main" full-path="content/root.dat" media-type="application/x-vnd.corel.cdr.rootdata" />
+        <rootfile crl:file-kind="thumbnail" crl:image-height="289" crl:image-width="256" full-path="previews/thumbnail.png" media-type="image/png" />
+        <rootfile crl:caption=":[Page 1];en:[Page 1];" crl:file-kind="page" crl:image-height="256" crl:image-width="225" crl:index="1" full-path="previews/page1.png" media-type="image/png" />
+        <rootfile crl:caption=":[Page 2];en:[Page 2];" crl:file-kind="page" crl:image-height="256" crl:image-width="147" crl:index="2" full-path="previews/page2.png" media-type="image/png" />
+        <rootfile crl:caption=":[Page 3];en:[Page 3];" crl:file-kind="page" crl:image-height="256" crl:image-width="147" crl:index="3" full-path="previews/page3.png" media-type="image/png" />
+    </rootfiles>
+</container>
