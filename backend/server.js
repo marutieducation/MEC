@@ -18,6 +18,18 @@ const { requestLogger, errorLogger } = require('./middleware/requestLogger');
 
 dotenv.config();
 
+// Ensure required directories exist
+const fs = require('fs');
+const path = require('path');
+['logs', 'uploads'].forEach(dir => {
+  const dirPath = path.join(__dirname, dir);
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+    console.log(`📁 Created missing directory: ${dir}`);
+  }
+});
+
+
 // Security validation on startup
 const REQUIRED_ENV = ['MONGO_URI', 'JWT_SECRET'];
 const missingEnv = REQUIRED_ENV.filter(key => !process.env[key]);
@@ -277,9 +289,13 @@ if (!process.env.VERCEL) {
   if (process.env.NODE_ENV === 'production') {
     setInterval(async () => {
       try {
-        const response = await fetch(`http://localhost:${PORT}/api/health`);
-        if (response.ok) {
-          console.log('💓 Keep-alive ping successful');
+        // Fallback for environments without global fetch
+        const fetchMethod = typeof fetch !== 'undefined' ? fetch : null;
+        if (fetchMethod) {
+          const response = await fetchMethod(`http://localhost:${PORT}/api/health`);
+          if (response.ok) {
+            console.log('💓 Keep-alive ping successful');
+          }
         }
       } catch (error) {
         console.error('❌ Keep-alive ping failed:', error.message);

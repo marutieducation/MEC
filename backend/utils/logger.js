@@ -3,7 +3,13 @@ require('winston-daily-rotate-file');
 const { format, transports } = winston;
 const path = require('path');
 
+const fs = require('fs');
 const logDir = 'logs';
+
+// Ensure log directory exists
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
+}
 
 const dailyRotateFileTransport = new transports.DailyRotateFile({
   filename: `${logDir}/application-%DATE%.log`,
