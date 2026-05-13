@@ -264,12 +264,20 @@ app.use(errorHandler);
 
 
 const PORT = process.env.PORT || 5000;
+const HOST = '0.0.0.0';
+
+console.log('--- Startup Diagnostics ---');
+console.log(`Node Version: ${process.version}`);
+console.log(`Current Directory: ${process.cwd()}`);
+console.log(`Port: ${PORT}`);
+console.log(`Host: ${HOST}`);
+console.log('---------------------------');
 
 // Start server unconditionally (no Vercel checks)
-serverInstance = server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+serverInstance = server.listen(PORT, HOST, () => {
+  console.log(`🚀 Server running on http://${HOST}:${PORT}`);
   console.log(`📡 Environment: ${process.env.NODE_ENV}`);
-  logger.info(`Server started on port ${PORT}`);
+  logger.info(`Server started on ${HOST}:${PORT}`);
 });
 
 serverInstance.on('error', (err) => {
