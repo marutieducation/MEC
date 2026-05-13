@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LockClosedIcon, CheckCircleIcon, ArrowRightIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { api } from '@/lib/api';
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -239,5 +239,17 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-bg font-sans">
+        <div className="text-primary font-bold text-lg animate-pulse">Loading Reset Link...</div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </React.Suspense>
   );
 }
