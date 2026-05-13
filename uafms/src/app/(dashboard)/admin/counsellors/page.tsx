@@ -49,8 +49,8 @@ export default function CounsellorManagement() {
     setIsLoading(true);
     try {
       const res = await api.get('/counsellors');
-      setCounsellors(res.data || []);
-      setStats(res.stats || null);
+      setCounsellors(res.data.data || []);
+      setStats(res.data.stats || null);
     } catch (err) {
       console.error('Failed to fetch counsellors', err);
     } finally {

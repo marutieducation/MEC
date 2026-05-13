@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -50,6 +51,8 @@ export default function UnifiedApplicationForm() {
       gmat: ''
     }
   });
+
+  const [selectedUniversities, setSelectedUniversities] = useState<any[]>([]);
 
   const [documents, setDocuments] = useState<{ [key: string]: File | null }>({
 
@@ -106,6 +109,20 @@ export default function UnifiedApplicationForm() {
     loadUserProfile();
   }, [user]);
 
+  useEffect(() => {
+    // Load selected universities from localStorage
+    const storedCart = localStorage.getItem('mec_application_cart');
+    if (storedCart) {
+      try {
+        const cartItems = JSON.parse(storedCart);
+        setSelectedUniversities(cartItems);
+      } catch (error) {
+        console.error('Failed to load application cart:', error);
+        setSelectedUniversities([]);
+      }
+    }
+  }, []);
+
   const addQualification = () => {
     setQualifications([...qualifications, { id: Date.now(), institution: '', degree: '', passingYear: '', cgpa: '', transcript: null }]);
   };
@@ -124,7 +141,43 @@ export default function UnifiedApplicationForm() {
     setSubmitError(null);
 
     try {
+      // 1. Upload Documents from Step 4
+      const uploadPromises = [];
+      
+      // Upload category-based documents
+      for (const [docName, file] of Object.entries(documents)) {
+        if (file) {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('name', docName);
+          // Map to backend categories
+          let category = 'other';
+          if (docName.includes('Marksheet') || docName.includes('Certificate')) category = 'academic';
+          if (docName.includes('Exam') || docName.includes('Scorecard')) category = 'test_score';
+          if (docName.includes('Aadhaar') || docName.includes('PAN') || docName.includes('Photo')) category = 'identity';
+          
+          formData.append('category', category);
+          uploadPromises.push(api.post('/documents/upload', formData));
+        }
+      }
 
+      // Upload transcripts from Step 2 (Qualifications)
+      for (const qual of qualifications) {
+        if (qual.transcript) {
+          const formData = new FormData();
+          formData.append('file', qual.transcript);
+          formData.append('name', `Transcript - ${qual.degree} (${qual.institution})`);
+          formData.append('category', 'academic');
+          uploadPromises.push(api.post('/documents/upload', formData));
+        }
+      }
+
+      // Wait for all uploads to complete
+      if (uploadPromises.length > 0) {
+        await Promise.all(uploadPromises);
+      }
+
+      // 2. Prepare and Submit Applications
       let applicationsToSubmit: any[] = [];
       const storedCart = localStorage.getItem('mec_application_cart');
 
@@ -133,23 +186,19 @@ export default function UnifiedApplicationForm() {
         applicationsToSubmit = cartItems.map((item: any) => ({
           universityId: item.universityId,
           course: item.course || 'Selected Course',
-          academics: qualifications,
+          // Send primary academic info (latest qualification)
+          academics: qualifications.length > 0 ? {
+            institution: qualifications[0].institution,
+            degree: qualifications[0].degree,
+            passingYear: qualifications[0].passingYear,
+            cgpa: qualifications[0].cgpa
+          } : {},
           testScores: formData.testScores
         }));
       } else {
-
-        const demoUnis = [
-          { universityId: '69e387e72feb44f2c611c66c', course: 'Project Management' }
-        ];
-
-        applicationsToSubmit = demoUnis.map(item => ({
-          universityId: item.universityId,
-          course: item.course,
-          academics: qualifications,
-          testScores: formData.testScores
-        }));
-
-        alert("Demo Mode Information: You haven't selected any universities from the Search page, so we added a demo entry (Karnavati University) for this submission test.");
+        setSubmitError('Please select at least one university from the Search page before submitting your application.');
+        setIsSubmitting(false);
+        return;
       }
 
       await api.post('/applications/bulk', { applications: applicationsToSubmit });
@@ -529,15 +578,40 @@ export default function UnifiedApplicationForm() {
 
         {}
         <div className="bg-surface rounded-xl border border-border shadow-sm p-6 grid grid-rows-[auto,1fr] min-h-0 overflow-hidden">
-          <h3 className="text-h3 mb-4 shrink-0">Applying To (0)</h3>
+          <h3 className="text-h3 mb-4 shrink-0">Applying To ({selectedUniversities.length})</h3>
           <div className="overflow-y-auto min-h-0">
             <div className="space-y-4">
-
-            <div className="p-8 border border-dashed border-border rounded-lg text-center text-muted bg-bg/50">
-               <p className="text-[13px] font-bold text-heading">No Universities Selected</p>
-               <p className="text-[11px] mt-1">Please select universities from the search page to apply.</p>
-            </div>
-
+              {selectedUniversities.length === 0 ? (
+                <div className="p-8 border border-dashed border-border rounded-lg text-center text-muted bg-bg/50">
+                   <p className="text-[13px] font-bold text-heading">No Universities Selected</p>
+                   <p className="text-[11px] mt-1">Please select universities from the search page to apply.</p>
+                   <Link href="/student/search" className="inline-flex items-center gap-2 text-primary hover:underline mt-3 text-[12px] font-medium">
+                     Browse Universities <ArrowRightIcon className="w-3 h-3" />
+                   </Link>
+                </div>
+              ) : (
+                selectedUniversities.map((uni, index) => (
+                  <div key={index} className="p-4 border border-border rounded-lg bg-bg/50">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-heading text-[14px]">{uni.universityName || 'University'}</h4>
+                        <p className="text-[12px] text-muted mt-1">{uni.course || 'Selected Course'}</p>
+                        {uni.fee && <p className="text-[11px] text-primary mt-1">{uni.fee}</p>}
+                      </div>
+                      <button
+                        onClick={() => {
+                          const updatedCart = selectedUniversities.filter((_, i) => i !== index);
+                          setSelectedUniversities(updatedCart);
+                          localStorage.setItem('mec_application_cart', JSON.stringify(updatedCart));
+                        }}
+                        className="text-danger hover:text-danger-dark text-[11px] font-medium"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="mt-8 pt-6 border-t border-border">
@@ -563,7 +637,26 @@ export default function UnifiedApplicationForm() {
 
         <div className="flex gap-4">
           <button
-            onClick={() => alert('Draft saved successfuly!')}
+            onClick={() => {
+              const draftData = {
+                formData,
+                qualifications,
+                documents: Object.fromEntries(
+                  Object.entries(documents).map(([key, file]) => [key, file ? file.name : null])
+                ),
+                currentStep,
+                savedAt: new Date().toISOString()
+              };
+              localStorage.setItem('mec_application_draft', JSON.stringify(draftData));
+              // Show success message
+              const successMsg = document.createElement('div');
+              successMsg.className = 'fixed top-4 right-4 bg-success text-white px-4 py-2 rounded-lg shadow-lg z-50';
+              successMsg.textContent = 'Draft saved successfully!';
+              document.body.appendChild(successMsg);
+              setTimeout(() => {
+                document.body.removeChild(successMsg);
+              }, 3000);
+            }}
             className="px-6 h-10 rounded-lg border border-border text-sm font-semibold text-heading hover:bg-bg transition-colors hidden sm:block"
           >
             Save Draft

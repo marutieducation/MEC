@@ -84,9 +84,6 @@ export default function ApplicantsPage() {
            <button onClick={fetchApplicants} className="p-3 bg-surface border border-border rounded-xl text-muted hover:text-primary transition-colors">
               <ArrowPathIcon className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
            </button>
-           <button className="h-12 px-6 bg-primary text-white font-black rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-all flex items-center gap-2">
-              <ArrowDownTrayIcon className="w-5 h-5" /> Export List
-           </button>
         </div>
       </div>
 
@@ -234,7 +231,7 @@ export default function ApplicantsPage() {
                    </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-10">
+                <div className="grid grid-cols-2 gap-6 mb-6">
                    <div className="p-6 bg-bg/50 rounded-3xl border border-border/50">
                       <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-2">Program Selection</p>
                       <p className="text-sm font-black text-heading leading-tight">{selectedApp.course}</p>
@@ -242,6 +239,84 @@ export default function ApplicantsPage() {
                    <div className="p-6 bg-bg/50 rounded-3xl border border-border/50">
                       <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-2">Contact Number</p>
                       <p className="text-sm font-black text-heading">{selectedApp.student?.phone || 'Not Provided'}</p>
+                   </div>
+                </div>
+
+                {}
+                <div className="mb-6">
+                   <h4 className="text-[11px] font-black text-muted uppercase tracking-[0.2em] mb-4">Academic Background</h4>
+                   <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-surface border border-border rounded-2xl">
+                         <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">Institution</p>
+                         <p className="text-sm font-bold text-heading">{selectedApp.academics?.institution || 'Not Provided'}</p>
+                      </div>
+                      <div className="p-4 bg-surface border border-border rounded-2xl">
+                         <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">Degree</p>
+                         <p className="text-sm font-bold text-heading">{selectedApp.academics?.degree || 'Not Provided'}</p>
+                      </div>
+                      <div className="p-4 bg-surface border border-border rounded-2xl">
+                         <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">CGPA</p>
+                         <p className="text-sm font-bold text-heading">{selectedApp.academics?.cgpa || 'Not Provided'}</p>
+                      </div>
+                      <div className="p-4 bg-surface border border-border rounded-2xl">
+                         <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">Passing Year</p>
+                         <p className="text-sm font-bold text-heading">{selectedApp.academics?.passingYear || 'Not Provided'}</p>
+                      </div>
+                   </div>
+                </div>
+
+                {}
+                <div className="mb-10">
+                   <h4 className="text-[11px] font-black text-muted uppercase tracking-[0.2em] mb-4">Test Scores</h4>
+                   <div className="grid grid-cols-4 gap-3">
+                      {selectedApp.testScores?.gre && (
+                         <div className="p-3 bg-surface border border-border rounded-xl text-center">
+                            <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">GRE</p>
+                            <p className="text-lg font-black text-primary">{selectedApp.testScores.gre}</p>
+                         </div>
+                      )}
+                      {selectedApp.testScores?.ielts && (
+                         <div className="p-3 bg-surface border border-border rounded-xl text-center">
+                            <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">IELTS</p>
+                            <p className="text-lg font-black text-primary">{selectedApp.testScores.ielts}</p>
+                         </div>
+                      )}
+                      {selectedApp.testScores?.toefl && (
+                         <div className="p-3 bg-surface border border-border rounded-xl text-center">
+                            <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">TOEFL</p>
+                            <p className="text-lg font-black text-primary">{selectedApp.testScores.toefl}</p>
+                         </div>
+                      )}
+                      {selectedApp.testScores?.gate && (
+                         <div className="p-3 bg-surface border border-border rounded-xl text-center">
+                            <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">GATE</p>
+                            <p className="text-lg font-black text-primary">{selectedApp.testScores.gate}</p>
+                         </div>
+                      )}
+                      {selectedApp.testScores?.gmat && (
+                         <div className="p-3 bg-surface border border-border rounded-xl text-center">
+                            <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">GMAT</p>
+                            <p className="text-lg font-black text-primary">{selectedApp.testScores.gmat}</p>
+                         </div>
+                      )}
+                      {selectedApp.testScores?.jee && (
+                         <div className="p-3 bg-surface border border-border rounded-xl text-center">
+                            <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">JEE</p>
+                            <p className="text-lg font-black text-primary">{selectedApp.testScores.jee}</p>
+                         </div>
+                      )}
+                      {selectedApp.testScores?.cat && (
+                         <div className="p-3 bg-surface border border-border rounded-xl text-center">
+                            <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">CAT</p>
+                            <p className="text-lg font-black text-primary">{selectedApp.testScores.cat}</p>
+                         </div>
+                      )}
+                      {!selectedApp.testScores?.gre && !selectedApp.testScores?.ielts && !selectedApp.testScores?.toefl && 
+                       !selectedApp.testScores?.gate && !selectedApp.testScores?.gmat && !selectedApp.testScores?.jee && !selectedApp.testScores?.cat && (
+                         <div className="col-span-4 p-4 bg-bg/50 rounded-2xl text-center">
+                            <p className="text-sm text-muted italic font-medium">No test scores provided</p>
+                         </div>
+                      )}
                    </div>
                 </div>
 

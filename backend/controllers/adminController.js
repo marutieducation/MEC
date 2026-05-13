@@ -7,10 +7,38 @@ const Counsellor = require('../models/Counsellor');
 const VerificationCode = require('../models/VerificationCode');
 const crypto = require('crypto');
 
+// Generate a compliant password that meets security requirements
+// Requirements: min 8 chars, uppercase, lowercase, digit, special char
+const generateCompliantPassword = () => {
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const digits = '0123456789';
+  const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  
+  // Ensure at least one character from each category
+  let password = '';
+  password += uppercase[Math.floor(Math.random() * uppercase.length)];
+  password += lowercase[Math.floor(Math.random() * lowercase.length)];
+  password += digits[Math.floor(Math.random() * digits.length)];
+  password += special[Math.floor(Math.random() * special.length)];
+  
+  // Fill the rest with random characters from all categories
+  const allChars = uppercase + lowercase + digits + special;
+  for (let i = 4; i < 12; i++) {
+    password += allChars[Math.floor(Math.random() * allChars.length)];
+  }
+  
+  // Shuffle the password
+  return password.split('').sort(() => Math.random() - 0.5).join('');
+};
+
 
 
 const getPipeline = async (req, res) => {
   try {
+    const { page = 1, limit = 50, stage } = req.query;
+    const skip = (page - 1) * limit;
+
     // 1. Get counts for each stage using aggregation (high performance)
     const stageCounts = await Application.aggregate([
       { $group: { _id: '$pipelineStage', count: { $sum: 1 } } }
@@ -35,9 +63,11 @@ const getPipeline = async (req, res) => {
       count: countsMap[stage.id] || 0
     }));
 
-    // 2. Get recent activity instead of ALL cards (prevents OOM)
-    // In a real app, we would paginate this or fetch by stage on demand
-    const recentCards = await Application.find({})
+    // 2. Build query with optional stage filter
+    const query = stage ? { pipelineStage: stage } : {};
+
+    // 3. Get paginated cards
+    const recentCards = await Application.find(query)
       .populate('student', 'firstName lastName')
       .populate('university', 'name logo')
       .populate({
@@ -45,7 +75,11 @@ const getPipeline = async (req, res) => {
         populate: { path: 'user', select: 'firstName lastName' }
       })
       .sort({ updatedAt: -1 })
-      .limit(50); // Hard limit to avoid OOM
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // 4. Get total count for pagination
+    const total = await Application.countDocuments(query);
 
     // Metrics
     const totalApps = await Application.countDocuments({});
@@ -56,6 +90,14 @@ const getPipeline = async (req, res) => {
 
     res.json({
       success: true,
+      columns,
+      cards: recentCards,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      },
       data: {
         columns,
         cards: recentCards,
@@ -371,6 +413,14 @@ const createUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
+    // Check if university is already assigned to another partner
+    if (role === 'university_partner' && universityId) {
+      const existingPartner = await User.findOne({ universityId, role: 'university_partner' });
+      if (existingPartner) {
+        return res.status(400).json({ message: 'Change University, its already added' });
+      }
+    }
+
     const userData = {
       firstName,
       lastName,
@@ -406,6 +456,18 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
+    // Check if university is already assigned to another partner (if being updated)
+    if (req.body.role === 'university_partner' && req.body.universityId) {
+      const existingPartner = await User.findOne({ 
+        universityId: req.body.universityId, 
+        role: 'university_partner',
+        _id: { $ne: req.params.id }
+      });
+      if (existingPartner) {
+        return res.status(400).json({ message: 'Change University, its already added' });
+      }
+    }
+
     if (req.body.password) {
       const user = await User.findById(req.params.id).select('+password');
       if (!user) {
@@ -489,7 +551,7 @@ const createLead = async (req, res) => {
         lastName,
         email,
         phone: phone || '',
-        password: crypto.randomBytes(18).toString('base64url'),
+        password: `MecV2!${crypto.randomBytes(6).toString('hex')}@`, // Ensures compliance with passwordRegex
         role: 'student'
       });
     }

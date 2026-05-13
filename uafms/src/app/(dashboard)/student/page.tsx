@@ -71,8 +71,8 @@ export default function StudentDashboard() {
     setBookingSuccess('');
 
     try {
-      await api.post('/students/book-consultation', bookingForm);
-      setBookingSuccess('Counseling session booked successfully! Admin will contact you soon.');
+      await api.post('/bookings/book', bookingForm);
+      setBookingSuccess('Counseling session booked successfully! You will receive a confirmation email shortly.');
       setTimeout(() => {
         setIsBookingModalOpen(false);
         setBookingSuccess('');

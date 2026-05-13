@@ -71,15 +71,38 @@ const userSchema = new mongoose.Schema(
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
-  // If the password already looks like a bcrypt hash (starts with $2b$ and is 60 chars),
-  // and it wasn't explicitly modified (handled by isModified), do not hash it again.
-  if (this.password && this.password.startsWith('$2') && this.password.length === 60) {
+  // Enhanced password validation before hashing
+  if (!this.password) {
+    return next(new Error('Password is required'));
+  }
+
+  // Check if password is already properly hashed (bcrypt format)
+  const isBcryptHash = /^\$2[aby]\$\d+\$/.test(this.password);
+  if (isBcryptHash && this.password.length >= 60) {
+    // Additional validation to ensure it's a valid bcrypt hash
+    try {
+      const testResult = await bcrypt.compare('test', this.password);
+      if (!testResult) {
+        // If test comparison fails, it might be corrupted, rehash it
+        const salt = await bcrypt.genSalt(12);
+        this.password = await bcrypt.hash(this.password, salt);
+      }
+    } catch (error) {
+      // If bcrypt comparison fails, rehash the password
+      const salt = await bcrypt.genSalt(12);
+      this.password = await bcrypt.hash(this.password, salt);
+    }
     return next();
   }
 
-  const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
+  // Hash new passwords with enhanced security
+  try {
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(new Error('Password hashing failed'));
+  }
 });
 
 

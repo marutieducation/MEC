@@ -11,11 +11,13 @@ import {
   DocumentMagnifyingGlassIcon,
   ShieldCheckIcon,
   SparklesIcon,
-  EnvelopeIcon,
   ArrowPathIcon,
-  BuildingLibraryIcon
+  BuildingLibraryIcon,
+  XMarkIcon,
+  ArrowDownTrayIcon,
+  ArrowDownTrayIcon as DownloadIcon
 } from '@heroicons/react/24/outline';
-import { api } from '@/lib/api';
+import { api, baseUrl } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { getUniversityLogo } from '@/lib/universityLogos';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,6 +29,10 @@ export default function UniversityDashboard() {
   const [recentApplicants, setRecentApplicants] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [universityData, setUniversityData] = useState<any>(null);
+  const [selectedApp, setSelectedApp] = useState<any>(null);
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [isDocsLoading, setIsDocsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,12 +40,12 @@ export default function UniversityDashboard() {
         setIsLoading(true);
         const [dashboardRes, applicantsRes] = await Promise.all([
           api.get('/university-portal/dashboard'),
-          api.get('/university-portal/applicants?limit=5')
+          api.get('/university-portal/applicants?limit=100')
         ]);
         
         setStats(dashboardRes.stats);
         setUniversityData(dashboardRes.university);
-        setRecentApplicants(applicantsRes.data?.data || []);
+        setRecentApplicants(applicantsRes.data || []);
       } catch (err) {
         console.error('Failed to fetch dashboard data', err);
       } finally {
@@ -48,6 +54,42 @@ export default function UniversityDashboard() {
     };
     fetchData();
   }, [user]);
+
+  const fetchDocs = async (id: string) => {
+    try {
+      setIsDocsLoading(true);
+      const res = await api.get(`/university-portal/applicants/${id}/documents`);
+      setDocuments(res.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsDocsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedApp) fetchDocs(selectedApp._id);
+  }, [selectedApp]);
+
+  const handleDecision = async (id: string, status: string) => {
+    try {
+      setIsProcessing(id);
+      await api.put(`/university-portal/applicants/${id}/status`, { status });
+      
+      // Update local state
+      setRecentApplicants(prev => prev.map(app => 
+        app._id === id ? { ...app, status } : app
+      ));
+      
+      if (selectedApp?._id === id) {
+        setSelectedApp({ ...selectedApp, status });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsProcessing(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -61,6 +103,189 @@ export default function UniversityDashboard() {
   }
 
   if (!user?.universityId) {
+    const [showOnboarding, setShowOnboarding] = useState(false);
+    const [onboardingData, setOnboardingData] = useState({
+      universityName: '',
+      website: '',
+      address: '',
+      city: '',
+      state: '',
+      country: 'India',
+      contactEmail: user?.email || '',
+      contactPhone: '',
+      description: '',
+      establishedYear: '',
+      accreditation: '',
+      type: 'Private'
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+
+    const handleOnboardingSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+      setError('');
+
+      try {
+        await api.post('/university-portal/onboarding', onboardingData);
+        setSuccess(true);
+        // Refresh user data after successful onboarding
+        window.location.reload();
+      } catch (err: any) {
+        setError(err.message || 'Failed to submit onboarding information');
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    if (success) {
+      return (
+        <div className="min-h-[80vh] flex flex-col items-center justify-center p-8 text-center bg-surface/30 rounded-[40px] border-2 border-dashed border-border">
+          <div className="w-24 h-24 bg-green-500/10 rounded-3xl flex items-center justify-center mb-8">
+             <CheckCircleIcon className="w-12 h-12 text-green-600" />
+          </div>
+          <h1 className="text-4xl font-black text-heading mb-4 tracking-tight">Onboarding Submitted!</h1>
+          <p className="text-muted text-lg max-w-lg mb-10 font-medium">
+            Your university profile has been submitted for review. We'll process your application within 24-48 hours.
+          </p>
+          <Link href="/university" className="px-8 py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+            Continue to Dashboard
+          </Link>
+        </div>
+      );
+    }
+
+    if (showOnboarding) {
+      return (
+        <div className="min-h-[80vh] flex items-center justify-center p-8">
+          <div className="max-w-2xl w-full bg-surface rounded-2xl border border-border shadow-xl p-8">
+            <h2 className="text-3xl font-bold text-heading mb-6">University Onboarding</h2>
+            <p className="text-muted mb-8">Please provide your institution details to complete the setup.</p>
+
+            {error && (
+              <div className="p-3 bg-danger/10 text-danger rounded-lg text-sm font-medium border border-danger/20 mb-6">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleOnboardingSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-heading mb-2">University Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={onboardingData.universityName}
+                    onChange={(e) => setOnboardingData({...onboardingData, universityName: e.target.value})}
+                    className="w-full h-11 px-3 bg-bg border border-border rounded-lg text-body focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-heading mb-2">Website</label>
+                  <input
+                    type="url"
+                    value={onboardingData.website}
+                    onChange={(e) => setOnboardingData({...onboardingData, website: e.target.value})}
+                    className="w-full h-11 px-3 bg-bg border border-border rounded-lg text-body focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-heading mb-2">Type</label>
+                  <select
+                    value={onboardingData.type}
+                    onChange={(e) => setOnboardingData({...onboardingData, type: e.target.value})}
+                    className="w-full h-11 px-3 bg-bg border border-border rounded-lg text-body focus:outline-none focus:border-primary"
+                  >
+                    <option value="Private">Private</option>
+                    <option value="Public">Public</option>
+                    <option value="Autonomous">Autonomous</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-heading mb-2">Established Year</label>
+                  <input
+                    type="number"
+                    value={onboardingData.establishedYear}
+                    onChange={(e) => setOnboardingData({...onboardingData, establishedYear: e.target.value})}
+                    className="w-full h-11 px-3 bg-bg border border-border rounded-lg text-body focus:outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-heading mb-2">Address</label>
+                <textarea
+                  value={onboardingData.address}
+                  onChange={(e) => setOnboardingData({...onboardingData, address: e.target.value})}
+                  rows={3}
+                  className="w-full px-3 bg-bg border border-border rounded-lg text-body focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-heading mb-2">City</label>
+                  <input
+                    type="text"
+                    value={onboardingData.city}
+                    onChange={(e) => setOnboardingData({...onboardingData, city: e.target.value})}
+                    className="w-full h-11 px-3 bg-bg border border-border rounded-lg text-body focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-heading mb-2">State</label>
+                  <input
+                    type="text"
+                    value={onboardingData.state}
+                    onChange={(e) => setOnboardingData({...onboardingData, state: e.target.value})}
+                    className="w-full h-11 px-3 bg-bg border border-border rounded-lg text-body focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-heading mb-2">Country</label>
+                  <input
+                    type="text"
+                    value={onboardingData.country}
+                    onChange={(e) => setOnboardingData({...onboardingData, country: e.target.value})}
+                    className="w-full h-11 px-3 bg-bg border border-border rounded-lg text-body focus:outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-heading mb-2">Description</label>
+                <textarea
+                  value={onboardingData.description}
+                  onChange={(e) => setOnboardingData({...onboardingData, description: e.target.value})}
+                  rows={4}
+                  placeholder="Brief description of your university..."
+                  className="w-full px-3 bg-bg border border-border rounded-lg text-body focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowOnboarding(false)}
+                  className="px-6 py-3 border border-border text-heading rounded-lg hover:bg-bg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-semibold transition-colors disabled:opacity-70"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Onboarding'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center p-8 text-center bg-surface/30 rounded-[40px] border-2 border-dashed border-border">
         <div className="w-24 h-24 bg-primary/10 rounded-3xl flex items-center justify-center mb-8">
@@ -68,12 +293,19 @@ export default function UniversityDashboard() {
         </div>
         <h1 className="text-4xl font-black text-heading mb-4 tracking-tight">Institutional Onboarding</h1>
         <p className="text-muted text-lg max-w-lg mb-10 font-medium">
-          Your partner account is active, but hasn't been linked to a university profile yet. 
-          Please contact <span className="text-primary font-bold">onboarding@mec.com</span> to finalize your setup.
+          Your partner account is active. Complete the onboarding process to link your university profile and access the partner dashboard.
         </p>
-        <Link href="/" className="px-8 py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all">
-          Back to Main Portal
-        </Link>
+        <div className="flex gap-4">
+          <button
+            onClick={() => setShowOnboarding(true)}
+            className="px-8 py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+          >
+            Start Onboarding
+          </button>
+          <Link href="/" className="px-8 py-4 border border-border text-heading font-black rounded-2xl hover:bg-bg transition-all">
+            Back to Main Portal
+          </Link>
+        </div>
       </div>
     );
   }
@@ -108,12 +340,7 @@ export default function UniversityDashboard() {
           </div>
 
           <div className="flex gap-4">
-             <button className="h-14 px-8 bg-white/5 border border-white/10 rounded-2xl font-black text-sm hover:bg-white/10 transition-all flex items-center gap-2">
-                <EnvelopeIcon className="w-5 h-5" /> Inbound Support
-             </button>
-             <button className="h-14 px-8 bg-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-all flex items-center gap-2">
-                Post New Event <ArrowUpRightIcon className="w-5 h-5" />
-             </button>
+             {/* Support and Event buttons removed as per request */}
           </div>
         </div>
       </motion.div>
@@ -147,12 +374,9 @@ export default function UniversityDashboard() {
         <div className="lg:col-span-2 bg-surface rounded-[40px] border border-border shadow-sm overflow-hidden flex flex-col">
           <div className="p-8 border-b border-border flex justify-between items-center">
             <div>
-              <h3 className="text-xl font-black text-heading">Recent Admissions Activity</h3>
-              <p className="text-xs text-muted font-bold mt-1">Latest candidate submissions for your programs</p>
+              <h3 className="text-xl font-black text-heading">Student Admissions Queue</h3>
+              <p className="text-xs text-muted font-bold mt-1">Full list of candidate submissions for your programs</p>
             </div>
-            <Link href="/university/applicants" className="text-[11px] font-black text-primary uppercase tracking-widest hover:underline">
-              View All Queue
-            </Link>
           </div>
           <div className="flex-1 p-4">
             <div className="space-y-4">
@@ -182,7 +406,10 @@ export default function UniversityDashboard() {
                       }`}>
                         {app.status}
                       </div>
-                      <button className="p-2 bg-surface border border-border rounded-xl text-muted hover:text-primary transition-colors">
+                      <button 
+                        onClick={() => setSelectedApp(app)}
+                        className="p-2 bg-surface border border-border rounded-xl text-muted hover:text-primary transition-colors"
+                      >
                          <ArrowUpRightIcon className="w-5 h-5" />
                       </button>
                     </div>
@@ -220,36 +447,122 @@ export default function UniversityDashboard() {
                </div>
             </div>
           </div>
-
-          {}
-          <div className="p-8 bg-surface rounded-[40px] border border-border shadow-sm">
-            <div className="flex items-center gap-3 mb-8 pb-4 border-b border-border">
-               <CalendarDaysIcon className="w-5 h-5 text-primary" />
-               <h3 className="text-[11px] font-black text-heading uppercase tracking-widest">Upcoming Events</h3>
-            </div>
-            <div className="space-y-6">
-               {[
-                 { title: 'Global MBA Webinar', date: 'Oct 24, 2026', type: 'WEBINAR' },
-                 { title: 'Annual Convocation', date: 'Nov 02, 2026', type: 'CEREMONY' }
-               ].map((ev, i) => (
-                 <div key={i} className="flex gap-4">
-                   <div className="w-12 h-12 bg-bg rounded-2xl flex flex-col items-center justify-center border border-border shrink-0">
-                      <span className="text-[10px] font-black text-primary">OCT</span>
-                      <span className="text-sm font-black text-heading leading-tight">24</span>
-                   </div>
-                   <div>
-                     <h5 className="text-[13px] font-black text-heading">{ev.title}</h5>
-                     <p className="text-[10px] text-muted font-bold mt-0.5 tracking-tight">{ev.type} • {ev.date}</p>
-                   </div>
-                 </div>
-               ))}
-               <button className="w-full py-4 text-[11px] font-black text-primary uppercase tracking-widest hover:underline">
-                  Manage Events Schedule
-               </button>
-            </div>
-          </div>
         </div>
       </div>
+      {}
+      <AnimatePresence>
+        {selectedApp && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-6"
+            onClick={() => setSelectedApp(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-surface w-full max-w-2xl rounded-[40px] shadow-2xl border border-border overflow-hidden max-h-[90vh] overflow-y-auto"
+            >
+              <div className="p-10">
+                <div className="flex items-center justify-between mb-10">
+                   <div className="flex items-center gap-6">
+                      <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary font-black text-3xl">
+                        {selectedApp.student?.firstName?.[0]}{selectedApp.student?.lastName?.[0]}
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-heading">{selectedApp.student?.firstName} {selectedApp.student?.lastName}</h2>
+                        <p className="text-sm text-muted font-bold tracking-widest uppercase mt-1">Application ID: {selectedApp._id.slice(-8).toUpperCase()}</p>
+                      </div>
+                   </div>
+                   <button onClick={() => setSelectedApp(null)} className="p-3 bg-bg rounded-2xl border border-border text-muted hover:text-heading transition-colors">
+                      <XMarkIcon className="w-6 h-6" />
+                   </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                   <div className="p-6 bg-bg/50 rounded-3xl border border-border/50">
+                      <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-2">Program Selection</p>
+                      <p className="text-sm font-black text-heading leading-tight">{selectedApp.course}</p>
+                   </div>
+                   <div className="p-6 bg-bg/50 rounded-3xl border border-border/50">
+                      <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-2">Contact Number</p>
+                      <p className="text-sm font-black text-heading">{selectedApp.student?.phone || 'Not Provided'}</p>
+                   </div>
+                </div>
+
+                <div className="mb-6">
+                   <h4 className="text-[11px] font-black text-muted uppercase tracking-[0.2em] mb-4">Academic Background</h4>
+                   <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-surface border border-border rounded-2xl">
+                         <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">Institution</p>
+                         <p className="text-sm font-bold text-heading">{selectedApp.academics?.institution || 'Not Provided'}</p>
+                      </div>
+                      <div className="p-4 bg-surface border border-border rounded-2xl">
+                         <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">Degree</p>
+                         <p className="text-sm font-bold text-heading">{selectedApp.academics?.degree || 'Not Provided'}</p>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="mb-10">
+                   <h4 className="text-[11px] font-black text-muted uppercase tracking-[0.2em] mb-4">Candidate Dossier</h4>
+                   {isDocsLoading ? (
+                      <div className="flex items-center gap-2 text-xs font-bold text-primary">
+                        <ArrowPathIcon className="w-4 h-4 animate-spin" /> Verifying document security...
+                      </div>
+                   ) : documents.length === 0 ? (
+                      <p className="text-sm text-muted italic font-medium">No documents have been uploaded for this candidate.</p>
+                   ) : (
+                      <div className="space-y-3">
+                        {documents.map(doc => (
+                          <div key={doc._id} className="p-4 bg-surface border border-border rounded-2xl flex items-center justify-between group">
+                            <div className="flex items-center gap-3">
+                               <DocumentMagnifyingGlassIcon className="w-6 h-6 text-primary" />
+                               <div>
+                                 <p className="text-sm font-black text-heading leading-none">{doc.name}</p>
+                                 <p className="text-[10px] text-muted font-bold mt-1 uppercase tracking-tight">{doc.category} • {doc.fileSize}</p>
+                               </div>
+                            </div>
+                            <a 
+                              href={`${baseUrl}/documents/${doc._id}/download?token=${localStorage.getItem('uafms_token')}`} 
+                              target="_blank" 
+                              download
+                              className="p-2 bg-bg border border-border rounded-xl text-muted hover:text-primary transition-all"
+                            >
+                               <ArrowDownTrayIcon className="w-5 h-5" />
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                   )}
+                </div>
+
+                {!['accepted', 'rejected'].includes(selectedApp.status) && (
+                  <div className="flex gap-4">
+                     <button 
+                       onClick={() => handleDecision(selectedApp._id, 'rejected')}
+                       disabled={isProcessing === selectedApp._id}
+                       className="flex-1 h-16 border-2 border-danger/20 text-danger font-black rounded-2xl hover:bg-danger/10 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                     >
+                        {isProcessing === selectedApp._id ? 'Processing...' : 'Decline'}
+                     </button>
+                     <button 
+                       onClick={() => handleDecision(selectedApp._id, 'accepted')}
+                       disabled={isProcessing === selectedApp._id}
+                       className="flex-1 h-16 bg-success text-white font-black rounded-2xl shadow-xl shadow-success/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                     >
+                        {isProcessing === selectedApp._id ? 'Processing...' : 'Issue Offer'}
+                     </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

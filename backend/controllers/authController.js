@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const VerificationCode = require('../models/VerificationCode');
-const generateToken = require('../utils/generateToken');
+const LoginAttempt = require('../models/LoginAttempt');
+const { generateToken } = require('../utils/generateToken');
 const { sendEmail } = require('../utils/emailService');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
@@ -109,20 +110,6 @@ const register = async (req, res) => {
 
 
 
-const forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-
-      return res.status(200).json({ message: 'If an account exists, a reset link has been sent.' });
-    }
-
-    res.status(200).json({ message: 'If an account exists, a reset link has been sent.' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
 
 
@@ -136,14 +123,38 @@ const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
+    // Check account lockout
+    const isLocked = await LoginAttempt.isAccountLocked(email);
+    if (isLocked) {
+      console.warn(`[AUTH] 🔒 Account locked: ${email} (IP: ${req.ip})`);
+      return res.status(429).json({ 
+        message: 'Account temporarily locked due to too many failed attempts. Please try again in 15 minutes.' 
+      });
+    }
+
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
+      // Log failed attempt
+      await LoginAttempt.create({
+        email,
+        ip: req.ip,
+        userAgent: req.get('User-Agent') || '',
+        success: false
+      });
       console.warn(`[AUTH] ❌ User not found: ${email}`);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
 
     if (role && user.role !== role) {
+      // Log failed attempt
+      await LoginAttempt.create({
+        email,
+        ip: req.ip,
+        userAgent: req.get('User-Agent') || '',
+        success: false,
+        userId: user._id
+      });
       console.warn(`[AUTH] ⚠️ Role mismatch: Expecting ${role}, found ${user.role} for ${email}`);
       return res.status(401).json({
         message: `Access denied. This account is registered as a ${user.role}.`
@@ -153,9 +164,30 @@ const login = async (req, res) => {
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
-      console.warn(`[AUTH] ❌ Password incorrect for: ${email}`);
-      return res.status(401).json({ message: 'Invalid email or password' });
+      // Log failed attempt
+      await LoginAttempt.create({
+        email,
+        ip: req.ip,
+        userAgent: req.get('User-Agent') || '',
+        success: false,
+        userId: user._id
+      });
+      const remaining = await LoginAttempt.getRemainingAttempts(email);
+      console.warn(`[AUTH] ❌ Password incorrect for: ${email}. Remaining attempts: ${remaining}`);
+      return res.status(401).json({ 
+        message: 'Invalid email or password',
+        remainingAttempts: remaining
+      });
     }
+
+    // Log successful attempt
+    await LoginAttempt.create({
+      email,
+      ip: req.ip,
+      userAgent: req.get('User-Agent') || '',
+      success: true,
+      userId: user._id
+    });
 
     console.log(`[AUTH] ✅ Success: ${email} (Role: ${user.role}) logged in.`);
 
@@ -203,6 +235,19 @@ const login = async (req, res) => {
     }
 
     const populatedUser = await user.populate('universityId');
+    const token = generateToken(populatedUser._id);
+    
+    // Set httpOnly secure cookie
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000, // 1 hour
+      path: '/'
+    };
+    
+    res.cookie('uafms_token', token, cookieOptions);
+    
     res.json({
       _id: populatedUser._id,
       firstName: populatedUser.firstName,
@@ -211,7 +256,7 @@ const login = async (req, res) => {
       role: populatedUser.role,
       profileCompleted: populatedUser.profileCompleted,
       universityId: populatedUser.universityId,
-      token: generateToken(populatedUser._id),
+      token: token, // Still return token for backward compatibility
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -230,26 +275,33 @@ const verify2FA = async (req, res) => {
 
 
     const normalizedOtp = typeof otp === 'string' ? otp.trim() : '';
-    const allowDevBypass = process.env.NODE_ENV !== 'production' && process.env.ALLOW_DEV_2FA_BYPASS === 'true';
-    if (allowDevBypass && normalizedOtp === '123456') {
-       console.log('--- 2FA DEV BYPASS ACTIVATED ---');
-    } else {
-      if (!user.twoFactorCode || !user.twoFactorExpiry) {
-        return res.status(400).json({ message: 'No active verification code' });
-      }
+    
+    // Enhanced OTP validation without bypass codes
+    if (!user.twoFactorCode || !user.twoFactorExpiry) {
+      return res.status(400).json({ message: 'No active verification code' });
+    }
 
-      if (!/^\d{6}$/.test(normalizedOtp)) {
-        return res.status(400).json({ message: 'Invalid verification code format' });
-      }
+    // Strict OTP format validation
+    if (!/^\d{6}$/.test(normalizedOtp)) {
+      return res.status(400).json({ message: 'Invalid verification code format' });
+    }
 
-      if (user.twoFactorExpiry < new Date()) {
-        return res.status(400).json({ message: 'Verification code has expired' });
-      }
+    // Check OTP expiration
+    if (user.twoFactorExpiry < new Date()) {
+      return res.status(400).json({ message: 'Verification code has expired' });
+    }
 
+    // Verify OTP with enhanced error handling
+    try {
       const isOtpMatch = await bcrypt.compare(normalizedOtp, user.twoFactorCode);
       if (!isOtpMatch) {
+        // Log failed attempt for security monitoring
+        console.warn(`[2FA] Failed verification attempt for user ${user._id}`);
         return res.status(400).json({ message: 'Invalid verification code' });
       }
+    } catch (error) {
+      console.error('2FA verification error:', error);
+      return res.status(500).json({ message: 'Verification process failed' });
     }
 
 
@@ -313,6 +365,195 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    const User = require('../models/User');
+    const PasswordReset = require('../models/PasswordReset');
+    const { sendEmail } = require('../utils/emailService');
+
+    const user = await User.findOne({ email });
+    
+    // Always return success to prevent email enumeration attacks
+    if (!user) {
+      return res.json({ 
+        message: 'If an account with this email exists, a password reset link has been sent.' 
+      });
+    }
+
+    // Generate reset token
+    const resetToken = await PasswordReset.generateResetToken(
+      email, 
+      req.ip, 
+      req.get('User-Agent')
+    );
+
+    // Create reset URL
+    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password?token=${resetToken.token}`;
+
+    // Send reset email
+    try {
+      await sendEmail({
+        to: email,
+        subject: 'Password Reset Request - MEC UAFMS',
+        html: `
+          <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+              <h1 style="color: white; margin: 0; font-size: 28px;">MEC UAFMS</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Password Reset Request</p>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+              <h2 style="color: #333; margin: 0 0 20px 0;">Hello ${user.firstName},</h2>
+              <p style="color: #666; line-height: 1.6; margin: 0 0 20px 0;">
+                We received a request to reset your password for your MEC UAFMS account. 
+                Click the button below to reset your password:
+              </p>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetUrl}" 
+                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                          color: white; padding: 15px 30px; text-decoration: none; 
+                          border-radius: 25px; font-weight: bold; display: inline-block;">
+                  Reset Password
+                </a>
+              </div>
+              
+              <p style="color: #666; line-height: 1.6; margin: 20px 0 0 0;">
+                Or copy and paste this link in your browser:<br>
+                <span style="word-break: break-all; color: #667eea;">${resetUrl}</span>
+              </p>
+            </div>
+            
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+              <p style="color: #856404; margin: 0; font-size: 14px;">
+                <strong>Important:</strong> This link will expire in 1 hour for security reasons. 
+                If you didn't request this password reset, please ignore this email.
+              </p>
+            </div>
+            
+            <div style="text-align: center; color: #999; font-size: 12px;">
+              <p>This is an automated message from MEC UAFMS. Please do not reply to this email.</p>
+            </div>
+          </div>
+        `
+      });
+    } catch (emailError) {
+      console.error('Failed to send password reset email:', emailError);
+      // Continue with response even if email fails
+    }
+
+    res.json({ 
+      message: 'If an account with this email exists, a password reset link has been sent.' 
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Password reset request failed' });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ 
+        message: 'Reset token and new password are required' 
+      });
+    }
+
+    // Validate password strength
+    if (newPassword.length < 8) {
+      return res.status(400).json({ 
+        message: 'Password must be at least 8 characters long' 
+      });
+    }
+
+    const PasswordReset = require('../models/PasswordReset');
+    const User = require('../models/User');
+
+    // Validate reset token
+    const resetDoc = await PasswordReset.validateToken(token);
+    if (!resetDoc) {
+      return res.status(400).json({ 
+        message: 'Invalid or expired reset token' 
+      });
+    }
+
+    // Update user password
+    const user = await User.findById(resetDoc.user._id);
+    user.password = newPassword;
+    await user.save();
+
+    // Mark token as used
+    await resetDoc.markAsUsed();
+
+    // Send confirmation email
+    try {
+      const { sendEmail } = require('../utils/emailService');
+      await sendEmail({
+        to: user.email,
+        subject: 'Password Reset Successful - MEC UAFMS',
+        html: `
+          <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+              <h1 style="color: white; margin: 0; font-size: 28px;">MEC UAFMS</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Password Reset Successful</p>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+              <h2 style="color: #333; margin: 0 0 20px 0;">Hello ${user.firstName},</h2>
+              <p style="color: #666; line-height: 1.6; margin: 0 0 20px 0;">
+                Your password has been successfully reset. You can now log in to your account with your new password.
+              </p>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/login" 
+                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                          color: white; padding: 15px 30px; text-decoration: none; 
+                          border-radius: 25px; font-weight: bold; display: inline-block;">
+                  Log In to Your Account
+                </a>
+              </div>
+            </div>
+            
+            <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+              <p style="color: #155724; margin: 0; font-size: 14px;">
+                <strong>Security Notice:</strong> If you didn't request this password reset, 
+                please contact our support team immediately.
+              </p>
+            </div>
+            
+            <div style="text-align: center; color: #999; font-size: 12px;">
+              <p>This is an automated message from MEC UAFMS. Please do not reply to this email.</p>
+            </div>
+          </div>
+        `
+      });
+    } catch (emailError) {
+      console.error('Failed to send confirmation email:', emailError);
+    }
+
+    res.json({ 
+      message: 'Password reset successful. You can now log in with your new password.' 
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Password reset failed' });
+  }
+};
+
 const linkUniversity = async (req, res) => {
   try {
     const { universityId } = req.body;
@@ -341,4 +582,4 @@ const linkUniversity = async (req, res) => {
   }
 };
 
-module.exports = { register, login, verify2FA, getMe, updateProfile, forgotPassword, linkUniversity };
+module.exports = { register, login, verify2FA, getMe, updateProfile, forgotPassword, resetPassword, linkUniversity };

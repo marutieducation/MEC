@@ -81,8 +81,6 @@ const partnerNav = [
     category: 'PARTNER',
     items: [
       { name: 'University Portal', href: '/university', icon: HomeIcon },
-      { name: 'Applicants', href: '/university/applicants', icon: UsersIcon },
-      { name: 'Events', href: '/university/events', icon: CalendarDaysIcon },
       { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
     ]
   }
@@ -166,23 +164,7 @@ export function Sidebar() {
           ))}
         </nav>
         
-        {/* Help Widget */}
-        <div className="mt-8 px-3">
-          <motion.div 
-            whileHover={{ scale: 1.02 }}
-            className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 relative overflow-hidden group cursor-pointer shadow-lg"
-          >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/40 transition-colors duration-500" />
-            <div className="relative z-10">
-              <p className="text-[13px] font-black text-heading mb-1">Need help?</p>
-              <p className="text-[11px] text-muted mb-3 font-medium">Get assistance from our dedicated support team.</p>
-              <div className="flex items-center text-[11px] font-black text-primary group-hover:gap-2 transition-all">
-                Contact Support <CommandLineIcon className="w-4 h-4 ml-1" />
-              </div>
-            </div>
-            <QuestionMarkCircleIcon className="absolute -right-3 -bottom-3 w-20 h-20 text-primary/10 group-hover:rotate-12 transition-transform duration-500" />
-          </motion.div>
-        </div>
+
 
         {/* User Profile Footer */}
         <div className="mt-8 pt-6 border-t border-border/30">

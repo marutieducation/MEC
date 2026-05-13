@@ -82,10 +82,123 @@ const validateFileType = async (req, res, next) => {
       await fs.unlink(req.file.path);
       return res.status(400).json({ message: 'Security Alert: File type mismatch detected (Magic Bytes)' });
     }
+
+    // Deep validation for PDF files
+    if (type.mime === 'application/pdf') {
+      const pdfValidation = await validatePDFStructure(buffer);
+      if (!pdfValidation.valid) {
+        await fs.unlink(req.file.path);
+        return res.status(400).json({ message: `Security Alert: Invalid PDF structure - ${pdfValidation.reason}` });
+      }
+    }
+
+    // Deep validation for images
+    if (type.mime.startsWith('image/')) {
+      const imageValidation = await validateImageStructure(buffer, type.mime);
+      if (!imageValidation.valid) {
+        await fs.unlink(req.file.path);
+        return res.status(400).json({ message: `Security Alert: Invalid image structure - ${imageValidation.reason}` });
+      }
+    }
+
+    // Check for embedded scripts or suspicious content
+    const contentCheck = await scanForSuspiciousContent(buffer);
+    if (!contentCheck.safe) {
+      await fs.unlink(req.file.path);
+      return res.status(400).json({ message: `Security Alert: Suspicious content detected - ${contentCheck.reason}` });
+    }
+
     next();
   } catch (error) {
     if (req.file) await fs.unlink(req.file.path).catch(() => {});
     return res.status(500).json({ message: 'Error validating file security' });
+  }
+};
+
+// Validate PDF structure
+const validatePDFStructure = async (buffer) => {
+  try {
+    // Check PDF header
+    const header = buffer.toString('ascii', 0, 4);
+    if (header !== '%PDF') {
+      return { valid: false, reason: 'Invalid PDF header' };
+    }
+
+    // Check for PDF trailer (must be at the end of the file)
+    const trailer = buffer.subarray(-1024).toString('ascii');
+    if (!trailer.includes('%%EOF')) {
+      return { valid: false, reason: 'Missing PDF trailer' };
+    }
+
+    // JavaScript check disabled to avoid false positives
+    // const content = buffer.toString('ascii');
+    // if (content.includes('/JavaScript') || content.includes('/JS')) {
+    //   return { valid: false, reason: 'Embedded JavaScript detected' };
+    // }
+
+    // Suspicious actions check disabled to avoid false positives
+    // if (content.includes('/Launch') || content.includes('/URI') || content.includes('/GoTo')) {
+    //   return { valid: false, reason: 'Suspicious PDF actions detected' };
+    // }
+
+    return { valid: true };
+  } catch (error) {
+    return { valid: false, reason: 'PDF validation error' };
+  }
+};
+
+// Validate image structure
+const validateImageStructure = async (buffer, mimeType) => {
+  try {
+    if (mimeType === 'image/jpeg') {
+      // Check JPEG header
+      const header = buffer.readUInt16BE(0);
+      if (header !== 0xFFD8) {
+        return { valid: false, reason: 'Invalid JPEG header' };
+      }
+    } else if (mimeType === 'image/png') {
+      // Check PNG header
+      const header = buffer.toString('ascii', 0, 8);
+      if (header !== '\x89PNG\r\n\x1A\n') {
+        return { valid: false, reason: 'Invalid PNG header' };
+      }
+    } else if (mimeType === 'image/webp') {
+      // Check WebP header
+      const header = buffer.toString('ascii', 0, 4);
+      if (header !== 'RIFF') {
+        return { valid: false, reason: 'Invalid WebP header' };
+      }
+    }
+
+    return { valid: true };
+  } catch (error) {
+    return { valid: false, reason: 'Image validation error' };
+  }
+};
+
+// Scan for suspicious content
+const scanForSuspiciousContent = async (buffer) => {
+  try {
+    const content = buffer.toString('ascii', 0, Math.min(1024, buffer.length));
+    
+    // Check for script tags
+    if (content.includes('<script') || content.includes('javascript:')) {
+      return { safe: false, reason: 'Script content detected' };
+    }
+
+    // Check for embedded executables
+    if (content.includes('MZ') || content.includes('PE')) {
+      return { safe: false, reason: 'Executable content detected' };
+    }
+
+    // Check for shell commands
+    if (content.includes('eval(') || content.includes('exec(') || content.includes('system(')) {
+      return { safe: false, reason: 'Shell command patterns detected' };
+    }
+
+    return { safe: true };
+  } catch (error) {
+    return { safe: false, reason: 'Content scan error' };
   }
 };
 

@@ -27,7 +27,8 @@ export default function StudentPrefsPage() {
     const fetchPrefs = async () => {
       try {
         const res = await api.get('/universities');
-        const unis = res.data?.data || [];
+        // getUniversities returns the array directly
+        const unis = Array.isArray(res.data) ? res.data : (res.data?.data || []);
 
         const topUnis = unis.sort((a: any, b: any) => (b.ytdEnrolled || 0) - (a.ytdEnrolled || 0)).slice(0, 6);
         setPopularUniversities(topUnis);

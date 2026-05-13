@@ -1,32 +1,27 @@
 const mongoose = require('mongoose');
-const User = require('./models/User');
 const dotenv = require('dotenv');
+const User = require('./models/User');
 
 dotenv.config();
 
 const resetAdmin = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    const email = 'marutieducation64@gmail.com';
-    const password = 'marutieducation64@gmail.com';
-
-    await User.deleteMany({ email: /marutieducation64@gmail.com/i });
-
-    const user = await User.create({
-      firstName: 'Maruti',
-      lastName: 'Education',
-      email: email,
-      password: password,
-      role: 'admin',
-      profileCompleted: true
-    });
-
-    console.log('✅ Admin user RESET successfully:');
-    console.log('Email:', user.email);
-
-    mongoose.connection.close();
+    const email = 'admin@mec.com';
+    const password = process.env.DEMO_PASSWORD || 'mec_v2_p4ssw0rd_9872!#';
+    
+    const user = await User.findOne({ email });
+    if (user) {
+      user.password = password;
+      await user.save();
+      console.log(`✅ Reset password for ${email} to: ${password}`);
+    } else {
+      console.log(`❌ User ${email} not found.`);
+    }
+    process.exit(0);
   } catch (err) {
     console.error(err);
+    process.exit(1);
   }
 };
 

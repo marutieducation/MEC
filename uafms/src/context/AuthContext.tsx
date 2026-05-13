@@ -70,7 +70,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       try {
-
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-9uu9.onrender.com/api';
         const response = await fetch(`${API_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${savedToken}` },
@@ -80,28 +79,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const userData = await response.json();
           setUser(userData);
           setToken(savedToken);
-
           localStorage.setItem('uafms_user', JSON.stringify(userData));
         } else if (response.status === 401 || response.status === 403) {
-
           console.warn('Session expired. Please log in again.');
           localStorage.removeItem('uafms_token');
           localStorage.removeItem('uafms_user');
           setUser(null);
           setToken(null);
         } else {
-
-          console.log(`📡 Server error ${response.status}, using cached session.`);
-          const parsedUser = JSON.parse(savedUser);
-          setUser(parsedUser);
-          setToken(savedToken);
+          // Don't use cached session on server errors - force re-authentication
+          console.warn(`Server error ${response.status}. Please log in again.`);
+          localStorage.removeItem('uafms_token');
+          localStorage.removeItem('uafms_user');
+          setUser(null);
+          setToken(null);
         }
       } catch (err) {
-
-        console.warn('📡 Network error during validation, using cached session.');
-        const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
-        setToken(savedToken);
+        // Don't use cached session on network errors - force re-authentication
+        console.warn('Network error during validation. Please log in again.');
+        localStorage.removeItem('uafms_token');
+        localStorage.removeItem('uafms_user');
+        setUser(null);
+        setToken(null);
       } finally {
         setIsLoading(false);
       }

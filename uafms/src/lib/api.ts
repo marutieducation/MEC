@@ -1,5 +1,5 @@
 const DEFAULT_REMOTE_BACKEND = 'https://mec-backend-9uu9.onrender.com/api';
-const LOCAL_BACKEND = 'http://localhost:5000/api';
+const LOCAL_BACKEND = 'http://localhost:5001/api';
 
 const normalizeBaseUrl = (url: string) => url.replace(/\/+$/, '');
 
@@ -8,14 +8,23 @@ const getBaseUrl = () => {
     return normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL);
   }
 
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    return LOCAL_BACKEND;
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    
+    // Detect local development (localhost or local IP)
+    if (hostname === 'localhost' || 
+        hostname === '127.0.0.1' || 
+        hostname.startsWith('192.168.') || 
+        hostname.startsWith('10.') ||
+        hostname.endsWith('.local')) {
+      return LOCAL_BACKEND;
+    }
   }
 
   return DEFAULT_REMOTE_BACKEND;
 };
 
-const baseUrl = getBaseUrl();
+export const baseUrl = getBaseUrl();
 
 
 const getToken = () => {

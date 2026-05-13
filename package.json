@@ -18,5 +18,11 @@
   "description": "",
   "devDependencies": {
     "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "pdfkit": "^0.18.0",
+    "razorpay": "^2.9.6",
+    "uuid": "^14.0.0"
   }
 }

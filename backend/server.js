@@ -1,8 +1,8 @@
 const express = require('express');
+require('express-async-errors');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const http = require('http');
@@ -10,6 +10,10 @@ const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 const { initCronJobs } = require('./utils/cronJobs');
 const logger = require('./utils/logger');
+const { generalLimiter, authLimiter, registerLimiter, passwordResetLimiter, paymentLimiter, uploadLimiter, searchLimiter, adminLimiter } = require('./middleware/rateLimit');
+const { sanitizeInput } = require('./middleware/sanitize');
+const { csrfTokenMiddleware, csrfProtection } = require('./middleware/csrf');
+const { requestLogger, errorLogger } = require('./middleware/requestLogger');
 
 
 dotenv.config();
@@ -18,8 +22,9 @@ dotenv.config();
 const REQUIRED_ENV = ['MONGO_URI', 'JWT_SECRET'];
 const missingEnv = REQUIRED_ENV.filter(key => !process.env[key]);
 if (missingEnv.length > 0) {
-  console.error(`🚨 Warning: Missing required env vars: ${missingEnv.join(', ')}`);
-  console.error(`👉 Ensure these are set in your .env file or hosting provider's dashboard.`);
+  const msg = `🚨 Missing required env vars: ${missingEnv.join(', ')}`;
+  console.error(msg);
+  console.error('👉 Ensure these are set in your .env file or Render/Netlify environment.');
   if (!process.env.VERCEL) {
     process.exit(1);
   }
@@ -34,45 +39,60 @@ if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEV_2FA_BYPASS ==
   }
 }
 
+// Configure allowed origins for CORS and CSP
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
+  : [process.env.CLIENT_URL || 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'https://mec-backend-9uu9.onrender.com'];
+const allowAnyOrigin = allowedOrigins.includes('*');
+const normalizeOrigin = (origin) => origin.replace(/\/$/, '');
+const normalizedAllowedOrigins = allowedOrigins.map(normalizeOrigin);
+
 connectDB();
 
 const app = express();
 const server = http.createServer(app);
 let serverInstance = null;
 
+// Apply general rate limiting to all routes
+app.use(generalLimiter);
+
+// Apply request logging to all routes
+app.use(requestLogger);
+
+// Apply input sanitization to all routes
+app.use(sanitizeInput);
 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", ...allowedOrigins],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      fontSrc: ["'self'", "data:"],
+      connectSrc: ["'self'", ...allowedOrigins, process.env.NEXT_PUBLIC_API_URL || 'https://mec-backend-9uu9.onrender.com/api'],
+      mediaSrc: ["'self'", "data:", "https:"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+      blockAllMixedContent: true,
+    },
+  } : false, // Disable CSP in development for easier debugging
+  hsts: process.env.NODE_ENV === 'production' ? {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  } : false,
+  xssFilter: true,
+  noSniff: true,
+  frameguard: { action: 'deny' },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
 }));
 
 
 
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: 'Too many requests, please try again later.' },
-});
-app.use(globalLimiter);
-
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: 'Too many login attempts, please try again after 15 minutes.' },
-});
-
-
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
-  : [];
-const allowAnyOrigin = allowedOrigins.includes('*');
-const normalizeOrigin = (origin) => origin.replace(/\/$/, '');
-const normalizedAllowedOrigins = allowedOrigins.map(normalizeOrigin);
 const corsOptions = {
   origin(origin, callback) {
     // Allow requests with no origin (like mobile apps, Postman)
@@ -80,8 +100,8 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    // In development, allow all origins
-    if (process.env.NODE_ENV !== 'production' && !process.env.ALLOWED_ORIGINS) {
+    // In development, allow all origins to prevent "Failed to Fetch" errors
+    if (process.env.NODE_ENV !== 'production') {
       return callback(null, true);
     }
 
@@ -98,9 +118,11 @@ const corsOptions = {
     return callback(new Error(`Origin ${origin} is not allowed by CORS`));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  maxAge: 86400,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+  exposedHeaders: ['X-CSRF-Token'],
+  maxAge: 86400, // 24 hours
+  optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
@@ -142,7 +164,6 @@ io.use((socket, next) => {
 
 
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url} - ${req.ip}`);
   req.io = io;
   next();
 });
@@ -167,7 +188,12 @@ io.on('connection', (socket) => {
 
 
 if (!process.env.VERCEL) {
-  initCronJobs();
+  try {
+    initCronJobs();
+  } catch (cronErr) {
+    logger.error(`❌ Failed to initialize cron jobs: ${cronErr.message}\n${cronErr.stack}`);
+    // Do NOT exit — cron failure must not kill the server
+  }
 }
 
 
@@ -185,13 +211,38 @@ app.use('/api/counsellors', require('./routes/counsellors'));
 app.use('/api/finance', require('./routes/finance'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/university-portal', require('./routes/universityPortal'));
+app.use('/api/payments', require('./routes/payment'));
+app.use('/api/bookings', require('./routes/booking'));
+app.use('/api/scholarships', require('./routes/scholarship'));
+app.use('/api/interviews', require('./routes/interview'));
+app.use('/api/reports', require('./routes/report'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/leads', require('./routes/leads'));
 
 
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/api/health', async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      database: dbStatus,
+      uptime: process.uptime(),
+      memory: {
+        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + 'MB',
+        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + 'MB'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
 });
 
 
@@ -202,27 +253,68 @@ const PORT = process.env.PORT || 5000;
 if (!process.env.VERCEL) {
   serverInstance = server.listen(PORT, () => {
     console.log(`🚀 UAFMS Backend running on port ${PORT}`);
+    console.log(`   Environment : ${process.env.NODE_ENV || 'development'}`);
     console.log(`   Health check: http://localhost:${PORT}/api/health`);
+    
+    // Tell PM2 that we're ready for traffic
+    if (process.send) {
+      process.send('ready');
+    }
   });
+
+  serverInstance.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${PORT} is already in use. Is another server instance running?`);
+      logger.error(`Port ${PORT} already in use (EADDRINUSE)`);
+      process.exit(1);
+    } else {
+      console.error('❌ Server error:', err.message);
+      logger.error(`Server error: ${err.message}\n${err.stack}`);
+    }
+  });
+
+  // Keep-alive mechanism for Render free tier (pings itself every 14 minutes)
+  if (process.env.NODE_ENV === 'production') {
+    setInterval(async () => {
+      try {
+        const response = await fetch(`http://localhost:${PORT}/api/health`);
+        if (response.ok) {
+          console.log('💓 Keep-alive ping successful');
+        }
+      } catch (error) {
+        console.error('❌ Keep-alive ping failed:', error.message);
+      }
+    }, 14 * 60 * 1000); // 14 minutes
+  }
 }
 
 // Export for Vercel
 module.exports = app;
 
-process.on('unhandledRejection', (err) => {
-  console.error(`❌ Unhandled Rejection: ${err.message}`);
-  if (!process.env.VERCEL) {
-    if (serverInstance) {
-      serverInstance.close(() => process.exit(1));
-    } else {
-      process.exit(1);
+process.on('unhandledRejection', (reason, promise) => {
+  const msg = reason instanceof Error ? reason.message : String(reason);
+  const stack = reason instanceof Error ? reason.stack : '';
+  logger.error(`❌ Unhandled Promise Rejection: ${msg}\n${stack}`);
+  console.error(`❌ Unhandled Rejection: ${msg}`);
+  if (stack) console.error(stack);
+  // In production, log and continue — do NOT crash the server for a single rejected promise
+  if (process.env.NODE_ENV !== 'production') {
+    if (!process.env.VERCEL) {
+      if (serverInstance) {
+        serverInstance.close(() => process.exit(1));
+      } else {
+        process.exit(1);
+      }
     }
   }
 });
 
 
 process.on('uncaughtException', (err) => {
+  logger.error(`❌ Uncaught Exception: ${err.message}\n${err.stack}`);
   console.error(`❌ Uncaught Exception: ${err.message}`);
+  console.error(err.stack);
+  // Uncaught exceptions ARE fatal — always exit so the process manager restarts us cleanly
   if (serverInstance) {
     serverInstance.close(() => process.exit(1));
   } else {
@@ -230,15 +322,39 @@ process.on('uncaughtException', (err) => {
   }
 });
 
+const gracefulShutdown = (signal) => {
+  console.log(`\n🛑 ${signal} received. Shutting down gracefully...`);
+  
+  const closeDB = () => {
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 0) {
+      mongoose.connection.close(false).then(() => {
+        console.log('✅ MongoDB connection closed.');
+        process.exit(0);
+      }).catch(err => {
+        console.error('❌ Error closing MongoDB connection:', err);
+        process.exit(1);
+      });
+    } else {
+      process.exit(0);
+    }
+  };
 
-process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received. Shutting down gracefully...');
-  if (!serverInstance) {
-    process.exit(0);
+  if (serverInstance) {
+    serverInstance.close(() => {
+      console.log('✅ HTTP Server closed.');
+      closeDB();
+    });
+    
+    // Force shutdown if it takes too long
+    setTimeout(() => {
+      console.error('🚨 Could not close connections in time, forcefully shutting down');
+      process.exit(1);
+    }, 10000);
+  } else {
+    closeDB();
   }
+};
 
-  serverInstance.close(() => {
-    console.log('✅ Server closed.');
-    process.exit(0);
-  });
-});
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

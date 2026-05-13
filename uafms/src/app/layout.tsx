@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import '@/app/globals.css';
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -21,7 +22,9 @@ export default function RootLayout({
       <body className="antialiased min-h-screen">
         <ThemeProvider attribute="data-theme" defaultTheme="light" enableSystem={false}>
           <AuthProvider>
-            {children}
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
           </AuthProvider>
         </ThemeProvider>
       </body>

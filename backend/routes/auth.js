@@ -1,38 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const rateLimit = require('express-rate-limit');
-const { register, login, verify2FA, getMe, updateProfile, forgotPassword, linkUniversity } = require('../controllers/authController');
-const { protect } = require('../middleware/auth');
-const validate = require('../middleware/validate');
-const { registerSchema, loginSchema } = require('../validation/authValidation');
-
-// Rate limiter for sensitive auth operations (prevents brute force & spam)
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10, // 10 attempts per 15 minutes per IP for sensitive endpoints
-  message: { message: 'Too many attempts. Please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Rate limiter for registration (prevent mass account creation)
-const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // 3 registration attempts per hour per IP
-  message: { message: 'Too many account creations. Please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Rate limiter for password reset (prevent email enumeration)
-const forgotPasswordLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // 3 password reset requests per hour per IP/email combo
-  message: { message: 'Too many password reset attempts. Please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => req.body.email || req.ip, // Rate limit by email + IP
-});
+const { register, login, verify2FA, getMe, updateProfile, forgotPassword, resetPassword, linkUniversity } = require('../controllers/authController');
+const { protect, authorize } = require('../middleware/auth');
+const { authLimiter, registerLimiter, passwordResetLimiter } = require('../middleware/rateLimit');
+const { validate } = require('../middleware/validation');
 
 const seedRouteGuard = (req, res, next) => {
   if (process.env.ENABLE_DEMO_SEEDING !== 'true') {
@@ -56,9 +27,10 @@ const getDemoPassword = () => {
     return process.env.NODE_ENV === 'production' ? null : 'mec_v2_p4ssw0rd_9872!#';
 };
 
-router.post('/register', registerLimiter, validate(registerSchema), register);
-router.post('/login', authLimiter, validate(loginSchema), login);
-router.post('/forgot-password', forgotPasswordLimiter, forgotPassword);
+router.post('/register', registerLimiter, validate('register'), register);
+router.post('/login', authLimiter, validate('login'), login);
+router.post('/forgot-password', passwordResetLimiter, validate('forgotPassword'), forgotPassword);
+router.post('/reset-password', validate('resetPassword'), resetPassword);
 router.post('/verify-2fa', authLimiter, verify2FA);
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
@@ -69,21 +41,38 @@ router.post('/super-seed', seedRouteGuard, async (req, res) => {
   const University = require('../models/University');
   const bcrypt = require('bcryptjs');
   try {
-    const email = 'marutieducation64@gmail.com';
-    const password = process.env.ADMIN_SEED_PASSWORD || getDemoPassword();
-    if (!password) {
-      return res.status(500).json({ message: 'ADMIN_SEED_PASSWORD or DEMO_PASSWORD is required' });
+    const { adminEmail, adminPassword } = req.body;
+    
+    // Validate admin credentials from request body
+    if (!adminEmail || !adminPassword) {
+      return res.status(400).json({ 
+        message: 'Admin email and password are required in request body' 
+      });
     }
 
-    await User.deleteMany({ email: /marutieducation64@gmail.com/i });
-    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(adminEmail)) {
+      return res.status(400).json({ 
+        message: 'Invalid email format' 
+      });
+    }
+
+    // Check if admin already exists
+    const existingAdmin = await User.findOne({ email: adminEmail, role: 'admin' });
+    if (existingAdmin) {
+      return res.status(409).json({ 
+        message: 'Admin with this email already exists' 
+      });
+    }
+
     const salt = await bcrypt.genSalt(12);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(adminPassword, salt);
 
     await User.create({
-      firstName: 'Maruti',
-      lastName: 'Education',
-      email: email,
+      firstName: 'System',
+      lastName: 'Administrator',
+      email: adminEmail,
       password: hashedPassword,
       role: 'admin',
       profileCompleted: true
@@ -93,8 +82,8 @@ router.post('/super-seed', seedRouteGuard, async (req, res) => {
     
     res.json({ 
       success: true,
-      message: 'Database Synchronized Permanently!',
-      admin: email,
+      message: 'Admin account created successfully!',
+      admin: adminEmail,
       universities: uniCount
     });
   } catch(e) {

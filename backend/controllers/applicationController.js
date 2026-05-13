@@ -70,6 +70,11 @@ const createApplication = async (req, res) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
+    
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'You have already applied for this program at this university.' });
+    }
+    
     res.status(500).json({ message: error.message });
   }
 };
@@ -202,57 +207,62 @@ const submitBulkApplications = async (req, res) => {
     for (const appData of applications) {
       const { universityId, course, academics, testScores } = appData;
 
+      try {
+        const aiMatchScore = Math.floor(70 + Math.random() * 30);
 
-      const aiMatchScore = Math.floor(70 + Math.random() * 30);
+        const application = await Application.create({
+          student: req.user._id,
+          university: universityId,
+          course,
+          academics: academics || {},
+          testScores: testScores || {},
+          status: 'submitted',
+          submittedAt: new Date(),
+          aiMatchScore,
+          pipelineStage: 'leads',
+        });
 
-      const application = await Application.create({
-        student: req.user._id,
-        university: universityId,
-        course,
-        academics: academics || {},
-        testScores: testScores || {},
-        status: 'submitted',
-        submittedAt: new Date(),
-        aiMatchScore,
-        pipelineStage: 'leads',
-      });
+        const populated = await application.populate('university', 'name logo location partnerUser');
+        createdApplications.push(populated);
 
-      const populated = await application.populate('university', 'name logo location partnerUser');
-      createdApplications.push(populated);
+        if (populated.university && populated.university.partnerUser) {
+          try {
+            const partner = await User.findById(populated.university.partnerUser);
+            if (partner && partner.email) {
+              const studentName = `${req.user.firstName} ${req.user.lastName}`;
+              const toEmails = admin && admin.email ? [partner.email, admin.email].join(', ') : partner.email;
 
-
-      if (populated.university && populated.university.partnerUser) {
-        try {
-          const partner = await User.findById(populated.university.partnerUser);
-          if (partner && partner.email) {
-            const studentName = `${req.user.firstName} ${req.user.lastName}`;
-            const toEmails = admin && admin.email ? [partner.email, admin.email].join(', ') : partner.email;
-
-            await sendEmail({
-              to: toEmails,
-              subject: `New Application Received: ${studentName}`,
-              html: `
-                <h3>New Lead Alert!</h3>
-                <p>A new student (<strong>${studentName}</strong>) has just submitted an application for <strong>${course}</strong> at <strong>${populated.university.name}</strong>.</p>
-                <br/>
-                <p>Please log in to your UAFMS Partner Dashboard to review their documents and make a decision.</p>
-              `
-            });
+              await sendEmail({
+                to: toEmails,
+                subject: `New Application Received: ${studentName}`,
+                html: `
+                  <h3>New Lead Alert!</h3>
+                  <p>A new student (<strong>${studentName}</strong>) has just submitted an application for <strong>${course}</strong> at <strong>${populated.university.name}</strong>.</p>
+                  <br/>
+                  <p>Please log in to your UAFMS Partner Dashboard to review their documents and make a decision.</p>
+                `
+              });
+            }
+          } catch (emailErr) {
+            console.error(`Failed to send notification email for application ${application._id}:`, emailErr.message);
           }
-        } catch (emailErr) {
-          console.error(`Failed to send notification email for application ${application._id}:`, emailErr.message);
-          // Continue - don't fail bulk operation for email failure
         }
+
+        await User.findByIdAndUpdate(req.user._id, {
+          $addToSet: {
+            savedPrograms: {
+              universityId: universityId,
+              courseName: course
+            }
+          }
+        });
+      } catch (innerError) {
+        if (innerError.code === 11000) {
+          console.log(`Skipping duplicate application for ${universityId}/${course}`);
+          continue;
+        }
+        throw innerError;
       }
-      // Sync to Saved Programs (Atomic)
-      await User.findByIdAndUpdate(req.user._id, {
-        $addToSet: {
-          savedPrograms: {
-            universityId: universityId,
-            courseName: course
-          }
-        }
-      });
     }
 
     res.status(201).json(createdApplications);

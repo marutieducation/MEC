@@ -102,6 +102,24 @@ const getApplicants = async (req, res) => {
             phone: app.student.phone || '',
           }
         : { firstName: 'Unknown', lastName: '', email: '' },
+      // Include full academic details for university partners
+      academics: app.academics || {
+        institution: '',
+        degree: '',
+        cgpa: '',
+        passingYear: '',
+        transcriptDoc: null
+      },
+      // Include test scores for university partners
+      testScores: app.testScores || {
+        gre: null,
+        ielts: null,
+        toefl: null,
+        gate: null,
+        gmat: null,
+        jee: null,
+        cat: null
+      },
     }));
 
     res.json({
@@ -217,10 +235,133 @@ const getApplicantDocuments = async (req, res) => {
   }
 };
 
+const submitOnboarding = async (req, res) => {
+  try {
+    const {
+      universityName,
+      website,
+      address,
+      city,
+      state,
+      country,
+      contactEmail,
+      contactPhone,
+      description,
+      establishedYear,
+      accreditation,
+      type
+    } = req.body;
+
+    // Validate required fields
+    if (!universityName || !address || !city || !state || !country) {
+      return res.status(400).json({ message: 'Required fields are missing' });
+    }
+
+    // Check if university with same name already exists
+    const existingUniversity = await University.findOne({ name: universityName });
+    if (existingUniversity) {
+      return res.status(409).json({ message: 'University with this name already exists' });
+    }
+
+    // Create new university
+    // Check if university name already exists
+    const existingUni = await University.findOne({ name: universityName });
+    if (existingUni) {
+      return res.status(400).json({ message: 'A university with this name is already registered' });
+    }
+
+    const university = await University.create({
+      name: universityName,
+      website: website || '',
+      address,
+      city,
+      state,
+      country,
+      contactEmail: contactEmail || req.user.email,
+      contactPhone: contactPhone || '',
+      description: description || '',
+      establishedYear: establishedYear || '',
+      accreditation: accreditation || '',
+      type: type || 'Private',
+      partnerUser: req.user._id,
+      status: 'pending_approval', // Pending admin approval
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // Update user with university reference
+    await require('../models/User').findByIdAndUpdate(req.user._id, {
+      universityId: university._id
+    });
+
+    // Send notification to admin
+    try {
+      const { sendEmail } = require('../utils/emailService');
+      const admin = await require('../models/User').findOne({ role: 'admin' });
+      
+      if (admin && admin.email) {
+        await sendEmail({
+          to: admin.email,
+          subject: 'New University Partner Onboarding',
+          html: `
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+                <h1 style="color: white; margin: 0; font-size: 28px;">MEC UAFMS</h1>
+                <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">New University Partner Registration</p>
+              </div>
+              
+              <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+                <h2 style="color: #333; margin: 0 0 20px 0;">New University Registration Details</h2>
+                <div style="background: white; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                  <p style="margin: 5px 0;"><strong>University:</strong> ${universityName}</p>
+                  <p style="margin: 5px 0;"><strong>Type:</strong> ${type}</p>
+                  <p style="margin: 5px 0;"><strong>Location:</strong> ${city}, ${state}, ${country}</p>
+                  <p style="margin: 5px 0;"><strong>Contact Email:</strong> ${contactEmail}</p>
+                  <p style="margin: 5px 0;"><strong>Website:</strong> ${website || 'Not provided'}</p>
+                  <p style="margin: 5px 0;"><strong>Established:</strong> ${establishedYear || 'Not provided'}</p>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/admin" 
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                            color: white; padding: 15px 30px; text-decoration: none; 
+                            border-radius: 25px; font-weight: bold; display: inline-block;">
+                    Review in Admin Dashboard
+                  </a>
+                </div>
+              </div>
+              
+              <div style="text-align: center; color: #999; font-size: 12px;">
+                <p>This is an automated message from MEC UAFMS. Please do not reply to this email.</p>
+              </div>
+            </div>
+          `
+        });
+      }
+    } catch (emailError) {
+      console.error('Failed to send admin notification:', emailError);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'University onboarding submitted successfully. Your application is now under review.',
+      university: {
+        id: university._id,
+        name: university.name,
+        status: university.status
+      }
+    });
+  } catch (error) {
+    console.error('University onboarding error:', error);
+    res.status(500).json({ message: 'Failed to submit onboarding information' });
+  }
+};
+
 module.exports = { 
   getPortalDashboard, 
   getApplicants, 
   decideApplicant, 
   uploadOfferLetter,
-  getApplicantDocuments 
+  getApplicantDocuments,
+  submitOnboarding
 };

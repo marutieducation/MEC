@@ -77,7 +77,18 @@ const downloadDocument = async (req, res) => {
     const document = await Document.findById(req.params.id);
     if (!document) return res.status(404).json({ message: 'Document not found' });
     if (!canAccessDocument(document, req.user)) {
-      return res.status(403).json({ message: 'Not authorized to access this document' });
+      // Check if university partner has an application from this student
+      if (req.user.role === 'university_partner' && req.user.universityId) {
+        const hasApplication = await Application.findOne({
+          student: document.student,
+          university: req.user.universityId
+        });
+        if (!hasApplication) {
+          return res.status(403).json({ message: 'Not authorized to access this document' });
+        }
+      } else {
+        return res.status(403).json({ message: 'Not authorized to access this document' });
+      }
     }
 
     if (!document.filePath) {

@@ -9,7 +9,7 @@ import {
   CalendarDaysIcon, MagnifyingGlassIcon,
   ChevronDownIcon, AcademicCapIcon, ChartBarIcon,
   CheckCircleIcon, PlusIcon, SparklesIcon,
-  ChevronRightIcon
+  ChevronRightIcon, ArrowRightIcon
 } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -104,6 +104,24 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
     }
   }, [searchParams]);
 
+  // Auto-sync selection with the Unified Application Form cart
+  useEffect(() => {
+    if (isLoading || results.length === 0) return;
+    
+    const cart = results
+      .filter(r => selectedIds.includes(r.id))
+      .map(r => ({
+        universityId: r.universityId,
+        universityName: r.name,
+        course: r.course,
+        fee: r.fee
+      }));
+    
+    if (cart.length > 0 || selectedIds.length > 0) {
+      localStorage.setItem('mec_application_cart', JSON.stringify(cart));
+    }
+  }, [selectedIds, results, isLoading]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (degreeDropdownRef.current && !degreeDropdownRef.current.contains(event.target as Node)) {
@@ -140,7 +158,8 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
     setSearchTerm('');
     setFilterState('Any State');
     setFilterDegree('All Levels');
-    router.push('/search'); // Clear URL params too
+    // Stay on current page but clear query params (prevents kicking student out of dashboard)
+    router.push(window.location.pathname);
   };
 
   const compareSelected = () => {
@@ -155,7 +174,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
 
     const token = localStorage.getItem('uafms_token');
     if (!token) {
-      router.push(`/login?redirect=/search&query=${searchTerm}`);
+      router.push(`/login?redirect=${window.location.pathname}&query=${searchTerm}`);
       return;
     }
 
@@ -185,7 +204,7 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
   const handleApplyBulk = async () => {
     const token = localStorage.getItem('uafms_token');
     if (!token) {
-      router.push(`/login?redirect=/search&query=${searchTerm}`);
+      router.push(`/login?redirect=${window.location.pathname}&query=${searchTerm}`);
       return;
     }
 
@@ -952,9 +971,18 @@ export default function SearchComparison({ isDashboard = false }: { isDashboard?
                   <button onClick={() => setIsComparing(false)} className="px-5 h-10 border border-border text-heading font-bold rounded-xl hover:bg-border/50 transition-colors text-[13px]">
                     Close
                   </button>
-                  <button onClick={handleApplyBulk} disabled={isApplying} className="px-6 h-10 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 flex items-center gap-2 text-[13px]">
-                    {isApplying ? 'Applying...' : 'Apply to All'} <SparklesIcon className="w-4 h-4" />
-                  </button>
+                  {isDashboard ? (
+                    <button 
+                      onClick={() => router.push('/student/apply')}
+                      className="px-6 h-10 bg-success text-white font-bold rounded-xl hover:bg-success-dark transition-colors shadow-lg shadow-success/20 flex items-center gap-2 text-[13px]"
+                    >
+                      Proceed to Application <ArrowRightIcon className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button onClick={handleApplyBulk} disabled={isApplying} className="px-6 h-10 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 flex items-center gap-2 text-[13px]">
+                      {isApplying ? 'Applying...' : 'Apply to All'} <SparklesIcon className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>

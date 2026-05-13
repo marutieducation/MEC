@@ -7,9 +7,10 @@ const {
 } = require('../controllers/documentController');
 const { protect, authorize } = require('../middleware/auth');
 const { upload, ensureUploadDir, validateFileType } = require('../middleware/upload');
+const { uploadLimiter } = require('../middleware/rateLimit');
 
 
-router.post('/upload', protect, ensureUploadDir, upload.single('file'), validateFileType, uploadDocument);
+router.post('/upload', protect, uploadLimiter, ensureUploadDir, upload.single('file'), validateFileType, uploadDocument);
 router.get('/', protect, getDocuments);
 router.get('/:id/download', protect, downloadDocument);
 router.delete('/:id', protect, deleteDocument);

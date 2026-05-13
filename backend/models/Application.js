@@ -68,5 +68,9 @@ applicationSchema.index({ student: 1, university: 1, course: 1 }, { unique: true
 applicationSchema.index({ student: 1, status: 1 });
 applicationSchema.index({ pipelineStage: 1 });
 applicationSchema.index({ university: 1, pipelineStage: 1 });
+applicationSchema.index({ createdAt: -1 });
+applicationSchema.index({ updatedAt: -1 });
+applicationSchema.index({ student: 1, createdAt: -1 });
+applicationSchema.index({ university: 1, status: 1 });
 
 module.exports = mongoose.model('Application', applicationSchema);
