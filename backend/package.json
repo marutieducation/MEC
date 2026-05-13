@@ -37,7 +37,6 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "file-type": "^16.5.4",
     "pm2": "^7.0.1"
   }
 }
