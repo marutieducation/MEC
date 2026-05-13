@@ -12,20 +12,14 @@ import {
   Cog6ToothIcon,
   UsersIcon,
   CalendarDaysIcon,
-  ChatBubbleLeftRightIcon,
   BriefcaseIcon,
   BanknotesIcon,
   IdentificationIcon,
   PresentationChartLineIcon,
   AcademicCapIcon,
-  BuildingLibraryIcon,
   ShieldCheckIcon,
   MagnifyingGlassIcon as SearchIcon,
-  HeartIcon,
-  QuestionMarkCircleIcon,
-  CommandLineIcon,
-  SunIcon,
-  MoonIcon
+  HeartIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
