@@ -33,6 +33,26 @@ export default function UniversityDashboard() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [isDocsLoading, setIsDocsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
+  
+  // Onboarding state moved to top level to comply with React Hook rules
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingData, setOnboardingData] = useState({
+    universityName: '',
+    website: '',
+    address: '',
+    city: '',
+    state: '',
+    country: 'India',
+    contactEmail: user?.email || '',
+    contactPhone: '',
+    description: '',
+    establishedYear: '',
+    accreditation: '',
+    type: 'Private'
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -103,24 +123,6 @@ export default function UniversityDashboard() {
   }
 
   if (!user?.universityId) {
-    const [showOnboarding, setShowOnboarding] = useState(false);
-    const [onboardingData, setOnboardingData] = useState({
-      universityName: '',
-      website: '',
-      address: '',
-      city: '',
-      state: '',
-      country: 'India',
-      contactEmail: user?.email || '',
-      contactPhone: '',
-      description: '',
-      establishedYear: '',
-      accreditation: '',
-      type: 'Private'
-    });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
 
     const handleOnboardingSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
