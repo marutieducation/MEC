@@ -2,14 +2,20 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI || '';
+    let mongoUri = (process.env.MONGO_URI || '').trim();
     if (!mongoUri) {
       throw new Error('MONGO_URI environment variable is not set');
     }
+    // Remove any accidental newlines or carriage returns
+    mongoUri = mongoUri.replace(/[\r\n]/g, '');
+    
     const isCloud = mongoUri.includes('mongodb+srv');
     console.log(`⏳ [DB] Connecting to ${isCloud ? 'Atlas' : 'Local'}...`);
+    // Log masked URI for debugging
+    const maskedUri = mongoUri.replace(/\/\/.*@/, '//****:****@');
+    console.log(`🔗 Target: ${maskedUri}`);
 
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
+    const conn = await mongoose.connect(mongoUri, {
       maxPoolSize: 10,
       minPoolSize: 2,
       serverSelectionTimeoutMS: 10000,

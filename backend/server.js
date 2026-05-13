@@ -59,6 +59,8 @@ const normalizedAllowedOrigins = allowedOrigins.map(normalizeOrigin);
 connectDB();
 
 const app = express();
+// Trust proxy is required for Render to correctly handle rate limiting and IP detection
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 let serverInstance = null;
 
