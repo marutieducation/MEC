@@ -295,9 +295,6 @@ if (process.env.NODE_ENV === 'production') {
   }, 14 * 60 * 1000); // 14 minutes
 }
 
-// Export for Vercel
-module.exports = app;
-
 process.on('unhandledRejection', (reason, promise) => {
   const msg = reason instanceof Error ? reason.message : String(reason);
   const stack = reason instanceof Error ? reason.stack : '';
