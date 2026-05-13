@@ -42,7 +42,7 @@ if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEV_2FA_BYPASS ==
 // Configure allowed origins for CORS and CSP
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
-  : [process.env.CLIENT_URL || 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'https://mec-backend-9uu9.onrender.com'];
+  : [process.env.CLIENT_URL || 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'https://marutieducation.onrender.com', 'https://mec-frontend.onrender.com', 'https://mec-backend-9uu9.onrender.com'];
 const allowAnyOrigin = allowedOrigins.includes('*');
 const normalizeOrigin = (origin) => origin.replace(/\/$/, '');
 const normalizedAllowedOrigins = allowedOrigins.map(normalizeOrigin);
