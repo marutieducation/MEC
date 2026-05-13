@@ -3,8 +3,10 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'pro
 const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || apiUrl.replace(/\/api\/?$/, '');
 const backendOrigin = apiUrl.replace(/\/api\/?$/, '');
 
+const isGithubActions = process.env.GITHUB_ACTIONS === 'true';
+
 const nextConfig = {
-  output: 'standalone',
+  output: isGithubActions ? 'export' : 'standalone',
   images: {
     unoptimized: true,
   },
@@ -14,56 +16,47 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https: wss: http: ws:;",
-          },
-        ],
-      },
-    ];
-  },
   env: {
     NEXT_PUBLIC_API_URL: apiUrl,
     NEXT_PUBLIC_SOCKET_URL: socketUrl,
   },
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${backendOrigin}/api/:path*`,
-      },
-    ];
-  },
-  async redirects() {
-    return [
-      {
-        source: '/register',
-        destination: '/signup',
-        permanent: true,
-      },
-    ];
-  },
+  // Only add server-specific features if we are NOT doing a static export for GitHub Pages
+  ...(isGithubActions ? {} : {
+    async headers() {
+      return [
+        {
+          source: '/(.*)',
+          headers: [
+            { key: 'X-Content-Type-Options', value: 'nosniff' },
+            { key: 'X-Frame-Options', value: 'DENY' },
+            { key: 'X-XSS-Protection', value: '1; mode=block' },
+            { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+            {
+              key: 'Content-Security-Policy',
+              value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https: wss: http: ws:;",
+            },
+          ],
+        },
+      ];
+    },
+    async rewrites() {
+      return [
+        {
+          source: '/api/:path*',
+          destination: `${backendOrigin}/api/:path*`,
+        },
+      ];
+    },
+    async redirects() {
+      return [
+        {
+          source: '/register',
+          destination: '/signup',
+          permanent: true,
+        },
+      ];
+    },
+  })
 };
 
 export default nextConfig;
