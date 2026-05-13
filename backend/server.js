@@ -56,7 +56,18 @@ const allowAnyOrigin = allowedOrigins.includes('*');
 const normalizeOrigin = (origin) => origin.replace(/\/$/, '');
 const normalizedAllowedOrigins = allowedOrigins.map(normalizeOrigin);
 
-connectDB();
+const getPositiveNumber = (value, fallback) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+};
+
+const startDatabaseConnection = () => {
+  connectDB({
+    exitOnFailure: process.env.DB_EXIT_ON_FAILURE === 'true'
+  }).catch((error) => {
+    logger.error(`Initial database connection failed: ${error.message}`);
+  });
+};
 
 const app = express();
 // Trust proxy is required for Render to correctly handle rate limiting and IP detection
@@ -88,7 +99,7 @@ app.use(helmet({
       baseUri: ["'self'"],
       formAction: ["'self'"],
       frameAncestors: ["'none'"],
-      blockAllMixedContent: true,
+      blockAllMixedContent: [],
     },
   } : false, // Disable CSP in development for easier debugging
   hsts: process.env.NODE_ENV === 'production' ? {
@@ -230,10 +241,23 @@ app.use('/api/leads', require('./routes/leads'));
 
 
 // Root route for Render default health check
+const getDatabaseStatus = () => {
+  const mongoose = require('mongoose');
+  const states = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting',
+  };
+
+  return states[mongoose.connection.readyState] || 'unknown';
+};
+
 app.get('/', (req, res) => {
   res.status(200).json({ 
     message: 'MEC UAFMS API is running', 
-    timestamp: new Date().toISOString() 
+    timestamp: new Date().toISOString(),
+    database: getDatabaseStatus(),
   });
 });
 
@@ -242,11 +266,10 @@ app.get('/', (req, res) => {
 
 app.get('/api/health', async (req, res) => {
   try {
-    const mongoose = require('mongoose');
-    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    const dbStatus = getDatabaseStatus();
     
-    res.json({
-      status: 'ok',
+    res.status(200).json({
+      status: dbStatus === 'connected' ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),
       database: dbStatus,
       uptime: process.uptime(),
@@ -262,6 +285,17 @@ app.get('/api/health', async (req, res) => {
       error: error.message
     });
   }
+});
+
+app.get('/api/ready', (req, res) => {
+  const dbStatus = getDatabaseStatus();
+  const ready = dbStatus === 'connected';
+
+  res.status(ready ? 200 : 503).json({
+    status: ready ? 'ready' : 'not_ready',
+    timestamp: new Date().toISOString(),
+    database: dbStatus,
+  });
 });
 
 
@@ -283,6 +317,9 @@ serverInstance = server.listen(PORT, HOST, () => {
   console.log(`🚀 Server running on http://${HOST}:${PORT}`);
   console.log(`📡 Environment: ${process.env.NODE_ENV}`);
   logger.info(`Server started on ${HOST}:${PORT}`);
+
+  const dbConnectDelayMs = getPositiveNumber(process.env.DB_CONNECT_DELAY_MS, 0);
+  setTimeout(startDatabaseConnection, dbConnectDelayMs);
 });
 
 serverInstance.on('error', (err) => {

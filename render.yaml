@@ -6,9 +6,12 @@ services:
     region: singapore
     plan: free
     rootDir: backend
+    healthCheckPath: /api/health
     buildCommand: npm ci --omit=dev
     startCommand: node server.js
     envVars:
+      - key: NODE_VERSION
+        value: "22.22.0"
       - key: NODE_ENV
         value: production
       - key: MONGO_URI
@@ -19,6 +22,12 @@ services:
         sync: false # Set this in Render Dashboard (Frontend URL)
       - key: ENABLE_DEMO_SEEDING
         value: "false"
+      - key: DB_EXIT_ON_FAILURE
+        value: "false"
+      - key: DB_CONNECT_DELAY_MS
+        value: "5000"
+      - key: MONGO_SERVER_SELECTION_TIMEOUT_MS
+        value: "5000"
       - key: SEED_ROUTE_SECRET
         sync: false # Set this in Render Dashboard
       - key: EMAIL_USER
@@ -37,9 +46,12 @@ services:
     region: singapore
     plan: free
     rootDir: uafms
+    healthCheckPath: /
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
+      - key: NODE_VERSION
+        value: "22.22.0"
       - key: NEXT_PUBLIC_API_URL
         sync: false # IMPORTANT: Set to https://your-backend.onrender.com/api
       - key: NEXT_PUBLIC_SOCKET_URL
