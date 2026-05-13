@@ -47,7 +47,39 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
 });
 
-const fileType = require('file-type');
+// NOTE: file-type v16+ is ESM-only and cannot be used with require().
+// We use a lightweight magic-bytes detector built on Node.js built-ins instead.
+const detectFileType = (buffer) => {
+  if (!buffer || buffer.length < 4) return null;
+
+  // PDF: %PDF
+  if (buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46) {
+    return { mime: 'application/pdf', ext: 'pdf' };
+  }
+  // JPEG: FF D8 FF
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
+    return { mime: 'image/jpeg', ext: 'jpg' };
+  }
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+    return { mime: 'image/png', ext: 'png' };
+  }
+  // WebP: RIFF....WEBP
+  if (buffer.length >= 12 &&
+      buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
+      buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50) {
+    return { mime: 'image/webp', ext: 'webp' };
+  }
+  // DOC: D0 CF 11 E0 (OLE2 compound document)
+  if (buffer[0] === 0xD0 && buffer[1] === 0xCF && buffer[2] === 0x11 && buffer[3] === 0xE0) {
+    return { mime: 'application/msword', ext: 'doc' };
+  }
+  // DOCX / XLSX / ZIP: PK (50 4B 03 04)
+  if (buffer[0] === 0x50 && buffer[1] === 0x4B && buffer[2] === 0x03 && buffer[3] === 0x04) {
+    return { mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', ext: 'docx' };
+  }
+  return null;
+};
 
 // Middleware to ensure user upload directory exists before multer processes file
 const ensureUploadDir = async (req, res, next) => {
@@ -67,7 +99,7 @@ const validateFileType = async (req, res, next) => {
 
   try {
     const buffer = await fs.readFile(req.file.path);
-    const type = await fileType.fromBuffer(buffer);
+    const type = detectFileType(buffer);
     
     const allowedMimeTypes = [
       'application/pdf',

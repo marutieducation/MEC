@@ -22,7 +22,6 @@
     "express": "^4.21.0",
     "express-async-errors": "^3.1.1",
     "express-rate-limit": "^8.3.2",
-    "file-type": "^16.5.4",
     "helmet": "^8.1.0",
     "joi": "^18.2.1",
     "jsonwebtoken": "^9.0.2",
@@ -32,10 +31,13 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^6.9.15",
     "pdfkit": "^0.18.0",
-    "pm2": "^7.0.1",
     "sanitize-html": "^2.17.3",
     "socket.io": "^4.8.3",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "file-type": "^16.5.4",
+    "pm2": "^7.0.1"
   }
 }
