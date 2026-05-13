@@ -17,7 +17,7 @@ const seedDemoUsers = async () => {
          firstName: 'System',
          lastName: 'Admin',
          email: 'admin@mec.com',
-         password: process.env.DEMO_PASSWORD || 'M3c@2024!Secure',
+         password: process.env.DEMO_PASSWORD || 'MecV2p4ssw0rd9872!',
          role: 'admin',
          profileCompleted: true
        });
@@ -33,7 +33,7 @@ const seedDemoUsers = async () => {
          firstName: 'University',
          lastName: 'Partner',
          email: 'partner@university.com',
-         password: process.env.DEMO_PASSWORD || 'M3c@2024!Secure',
+         password: process.env.DEMO_PASSWORD || 'MecV2p4ssw0rd9872!',
          role: 'university_partner',
          profileCompleted: true
        });

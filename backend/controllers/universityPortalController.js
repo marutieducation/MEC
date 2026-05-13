@@ -9,11 +9,14 @@ const getPortalDashboard = async (req, res) => {
     let university = await University.findOne({ partnerUser: req.user._id });
     // Fallback: look up by universityId on the user document
     if (!university && req.user.universityId) {
+      console.log(`[PORTAL] Fallback search for universityId: ${req.user.universityId}`);
       university = await University.findById(req.user.universityId);
     }
     if (!university) {
-      return res.status(404).json({ message: 'No university linked to this account' });
+      console.error(`[PORTAL] ❌ No university linked to user: ${req.user._id} (${req.user.email})`);
+      return res.status(404).json({ message: 'No university linked to this account. Please contact support.' });
     }
+    console.log(`[PORTAL] ✅ Dashboard loaded for: ${university.name}`);
 
 
     const totalApps = await Application.countDocuments({ university: university._id });
@@ -49,12 +52,14 @@ const getApplicants = async (req, res) => {
 
     // Fallback: look up by universityId on the user document
     if (!university && req.user.universityId) {
+      console.log(`[PORTAL] Fallback search (applicants) for universityId: ${req.user.universityId}`);
       university = await University.findById(req.user.universityId);
     }
-
     if (!university) {
+      console.error(`[PORTAL] ❌ No university linked for applicants view: ${req.user._id}`);
       return res.status(404).json({ message: 'No university linked to this account' });
     }
+    console.log(`[PORTAL] 📋 Fetching applicants for: ${university.name}`);
 
     const { status, course, stage } = req.query;
     let query = { university: university._id };

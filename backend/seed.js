@@ -68,6 +68,19 @@ const seed = async () => {
     });
     console.log('👤 Created default student user');
 
+    // Create a demo partner user (will be linked after universities are created)
+    const partnerPassword = process.env.DEMO_PASSWORD || 'MecV2p4ssw0rd9872!';
+    const partner = await User.create({
+      firstName: 'University',
+      lastName: 'Partner',
+      email: 'partner@university.com',
+      password: partnerPassword,
+      role: 'university_partner',
+      phone: '7777777777',
+      profileCompleted: true,
+    });
+    console.log('👤 Created default partner user');
+
 
 
     const collegeData = {
@@ -129,6 +142,39 @@ const seed = async () => {
     const universities = await University.insertMany(parsedUniversities);
     console.log(`🎓 Created ${universities.length} Universities`);
 
+    // Link the partner user to Alliance University
+    const allianceUni = universities.find(u => u.name === 'Alliance University');
+    if (allianceUni && partner) {
+      await University.findByIdAndUpdate(allianceUni._id, { partnerUser: partner._id });
+      await User.findByIdAndUpdate(partner._id, { universityId: allianceUni._id });
+      console.log(`🔗 Linked ${partner.email} to ${allianceUni.name}`);
+
+      // Create a few mock applications for this university so the dashboard isn't empty
+      const demoStudent = await User.findOne({ role: 'student' });
+      if (demoStudent) {
+        await Application.create([
+          {
+            student: demoStudent._id,
+            university: allianceUni._id,
+            course: 'MBA',
+            status: 'submitted',
+            pipelineStage: 'applied',
+            currentStep: 1,
+            academics: { institution: 'Demo College', degree: 'BBA', cgpa: '8.5', passingYear: '2023' }
+          },
+          {
+            student: demoStudent._id,
+            university: allianceUni._id,
+            course: 'Engineering',
+            status: 'under_review',
+            pipelineStage: 'review',
+            currentStep: 2,
+            academics: { institution: 'Demo School', degree: 'HSC', cgpa: '9.0', passingYear: '2022' }
+          }
+        ]);
+        console.log('📝 Created mock applications for the partner portal');
+      }
+    }
 
     await VerificationCode.create({
       code: 'MEC-ADMIN-2024',
