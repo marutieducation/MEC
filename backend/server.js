@@ -1,6 +1,12 @@
+console.log('--- Startup Diagnostics ---');
+console.log(`Timestamp: ${new Date().toISOString()}`);
+console.log(`Node Version: ${process.version}`);
+console.log(`Current Directory: ${process.cwd()}`);
+console.log('---------------------------');
+
 require('dotenv').config();
-const express = require('express');
 require('express-async-errors');
+const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const connectDB = require('./config/db');
@@ -14,9 +20,6 @@ const { generalLimiter, authLimiter, registerLimiter, passwordResetLimiter, paym
 const { sanitizeInput } = require('./middleware/sanitize');
 const { csrfTokenMiddleware, csrfProtection } = require('./middleware/csrf');
 const { requestLogger, errorLogger } = require('./middleware/requestLogger');
-
-
-// Ensure required directories exist
 const fs = require('fs');
 const path = require('path');
 ['logs', 'uploads'].forEach(dir => {
