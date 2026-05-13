@@ -94,7 +94,7 @@ export default function UniversityDashboard() {
   const handleDecision = async (id: string, status: string) => {
     try {
       setIsProcessing(id);
-      await api.put(`/university-portal/applicants/${id}/status`, { status });
+      await api.put(`/university-portal/applicants/${id}/decide`, { decision: status });
       
       // Update local state
       setRecentApplicants(prev => prev.map(app => 

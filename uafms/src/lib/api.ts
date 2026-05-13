@@ -1,5 +1,5 @@
 const DEFAULT_REMOTE_BACKEND = 'https://mec-backend-9uu9.onrender.com/api';
-const LOCAL_BACKEND = 'http://localhost:5000/api';
+const LOCAL_BACKEND = 'http://localhost:5001/api';
 
 const normalizeBaseUrl = (url: string) => url.replace(/\/+$/, '');
 

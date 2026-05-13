@@ -158,7 +158,7 @@ const seed = async () => {
             university: allianceUni._id,
             course: 'MBA',
             status: 'submitted',
-            pipelineStage: 'applied',
+            pipelineStage: 'review',
             currentStep: 1,
             academics: { institution: 'Demo College', degree: 'BBA', cgpa: '8.5', passingYear: '2023' }
           },

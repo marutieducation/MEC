@@ -165,8 +165,11 @@ const decideApplicant = async (req, res) => {
     ).populate('student', 'firstName lastName email');
 
     if (!application) {
+      console.warn(`[PORTAL] ⚠️ Application ${req.params.id} not found for decision`);
       return res.status(404).json({ message: 'Application not found' });
     }
+
+    console.log(`[PORTAL] ✅ Decision "${decision}" recorded for app: ${application._id}`);
 
     res.json(application);
   } catch (error) {
@@ -183,9 +186,15 @@ const uploadOfferLetter = async (req, res) => {
     if (!university) return res.status(404).json({ message: 'No university linked' });
 
     const application = await Application.findOne({ _id: req.params.id, university: university._id });
-    if (!application) return res.status(404).json({ message: 'Application not found' });
+    if (!application) {
+      console.warn(`[PORTAL] ⚠️ App ${req.params.id} not found for university ${university._id}`);
+      return res.status(404).json({ message: 'Application not found' });
+    }
 
-    if (!req.file) return res.status(400).json({ message: 'No offer PDF uploaded' });
+    if (!req.file) {
+      console.error(`[PORTAL] ❌ No file provided in offer upload for app: ${req.params.id}`);
+      return res.status(400).json({ message: 'No offer PDF uploaded' });
+    }
 
     const fileSizeBytes = req.file.size;
     const fileSizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(1) + ' MB';

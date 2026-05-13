@@ -75,6 +75,7 @@ const partnerNav = [
     category: 'PARTNER',
     items: [
       { name: 'University Portal', href: '/university', icon: HomeIcon },
+      { name: 'Admissions Queue', href: '/university/applicants', icon: UsersIcon },
       { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
     ]
   }
