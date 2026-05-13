@@ -38,10 +38,10 @@ const connectDB = async () => {
 
   } catch (error) {
     console.error(`🚨 CRITICAL ERROR: Initial DB Connection failed: ${error.message}`);
-    console.error('👉 Please check your MONGO_URI and IP Whitelist in MongoDB Atlas.');
+    console.error('👉 IMPORTANT: If this is a timeout, ensure 0.0.0.0/0 is added to your MongoDB Atlas IP Access List.');
+    console.error('👉 Also verify that MONGO_URI is correctly set in Render environment variables.');
     
     // Fail fast on initial connection failure. 
-    // The process manager (PM2/Docker) will automatically restart the app.
     process.exit(1);
   }
 };

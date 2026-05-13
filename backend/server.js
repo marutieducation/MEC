@@ -1,7 +1,7 @@
+require('dotenv').config();
 const express = require('express');
 require('express-async-errors');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const helmet = require('helmet');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
@@ -15,8 +15,6 @@ const { sanitizeInput } = require('./middleware/sanitize');
 const { csrfTokenMiddleware, csrfProtection } = require('./middleware/csrf');
 const { requestLogger, errorLogger } = require('./middleware/requestLogger');
 
-
-dotenv.config();
 
 // Ensure required directories exist
 const fs = require('fs');
@@ -230,6 +228,16 @@ app.use('/api/interviews', require('./routes/interview'));
 app.use('/api/reports', require('./routes/report'));
 app.use('/api/chat', require('./routes/chat'));
 app.use('/api/leads', require('./routes/leads'));
+
+
+// Root route for Render default health check
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    message: 'MEC UAFMS API is running', 
+    timestamp: new Date().toISOString() 
+  });
+});
+
 
 
 
