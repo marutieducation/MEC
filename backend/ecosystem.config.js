@@ -3,8 +3,8 @@ module.exports = {
     {
       name: 'mec-backend',
       script: './server.js',
-      instances: 'max', // Uses all available CPU cores in cluster mode
-      exec_mode: 'cluster',
+      instances: 1, // Use single instance for Render (cluster mode not recommended on Render)
+      exec_mode: 'fork',
       autorestart: true,
       watch: false, // Don't watch in production to save CPU/Memory
       max_memory_restart: '400M', // Prevents 512M limit OOM kills on free-tier Render/Railway
@@ -23,6 +23,10 @@ module.exports = {
       kill_timeout: 10000,
       wait_ready: true,
       listen_timeout: 8000,
+      // Render-specific settings
+      min_uptime: '10s',
+      max_restarts: 10,
+      restart_delay: 4000,
     },
   ],
 };
